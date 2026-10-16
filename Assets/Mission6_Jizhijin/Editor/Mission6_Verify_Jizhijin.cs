@@ -232,6 +232,8 @@ public static class Mission6_Verify_Jizhijin
                     pickup++; stage = 8; next = 0; break;
                 case 10:
                     Check(puzzle.gameObject.activeInHierarchy && Time.timeScale == 0, "physical exit opens the crossword");
+                    Check(puzzle.nextLevelButton != null && puzzle.nextLevelButton.transform.parent == puzzle.transform && puzzle.nextLevelButton.GetComponentInParent<Canvas>() != null && puzzle.nextLevelButton.GetComponent<Image>().color.a == 1, "NEXT LEVEL belongs to the exit Canvas and has an opaque button image");
+                    puzzle.NextLevel(); Check(!puzzle.nextLevelButton.activeSelf && SceneManager.GetActiveScene().path == Mission6_Setup_Jizhijin.ScenePath, "unsolved crossword cannot advance to another mission");
                     Check(puzzle.letterSlots.Length == 4 && puzzle.slotCells.Distinct().Count() == 4, "crossword has exactly four inputs with shared intersections counted once");
                     Check(FindObjects().Count(t => t.GetComponent<Collider>().enabled) == 5, "five distractor letters remain uncollected at the exit");
                     Check(puzzle.transform.Cast<Transform>().Count(t => t.name.StartsWith("Square_")) == Mission6_Grid_Level_Jizhijin.Crossword.Count, "UI grid preserves the reference crossword shape");
@@ -253,6 +255,7 @@ public static class Mission6_Verify_Jizhijin
                     puzzle.transform.Find("SubmitButton").GetComponent<Button>().onClick.Invoke();
                     Check(puzzle.Solved && puzzle.resultText.text.Contains("8 / 8") && inventory.Letters.Count == 4, "only four collected letters complete all eight crossing words");
                     Check(puzzle.wordLabels.All(l => l.color.g > 0.9f), "shared answers validate both Across and Down");
+                    Check(puzzle.nextLevelButton.activeInHierarchy && puzzle.nextLevelButton.GetComponent<Button>().onClick.GetPersistentMethodName(0) == "NextLevel", "correct crossword reveals the wired NEXT LEVEL button");
                     Capture("letters-08-success"); stage = 12; next = Time.realtimeSinceStartup + 0.4f; break;
                 case 12:
                     int intersection = Array.IndexOf(puzzle.slotCells, new Vector2Int(9, 16));
@@ -262,6 +265,7 @@ public static class Mission6_Verify_Jizhijin
                     puzzle.letterSlots[single].SetValueWithoutNotify(oldValue);
                     puzzle.CheckAnswer();
                     Check(!puzzle.Solved && puzzle.resultText.text.StartsWith("5 / 8"), "changing a shared square affects both crossing words");
+                    Check(!puzzle.nextLevelButton.activeSelf, "changing an answer hides NEXT LEVEL until the crossword is correct again");
                     foreach (var remaining in FindObjects().Where(t => t.GetComponent<Collider>().enabled)) inventory.AddLetter(remaining.letter);
                     puzzle.gameObject.SetActive(false); puzzle.gameObject.SetActive(true);
                     Check(inventory.Letters.Count == 9 && inventory.Letters.All(c => puzzle.bagText.text.Contains(c)), "crossword displays all nine collected letters in its bag summary");
@@ -291,7 +295,21 @@ public static class Mission6_Verify_Jizhijin
                     var last = puzzle.letterSlots[menuSlot].transform.Find("Dropdown List").GetComponentsInChildren<Toggle>().OrderBy(t => t.transform.position.y).First();
                     last.isOn = true;
                     Check(puzzle.letterSlots[menuSlot].captionText.text == inventory.Letters[8], "last letter in a full bag remains selectable");
-                    puzzle.PlayAgain(); stage = 13; next = Time.realtimeSinceStartup + 1; break;
+                    foreach (var slot in puzzle.letterSlots) slot.SetValueWithoutNotify(0);
+                    for (int i = 0; i < puzzle.slotCells.Length; i++)
+                    {
+                        string required = Mission6_Grid_Level_Jizhijin.Crossword[puzzle.slotCells[i]].answer.ToString();
+                        puzzle.letterSlots[i].value = Enumerable.Range(0, inventory.Letters.Count).First(j => inventory.Letters[j] == required) + 1;
+                    }
+                    puzzle.CheckAnswer();
+                    puzzle.nextSceneName = "MissingMission_Verification"; puzzle.NextLevel();
+                    Check(Time.timeScale == 0 && SceneManager.GetActiveScene().path == Mission6_Setup_Jizhijin.ScenePath, "unavailable next mission preserves the paused crossword instead of throwing a load error");
+                    puzzle.nextSceneName = "";
+                    puzzle.nextLevelButton.GetComponent<Button>().onClick.Invoke();
+                    stage = 25; next = Time.realtimeSinceStartup + 1; break;
+                case 25:
+                    Check(SceneManager.GetActiveScene().buildIndex == 1 && Time.timeScale == 1, "NEXT LEVEL loads the next scene in Build Settings and restores time");
+                    SceneManager.LoadScene(Mission6_Setup_Jizhijin.ScenePath); stage = 13; next = Time.realtimeSinceStartup + 1; break;
                 case 13:
                     level = Find<Mission6_Grid_Level_Jizhijin>(); photo = Find<Mission6_Photo_Player_Jizhijin>(); inventory = Find<Mission6_Letters_GameManager_Jizhijin>();
                     Check(level.IsPlanning && level.moving.enabled && !photo.Used && inventory.Letters.Count == 0, "restart restores movable PLAN and an empty bag");

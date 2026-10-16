@@ -23,6 +23,12 @@ public static class Mission6_GridBuilder_Jizhijin
     static Mission6_GridBuilder_Jizhijin() { EditorApplication.update += Poll; }
     static void Poll()
     {
+        if (File.Exists("Temp/Mission6_Jizhijin.nextlevel") && !EditorApplication.isCompiling && !EditorApplication.isUpdating && !EditorApplication.isPlayingOrWillChangePlaymode)
+        {
+            File.Delete("Temp/Mission6_Jizhijin.nextlevel");
+            try { AddNextLevelButton(); }
+            catch (Exception error) { Debug.LogException(error); }
+        }
         if (!File.Exists("Temp/Mission6_Jizhijin.grid") || EditorApplication.isCompiling || EditorApplication.isUpdating || EditorApplication.isPlayingOrWillChangePlaymode) return;
         File.Delete("Temp/Mission6_Jizhijin.grid");
         try { Rebuild(); File.WriteAllText("docs/Mission6_Jizhijin/grid-build.txt", "Built 20x20 maze with connected crossword, shared blank cells and walkable PLAN room. Map synchronized."); }
@@ -39,6 +45,7 @@ public static class Mission6_GridBuilder_Jizhijin
         var canvas = All<Canvas>().First(x => x.renderMode == RenderMode.ScreenSpaceOverlay);
         var inventory = All<Mission6_Letters_GameManager_Jizhijin>().Single();
         var watch = player.GetComponentInChildren<PocketWatch>(true);
+        string nextScene = All<Mission6_Spelling_ExitPanel_Jizhijin>().FirstOrDefault()?.nextSceneName;
         var template = canvas.transform.Find("DropdownTemplate_Jizhijin");
         if (template == null)
         {
@@ -192,12 +199,13 @@ public static class Mission6_GridBuilder_Jizhijin
         var retry = Button("Restart", death.transform, "TRY AGAIN", new Vector2(0, -30));
         UnityEventTools.AddPersistentListener(retry.onClick, watch.RestartGame); watch.deathPanel = death; death.SetActive(false);
         var exitPanel = CreatePuzzle(canvas.transform, template.GetComponent<TMP_Dropdown>(), inventory);
+        exitPanel.nextSceneName = nextScene;
         var exit = new GameObject("GridExit_Jizhijin", typeof(BoxCollider), typeof(ExitTrigger)); exit.transform.SetParent(grid.transform);
         exit.transform.position = Mission6_Grid_Level_Jizhijin.Center(18, 18, 1.7f);
         var exitCollider = exit.GetComponent<BoxCollider>(); exitCollider.isTrigger = true; exitCollider.size = new Vector3(2.2f, 3.4f, 2.2f);
         var exitTrigger = exit.GetComponent<ExitTrigger>(); exitTrigger.exitPanel = exitPanel.gameObject;
         exitTrigger.moving = player; exitTrigger.mouseLook = level.mouseLook; exitTrigger.headBob = level.headBob; exitTrigger.pocketWatch = watch;
-        var back = Button("BackToGrid", exitPanel.transform, "BACK TO GRID", new Vector2(-145, -307));
+        var back = Button("BackToGrid", exitPanel.transform, "BACK TO GRID", new Vector2(-290, -307));
         UnityEventTools.AddPersistentListener(back.onClick, exitTrigger.ClosePanel);
         exitPanel.gameObject.SetActive(false);
         Cube("ExitPad", grid.transform, Mission6_Grid_Level_Jizhijin.Center(18, 18, 0.02f), new Vector3(2.3f, 0.04f, 2.3f), exitMat);
@@ -314,10 +322,37 @@ public static class Mission6_GridBuilder_Jizhijin
         puzzle.resultText = Label("Result", panel.transform, "", 21, new Vector2(0, -205), new Vector2(1120, 46));
         var submit = Button("SubmitButton", panel.transform, "CHECK CROSSWORD", new Vector2(0, -257));
         UnityEventTools.AddPersistentListener(submit.onClick, puzzle.CheckAnswer);
-        var replay = Button("Replay", panel.transform, "PLAY AGAIN", new Vector2(145, -307));
+        var replay = Button("Replay", panel.transform, "PLAY AGAIN", new Vector2(0, -307));
         UnityEventTools.AddPersistentListener(replay.onClick, puzzle.PlayAgain);
         puzzle.playAgainButton = replay.gameObject; replay.gameObject.SetActive(false);
+        ConfigureNextLevelButton(puzzle);
         return puzzle;
+    }
+    [MenuItem("Mission6 Jizhijin/Add or repair NEXT LEVEL button")]
+    public static void AddNextLevelButton()
+    {
+        scene = SceneManager.GetSceneByPath(ScenePath);
+        if (!scene.IsValid() || !scene.isLoaded) scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Additive);
+        var puzzle = All<Mission6_Spelling_ExitPanel_Jizhijin>().Single();
+        ConfigureNextLevelButton(puzzle);
+        var back = puzzle.transform.Find("BackToGrid");
+        if (back != null) back.GetComponent<RectTransform>().anchoredPosition = new Vector2(-290, -307);
+        if (puzzle.playAgainButton != null) puzzle.playAgainButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -307);
+        EditorUtility.SetDirty(puzzle);
+        EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene);
+        Selection.activeGameObject = puzzle.nextLevelButton;
+    }
+    static void ConfigureNextLevelButton(Mission6_Spelling_ExitPanel_Jizhijin puzzle)
+    {
+        var existing = puzzle.transform.Find("NextLevel_Jizhijin");
+        var button = existing != null ? existing.GetComponent<Button>() : Button("NextLevel_Jizhijin", puzzle.transform, "NEXT LEVEL", new Vector2(290, -307));
+        button.GetComponent<RectTransform>().anchoredPosition = new Vector2(290, -307);
+        button.GetComponent<Image>().color = new Color(0.1f, 0.37f, 0.43f, 1);
+        button.onClick = new Button.ButtonClickedEvent();
+        UnityEventTools.AddPersistentListener(button.onClick, puzzle.NextLevel);
+        puzzle.nextLevelButton = button.gameObject;
+        // Available to inspect in edit mode; OnEnable hides it until a correct answer in play mode.
+        button.gameObject.SetActive(true);
     }
     static void ConfigureLetterMenu(TMP_Dropdown slot)
     {

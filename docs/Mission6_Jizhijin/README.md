@@ -20,6 +20,9 @@
 地图和照片直接标明全部九个字母及位置。抵达 E 出口后在空格中选择收集的字母。
 相同字母的不同道具可以分别使用；同一个实体道具不能放入两个不同格子。
 点击 CHECK CROSSWORD 判定，错误可以重选，缺少字母时点击 BACK TO GRID 返回。
+全部正确后显示 NEXT LEVEL，默认加载 Build Settings 中当前场景之后的下一场景，并恢复暂停时间。
+若要指定任务，在 CrosswordPanel_Jizhijin 的脚本组件中填写 Next Scene Name；目标场景必须加入构建列表。
+Unity 菜单 Mission6 Jizhijin > Add or repair NEXT LEVEL button 可补加或修复按钮，不需要重建地图。
 填字界面上方显示全部已收集字母；展开选项的列表独立加宽，最多九个字母可一次看全。
 
 ## 操作和照片
