@@ -87,6 +87,14 @@ public static class mission3Lift_Editor_ShengChiehLee
         lightGo.transform.localPosition = new Vector3(0, 2.7f, .9f);
         var light = lightGo.AddComponent<Light>(); light.type = LightType.Point;
         light.color = new Color(1, .84f, .62f); light.intensity = 1.7f; light.range = 3.5f;
+        var manager = parent.GetComponentInParent<mission3Hotel_Manager_ShengChiehLee>();
+        if (manager == null)
+            foreach (var sceneRoot in parent.gameObject.scene.GetRootGameObjects())
+            {
+                manager = sceneRoot.GetComponentInChildren<mission3Hotel_Manager_ShengChiehLee>(true);
+                if (manager != null) break;
+            }
+        if (manager != null) mission3NextLevel_Editor_ShengChiehLee.Create(root, manager);
         Validate(root);
         return root;
     }

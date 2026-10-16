@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using TMPro;
 
 public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
 {
@@ -14,8 +16,10 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
     public Texture2D floorMap;
     public GameObject serviceDoor;
     public Transform serviceDoorOpenPosition;
-    [Tooltip("Optional exact scene name for team integration. Leave blank until the next scene exists.")]
-    public string nextSceneName;
+    [Tooltip("Exact destination scene name or Assets/... scene path. Add the destination to Build Settings before playing.")]
+    public string nextSceneName = "Mission4";
+    public Button nextLevelButton;
+    public TMP_Text nextLevelStatus;
     public UnityEvent<int> onMissionCompleted = new UnityEvent<int>();
     public int FinalScore { get; private set; }
     public bool IsCompleted { get; private set; }
@@ -39,6 +43,7 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
     {
         startPosition = playerBody.transform.position; startRotation = playerBody.transform.rotation;
         SetPage(Page.Welcome);
+        RefreshNextLevelStatus();
     }
     void SetPage(Page value)
     {
@@ -60,12 +65,20 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
         focus = null;
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, 3.4f, ~0, QueryTriggerInteraction.Collide))
             focus = hit.collider.GetComponentInParent<mission3Interact_Prop_ShengChiehLee>();
-        if (focus != null && k.eKey.wasPressedThisFrame) Interact(focus);
+        if (focus != null && (k.eKey.wasPressedThisFrame ||
+            (focus.kind == mission3Interact_Prop_ShengChiehLee.Kind.NextLevel && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame))) Interact(focus);
         if (playerBody.position.y < -8) { playerBody.position = startPosition; playerBody.rotation = startRotation; playerBody.linearVelocity = Vector3.zero; Notify("Returned to reception."); }
     }
     public void Interact(mission3Interact_Prop_ShengChiehLee prop)
     {
-        if (IsCompleted) return;
+        if (prop == null) return;
+        if (prop.kind == mission3Interact_Prop_ShengChiehLee.Kind.NextLevel)
+        {
+            if (nextLevelButton != null) nextLevelButton.onClick.Invoke();
+            else LoadNextLevel();
+            return;
+        }
+        if (IsCompleted && prop.kind != mission3Interact_Prop_ShengChiehLee.Kind.LiftDoors) return;
         switch (prop.kind)
         {
             case mission3Interact_Prop_ShengChiehLee.Kind.LostProperty:
@@ -94,7 +107,28 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
         for (int i = 0; i < 6; i++) if (collected[i] && assignment[i] < 0) { Notify("Assign every collected item before checkout."); return; }
         result = mission3Rules_Manager_ShengChiehLee.Settle(collected, assignment, ShortcutOpened);
         FinalScore = result.score; IsCompleted = true; SetPage(Page.Result);
+        RefreshNextLevelStatus();
         onMissionCompleted.Invoke(FinalScore);
+    }
+    public void RefreshNextLevelStatus()
+    {
+        if (nextLevelStatus == null) return;
+        nextLevelStatus.text = !IsCompleted ? "COMPLETE CHECKOUT FIRST" :
+            (Application.CanStreamedLevelBeLoaded(nextSceneName) ? "READY  /  E OR CLICK TO CONTINUE" : "DESTINATION NOT ADDED YET");
+    }
+    public void LoadNextLevel()
+    {
+        if (!IsCompleted) { Notify("Complete checkout before travelling to the next level."); return; }
+        string destination = (nextSceneName ?? "").Trim();
+        if (string.IsNullOrEmpty(destination) || !Application.CanStreamedLevelBeLoaded(destination))
+        {
+            Notify("Next level is not available yet: " + (string.IsNullOrEmpty(destination) ? "no destination configured" : destination) + ".");
+            return;
+        }
+        if (nextLevelButton != null) nextLevelButton.interactable = false;
+        Time.timeScale = 1;
+        Cursor.lockState = CursorLockMode.None; Cursor.visible = true;
+        SceneManager.LoadScene(destination);
     }
     void OnDisable() { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; }
     void InitStyles()
@@ -159,7 +193,8 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
                 GUILayout.Label("Correct returns: "+result.correct+" / 6  = "+result.itemPoints+"\nComplete guest pairs: "+result.sets+" / 3  = "+result.setPoints+"\nService shortcut: "+result.explorationPoints,body);
                 for(int i=0;i<6;i++) GUILayout.Label(mission3Rules_Manager_ShengChiehLee.Items[i]+" -> "+(301+mission3Rules_Manager_ShengChiehLee.Owner(i))+(collected[i]?(assignment[i]==mission3Rules_Manager_ShengChiehLee.Owner(i)?"  / RETURNED":"  / WRONG OWNER"):"  / NOT FOUND"),small);
                 if(GUILayout.Button("Explore again",button)) Restart();
-                if(!string.IsNullOrWhiteSpace(nextSceneName) && Application.CanStreamedLevelBeLoaded(nextSceneName) && GUILayout.Button("Continue to next mission",button)) SceneManager.LoadScene(nextSceneName); break;
+                if(GUILayout.Button("Return to lift / NEXT LEVEL",button)) SetPage(Page.None);
+                break;
             case Page.Pause:
                 GUILayout.Label("PAUSED",title); if(GUILayout.Button("Continue",button)) SetPage(Page.None); if(GUILayout.Button("Floor map",button)) SetPage(Page.Map); break;
         }
