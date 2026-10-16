@@ -15,6 +15,9 @@ EditorBuildSettings:
     path: Assets/Scenes/ZhuohengWu Mission5.unity
     guid: 42290403a1a2c4284b537f8f541af0d4
   - enabled: 1
+    path: Assets/Scenes/Mission4.unity
+    guid: 5a16fa40422d5fa44b090cfd0ebbbb39
+  - enabled: 1
     path: Assets/Scenes/Mission1.unity
     guid: 99c9720ab356a0642a771bea13969a05
   - enabled: 0
