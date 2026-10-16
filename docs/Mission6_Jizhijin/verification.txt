@@ -1,0 +1,56 @@
+PASS: PLAN map is a board in the starting room
+PASS: movement, mouse look, and physics remain enabled during PLAN
+PASS: PLAN map is clear of exploration HUD overlays
+PASS: moving during PLAN does not consume the photo
+PASS: view remains free of fog and lens flares
+PASS: map import preserves pixel dimensions without rescaling
+PASS: exactly 20 x 20 floor cells at matching world coordinates
+PASS: scene walls match the 20 x 20 layout
+PASS: map terrain colors match every one of the 400 cells
+PASS: all letter cells and exit reachable from start
+PASS: all Across and Down word cells reachable
+PASS: only four shared blanks require four available letters
+PASS: map contains nine distinct physical pickups including five distractors
+PASS: all nine map badges contain letter glyphs at matching physical pickup coordinates
+PASS: crossword contains missing letters shared by Across and Down
+PASS: crossing words share physical cells
+PASS: physical colliders have correct wall, passage, raised floor and ramp heights
+PASS: starting-room sign faces the player from inside
+PASS: WASD physically moves the player within the PLAN room
+PASS: PLAN ticks while the exploration timer waits
+PASS: walking through the opening ends PLAN early and hides its map
+PASS: early departure keeps movement active
+PASS: exploration HUD returns when leaving PLAN
+PASS: starting-room sign faces the player from outside
+PASS: Z opens the updated crossword map once
+PASS: repeated Z cannot extend the photo
+PASS: photo closes after five seconds and cannot reopen
+PASS: exploration countdown continues during photo
+PASS: asymmetric pickup glyph presents its front to the camera
+PASS: raised terrain remains walkable without jumping
+PASS: letter pickup 1 collected exactly once
+PASS: letter pickup 2 collected exactly once
+PASS: letter pickup 3 collected exactly once
+PASS: letter pickup 4 collected exactly once
+PASS: physical exit opens the crossword
+PASS: crossword has exactly four inputs with shared intersections counted once
+PASS: five distractor letters remain uncollected at the exit
+PASS: UI grid preserves the reference crossword shape
+PASS: incomplete crossword cannot win
+PASS: a physical tile cannot fill two different squares
+PASS: incorrect crossword can be retried
+PASS: only four collected letters complete all eight crossing words
+PASS: shared answers validate both Across and Down
+PASS: changing a shared square affects both crossing words
+PASS: crossword displays all nine collected letters in its bag summary
+PASS: blank 1 shows all nine letter options without clipping or scrollbar overlap
+PASS: blank 2 shows all nine letter options without clipping or scrollbar overlap
+PASS: blank 3 shows all nine letter options without clipping or scrollbar overlap
+PASS: blank 4 shows all nine letter options without clipping or scrollbar overlap
+PASS: last letter in a full bag remains selectable
+PASS: restart restores movable PLAN and an empty bag
+PASS: new round restores the one-use photo
+PASS: death closes photo while paused
+PASS: new PLAN begins after death restart
+PASS: remaining in the room until PLAN expires causes the original failure
+PASS: no runtime errors
