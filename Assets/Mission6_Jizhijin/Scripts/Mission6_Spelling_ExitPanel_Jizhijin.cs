@@ -12,6 +12,9 @@ public class Mission6_Spelling_ExitPanel_Jizhijin : MonoBehaviour
     public TMP_Text resultText;
     public TMP_Text bagText;
     public GameObject playAgainButton;
+    public GameObject nextLevelButton;
+    [Tooltip("Optional scene name or path. Leave empty to load the next enabled scene in Build Settings.")]
+    public string nextSceneName;
     public bool Solved { get; private set; }
     void Awake()
     {
@@ -23,8 +26,8 @@ public class Mission6_Spelling_ExitPanel_Jizhijin : MonoBehaviour
     }
     void OnEnable()
     {
+        ResetCompletion();
         if (inventory == null || letterSlots == null) return;
-        Solved = false; playAgainButton.SetActive(false);
         resultText.text = "Fill the crossword. A shared cell completes both directions.";
         var options = new List<string> { "-" };
         foreach (string letter in inventory.Letters) options.Add(letter);
@@ -35,7 +38,7 @@ public class Mission6_Spelling_ExitPanel_Jizhijin : MonoBehaviour
     }
     void SelectionChanged(TMP_Dropdown changed)
     {
-        Solved = false; playAgainButton.SetActive(false);
+        ResetCompletion();
         if (changed.value == 0) return;
         foreach (var slot in letterSlots)
             if (slot != changed && slot.value == changed.value)
@@ -48,7 +51,7 @@ public class Mission6_Spelling_ExitPanel_Jizhijin : MonoBehaviour
     public void CheckAnswer()
     {
         if (inventory == null) return;
-        Solved = false; playAgainButton.SetActive(false);
+        ResetCompletion();
         var used = new HashSet<int>();
         var answers = new Dictionary<Vector2Int, char>();
         for (int i = 0; i < letterSlots.Length; i++)
@@ -74,7 +77,30 @@ public class Mission6_Spelling_ExitPanel_Jizhijin : MonoBehaviour
         }
         Solved = correct == Mission6_Grid_Level_Jizhijin.Words.Length;
         resultText.text = Solved ? "CROSSWORD COMPLETE!  8 / 8\nYou escaped. Well done!" : correct + " / 8 correct. Check the orange clues.";
-        playAgainButton.SetActive(Solved);
+    }
+    void ResetCompletion()
+    {
+        Solved = false;
+        if (playAgainButton != null) playAgainButton.SetActive(true);
+        if (nextLevelButton != null) nextLevelButton.SetActive(true);
+    }
+    public void NextLevel()
+    {
+        if (!Solved)
+        { resultText.text = "Complete the crossword before continuing to the next mission."; return; }
+        string destination = nextSceneName == null ? "" : nextSceneName.Trim();
+        if (destination.Length == 0)
+        {
+            int nextIndex = SceneManager.GetActiveScene().buildIndex + 1;
+            if (SceneManager.GetActiveScene().buildIndex < 0 || nextIndex >= SceneManager.sceneCountInBuildSettings)
+            { resultText.text = "All available missions complete!"; return; }
+            destination = SceneUtility.GetScenePathByBuildIndex(nextIndex);
+        }
+        if (!Application.CanStreamedLevelBeLoaded(destination))
+        { resultText.text = "The next mission is not available in this build."; return; }
+        Time.timeScale = 1;
+        Cursor.lockState = CursorLockMode.Locked; Cursor.visible = false;
+        SceneManager.LoadScene(destination);
     }
     public void PlayAgain()
     {

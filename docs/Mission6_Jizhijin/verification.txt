@@ -33,6 +33,9 @@ PASS: letter pickup 2 collected exactly once
 PASS: letter pickup 3 collected exactly once
 PASS: letter pickup 4 collected exactly once
 PASS: physical exit opens the crossword
+PASS: NEXT LEVEL belongs to the exit Canvas and has an opaque button image
+PASS: NEXT LEVEL and PLAY AGAIN are visible as soon as the exit panel opens
+PASS: visible NEXT LEVEL explains the completion requirement without changing scenes
 PASS: crossword has exactly four inputs with shared intersections counted once
 PASS: five distractor letters remain uncollected at the exit
 PASS: UI grid preserves the reference crossword shape
@@ -41,14 +44,19 @@ PASS: a physical tile cannot fill two different squares
 PASS: incorrect crossword can be retried
 PASS: only four collected letters complete all eight crossing words
 PASS: shared answers validate both Across and Down
+PASS: correct crossword retains the wired NEXT LEVEL button
 PASS: changing a shared square affects both crossing words
+PASS: editing or submitting an incorrect answer keeps both navigation buttons visible
 PASS: crossword displays all nine collected letters in its bag summary
 PASS: blank 1 shows all nine letter options without clipping or scrollbar overlap
 PASS: blank 2 shows all nine letter options without clipping or scrollbar overlap
 PASS: blank 3 shows all nine letter options without clipping or scrollbar overlap
 PASS: blank 4 shows all nine letter options without clipping or scrollbar overlap
 PASS: last letter in a full bag remains selectable
+PASS: unavailable next mission preserves the paused crossword instead of throwing a load error
+PASS: NEXT LEVEL loads the next scene in Build Settings and restores time
 PASS: restart restores movable PLAN and an empty bag
+PASS: PLAY AGAIN works before crossword completion and restores a fresh running round
 PASS: new round restores the one-use photo
 PASS: death closes photo while paused
 PASS: new PLAN begins after death restart
