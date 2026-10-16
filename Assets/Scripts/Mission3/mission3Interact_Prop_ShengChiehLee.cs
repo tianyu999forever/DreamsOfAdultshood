@@ -3,7 +3,7 @@ using UnityEngine;
 // Scene-local interactions only. Never attached to shared prefabs.
 public class mission3Interact_Prop_ShengChiehLee : MonoBehaviour
 {
-    public enum Kind { LostProperty, GuestNote, FloorMap, ServiceDoor, Checkout, LiftDoors }
+    public enum Kind { LostProperty, GuestNote, FloorMap, ServiceDoor, Checkout, LiftDoors, NextLevel }
     public Kind kind;
     public int index;
     public string displayName;
