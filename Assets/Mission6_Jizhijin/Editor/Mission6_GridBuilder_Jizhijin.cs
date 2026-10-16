@@ -324,7 +324,7 @@ public static class Mission6_GridBuilder_Jizhijin
         UnityEventTools.AddPersistentListener(submit.onClick, puzzle.CheckAnswer);
         var replay = Button("Replay", panel.transform, "PLAY AGAIN", new Vector2(0, -307));
         UnityEventTools.AddPersistentListener(replay.onClick, puzzle.PlayAgain);
-        puzzle.playAgainButton = replay.gameObject; replay.gameObject.SetActive(false);
+        puzzle.playAgainButton = replay.gameObject; replay.gameObject.SetActive(true);
         ConfigureNextLevelButton(puzzle);
         return puzzle;
     }
@@ -337,7 +337,11 @@ public static class Mission6_GridBuilder_Jizhijin
         ConfigureNextLevelButton(puzzle);
         var back = puzzle.transform.Find("BackToGrid");
         if (back != null) back.GetComponent<RectTransform>().anchoredPosition = new Vector2(-290, -307);
-        if (puzzle.playAgainButton != null) puzzle.playAgainButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -307);
+        if (puzzle.playAgainButton != null)
+        {
+            puzzle.playAgainButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -307);
+            puzzle.playAgainButton.SetActive(true);
+        }
         EditorUtility.SetDirty(puzzle);
         EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene);
         Selection.activeGameObject = puzzle.nextLevelButton;
@@ -351,7 +355,7 @@ public static class Mission6_GridBuilder_Jizhijin
         button.onClick = new Button.ButtonClickedEvent();
         UnityEventTools.AddPersistentListener(button.onClick, puzzle.NextLevel);
         puzzle.nextLevelButton = button.gameObject;
-        // Available to inspect in edit mode; OnEnable hides it until a correct answer in play mode.
+        // Navigation buttons remain visible whenever the exit panel is open.
         button.gameObject.SetActive(true);
     }
     static void ConfigureLetterMenu(TMP_Dropdown slot)

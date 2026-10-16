@@ -26,8 +26,8 @@ public class Mission6_Spelling_ExitPanel_Jizhijin : MonoBehaviour
     }
     void OnEnable()
     {
-        if (inventory == null || letterSlots == null) return;
         ResetCompletion();
+        if (inventory == null || letterSlots == null) return;
         resultText.text = "Fill the crossword. A shared cell completes both directions.";
         var options = new List<string> { "-" };
         foreach (string letter in inventory.Letters) options.Add(letter);
@@ -77,18 +77,17 @@ public class Mission6_Spelling_ExitPanel_Jizhijin : MonoBehaviour
         }
         Solved = correct == Mission6_Grid_Level_Jizhijin.Words.Length;
         resultText.text = Solved ? "CROSSWORD COMPLETE!  8 / 8\nYou escaped. Well done!" : correct + " / 8 correct. Check the orange clues.";
-        playAgainButton.SetActive(Solved);
-        if (nextLevelButton != null) nextLevelButton.SetActive(Solved);
     }
     void ResetCompletion()
     {
         Solved = false;
-        if (playAgainButton != null) playAgainButton.SetActive(false);
-        if (nextLevelButton != null) nextLevelButton.SetActive(false);
+        if (playAgainButton != null) playAgainButton.SetActive(true);
+        if (nextLevelButton != null) nextLevelButton.SetActive(true);
     }
     public void NextLevel()
     {
-        if (!Solved) return;
+        if (!Solved)
+        { resultText.text = "Complete the crossword before continuing to the next mission."; return; }
         string destination = nextSceneName == null ? "" : nextSceneName.Trim();
         if (destination.Length == 0)
         {
