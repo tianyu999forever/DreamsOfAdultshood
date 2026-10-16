@@ -24542,7 +24542,7 @@ GameObject:
   - component: {fileID: 1591807026}
   - component: {fileID: 1591807025}
   - component: {fileID: 1591807024}
-  - component: {fileID: 1591807023}
+  - component: {fileID: 1591807028}
   m_Layer: 0
   m_Name: TeleportPad_A
   m_TagString: Untagged
@@ -24550,25 +24550,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1591807023
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1591807022}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9f4783be36192cd4eae27a3b852925d7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Teleporter
-  destination: {fileID: 1655703241}
-  stayTime: 1.5
-  snapToGround: 1
-  promptText: {fileID: 0}
-  promptLabel: 'TELEPORTING IN '
-  teleportParticlePrefab: {fileID: 6030190285009755996, guid: 0aec021a628dc824b9c1418c68fb7974, type: 3}
-  teleportSound: {fileID: 0}
 --- !u!65 &1591807024
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -24662,6 +24643,25 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1591807028
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1591807022}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f4783be36192cd4eae27a3b852925d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Teleporter
+  destination: {fileID: 1655703241}
+  stayTime: 1.5
+  snapToGround: 1
+  promptText: {fileID: 0}
+  promptLabel: 'TELEPORTING IN '
+  teleportParticlePrefab: {fileID: 6030190285009755996, guid: 0aec021a628dc824b9c1418c68fb7974, type: 3}
+  teleportSound: {fileID: 0}
 --- !u!4 &1592211479 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7213797157763362029, guid: ac019df2f3e3b4046af1e937d8456553, type: 3}
