@@ -35,7 +35,7 @@ PASS: letter pickup 4 collected exactly once
 PASS: physical exit opens the crossword
 PASS: NEXT LEVEL belongs to the exit Canvas and has an opaque button image
 PASS: NEXT LEVEL and PLAY AGAIN are visible as soon as the exit panel opens
-PASS: visible NEXT LEVEL explains the completion requirement without changing scenes
+PASS: NEXT LEVEL is enabled while all crossword inputs are empty
 PASS: crossword has exactly four inputs with shared intersections counted once
 PASS: five distractor letters remain uncollected at the exit
 PASS: UI grid preserves the reference crossword shape
@@ -53,8 +53,9 @@ PASS: blank 2 shows all nine letter options without clipping or scrollbar overla
 PASS: blank 3 shows all nine letter options without clipping or scrollbar overlap
 PASS: blank 4 shows all nine letter options without clipping or scrollbar overlap
 PASS: last letter in a full bag remains selectable
+PASS: next mission test begins with an unfinished crossword and no submitted answer
 PASS: unavailable next mission preserves the paused crossword instead of throwing a load error
-PASS: NEXT LEVEL loads the next scene in Build Settings and restores time
+PASS: clicking NEXT LEVEL skips the unfinished crossword, loads the next scene, and restores time
 PASS: restart restores movable PLAN and an empty bag
 PASS: PLAY AGAIN works before crossword completion and restores a fresh running round
 PASS: new round restores the one-use photo
