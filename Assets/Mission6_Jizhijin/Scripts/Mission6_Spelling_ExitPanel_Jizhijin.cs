@@ -86,8 +86,6 @@ public class Mission6_Spelling_ExitPanel_Jizhijin : MonoBehaviour
     }
     public void NextLevel()
     {
-        if (!Solved)
-        { resultText.text = "Complete the crossword before continuing to the next mission."; return; }
         string destination = nextSceneName == null ? "" : nextSceneName.Trim();
         if (destination.Length == 0)
         {
