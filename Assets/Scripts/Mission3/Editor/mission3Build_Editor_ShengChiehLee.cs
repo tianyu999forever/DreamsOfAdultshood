@@ -12,8 +12,7 @@ using UnityEngine.SceneManagement;
 
 public static class mission3Build_Editor_ShengChiehLee
 {
-    const string Root = "Assets/Mission3";
-    public const string ScenePath = "Assets/Scenes/Mission3.unity";
+    public const string ScenePath = mission3Paths_Editor_ShengChiehLee.Scene;
     static bool[,] cells;
     static Transform environment, props;
     static Material wall, wood, carpet, gold, cream, ink, green, sharedCeiling;
@@ -23,13 +22,16 @@ public static class mission3Build_Editor_ShengChiehLee
     static void Room(int x0,int y0,int x1,int y1) { for(int y=y0;y<=y1;y++)for(int x=x0;x<=x1;x++)cells[x,y]=true; }
     static void Layout()
     {
-        cells=new bool[21,21];Room(1,1,5,5);Room(3,5,3,18);Room(3,8,17,8);Room(17,3,17,18);Room(3,17,17,17);Room(9,4,9,17);Room(9,12,17,12);Room(5,4,9,4);
-        Room(1,9,2,11);Room(5,10,7,12);Room(5,14,7,16);Room(10,3,12,5);Room(14,3,16,5);Room(18,10,19,12);Room(11,14,13,16);Room(4,11,4,11);Room(4,15,4,15);Room(11,6,11,7);
+        // Mission1-inspired outer circuit and staggered inner branches, with distinct hotel rooms.
+        cells=new bool[21,21];Room(1,1,5,5);Room(3,5,3,18);Room(3,7,18,7);Room(18,4,18,18);Room(3,18,18,18);
+        Room(9,4,9,13);Room(5,4,9,4);Room(9,12,18,12);Room(3,13,9,13);Room(14,12,14,18);
+        Room(1,9,2,11);Room(5,10,7,12);Room(5,14,7,16);Room(10,3,12,5);Room(14,3,16,5);Room(17,4,18,4);
+        Room(18,10,19,12);Room(11,14,13,16);Room(14,15,14,15);Room(4,11,4,11);Room(4,15,4,15);Room(11,6,11,7);
         cells[10,4]=false;
     }
     static Material Mat(string name, Color color, string source=null)
     {
-        string path=Root+"/"+name+".mat";
+        string path=mission3Paths_Editor_ShengChiehLee.Material(name);
         var m=AssetDatabase.LoadAssetAtPath<Material>(path);
         bool fresh=m==null;
         if(fresh) { var shared=source==null?null:AssetDatabase.LoadAssetAtPath<Material>(source); m=shared!=null?new Material(shared):new Material(Shader.Find("Universal Render Pipeline/Lit")); }
@@ -100,14 +102,14 @@ public static class mission3Build_Editor_ShengChiehLee
         for(int y=0;y<504;y++)for(int x=0;x<504;x++){int cx=x/24,cy=20-y/24;colors[y*504+x]=cells[cx,cy]?new Color(.86f,.75f,.52f):new Color(.18f,.13f,.11f);}
         void Mark(int cx,int cy,Color c){for(int y=0;y<14;y++)for(int x=0;x<14;x++)colors[((20-cy)*24+5+y)*504+cx*24+5+x]=c;}
         Mark(3,1,Color.red);Mark(5,2,Color.cyan);Mark(10,4,Color.green);Mark(2,10,new Color(.95f,.5f,.2f));Mark(11,4,new Color(.95f,.5f,.2f));Mark(18,11,new Color(.95f,.5f,.2f));
-        t.SetPixels(colors);t.Apply();string p=Root+"/mission3FloorMap.png";File.WriteAllBytes(p,t.EncodeToPNG());UnityEngine.Object.DestroyImmediate(t);AssetDatabase.ImportAsset(p);
+        t.SetPixels(colors);t.Apply();string p=mission3Paths_Editor_ShengChiehLee.Maps+"/mission3FloorMap.png";File.WriteAllBytes(p,t.EncodeToPNG());UnityEngine.Object.DestroyImmediate(t);AssetDatabase.ImportAsset(p);
         var imp=(TextureImporter)AssetImporter.GetAtPath(p);imp.textureType=TextureImporterType.Default;imp.sRGBTexture=true;imp.mipmapEnabled=false;imp.textureCompression=TextureImporterCompression.Uncompressed;imp.filterMode=FilterMode.Point;imp.SaveAndReimport();return AssetDatabase.LoadAssetAtPath<Texture2D>(p);
     }
     [MenuItem("Mission3/Build Hotel 24 Scene (replaces Mission3 only)")]
     public static void Build()
     {
         if(!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())return;
-        Directory.CreateDirectory(Root);AssetDatabase.Refresh();Layout();
+        mission3Paths_Editor_ShengChiehLee.EnsureFolders();AssetDatabase.Refresh();Layout();
         var scene=EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);
         environment=new GameObject("Mission3_HotelArchitecture").transform;props=new GameObject("Mission3_PropsAndInteractions").transform;
         const string common="Assets/Materials/Materials/Environment/";
@@ -163,6 +165,8 @@ public static class mission3Build_Editor_ShengChiehLee
         Box("Lounge sofa",W(12,14.4f,.5f),new Vector3(3.5f,.65f,1.1f),carpet,props);Box("Sofa back",W(12,14.25f,1),new Vector3(3.5f,.7f,.25f),wood,props);
         // Deliberately mixed locations: infer owners from notes rather than room of discovery.
         Item(6,11,0);Item(18,11,1);Item(1.2f,11,2);Item(12,15.5f,3);Item(11,4,4);Item(6,15,5);
+        mission3Presentation_Editor_ShengChiehLee.BuildPresentation(scene);
+        mission3Architecture_Editor_ShengChiehLee.Organize(scene);
         AssetDatabase.SaveAssets();EditorSceneManager.SaveScene(scene,ScenePath);Validate();Debug.Log("MISSION3_BUILD_SUCCESS "+ScenePath);
     }
     public static void BuildAndCapture() { Build(); mission3Verify_Editor_ShengChiehLee.Capture(); }

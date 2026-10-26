@@ -13,6 +13,8 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
     public Moving movement;
     public MouseLook mouseLook;
     public Rigidbody playerBody;
+    public HeadBob headBob;
+    public mission3Canvas_UI_ShengChiehLee canvasUI;
     public Texture2D floorMap;
     public GameObject serviceDoor;
     public Transform serviceDoorOpenPosition;
@@ -27,17 +29,24 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
     public bool[] collected = new bool[6];
     public bool[] notesRead = new bool[3];
     public int[] assignment = { -1, -1, -1, -1, -1, -1 };
-    enum Page { None, Welcome, Map, Journal, Note, Checkout, Confirm, Result, Pause }
+    public enum Page { None, Welcome, Map, Journal, Note, Checkout, Confirm, Result, Pause }
     Page page = Page.Welcome;
     mission3Interact_Prop_ShengChiehLee focus;
     string noteText = "", notice = "";
     float noticeUntil, elapsed;
-    bool wasMoving, wasLooking, frozen;
+    bool wasMoving, wasLooking, wasBobbing, frozen;
     Vector3 startPosition;
     Quaternion startRotation;
     mission3Rules_Manager_ShengChiehLee.Result result;
     GUIStyle title, body, small, button;
     int Count => collected.Count(x => x);
+    public Page CurrentPage => page;
+    public int CollectedCount => Count;
+    public string FocusPrompt => focus == null ? "" : focus.Prompt;
+    public string Notice => Time.unscaledTime < noticeUntil ? notice : "";
+    public string CurrentNote => noteText;
+    public float ElapsedSeconds => elapsed;
+    public string ResultDescription => "CHECKED OUT  /  " + FinalScore + " / 100\n\nCorrect returns: " + result.correct + "/6  (+" + result.itemPoints + ")\nComplete guest pairs: " + result.sets + "/3  (+" + result.setPoints + ")\nExploration bonus: +" + result.explorationPoints + "\n\n" + string.Join("\n", Enumerable.Range(0,6).Select(i => mission3Rules_Manager_ShengChiehLee.Items[i] + "  >  " + (301+mission3Rules_Manager_ShengChiehLee.Owner(i)) + (!collected[i] ? " / NOT FOUND" : assignment[i] == mission3Rules_Manager_ShengChiehLee.Owner(i) ? " / RETURNED" : " / WRONG OWNER")));
 
     void Start()
     {
@@ -45,11 +54,11 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
         SetPage(Page.Welcome);
         RefreshNextLevelStatus();
     }
-    void SetPage(Page value)
+    public void SetPage(Page value)
     {
         page = value; bool stop = value != Page.None;
-        if (stop && !frozen) { wasMoving = movement.enabled; wasLooking = mouseLook.enabled; movement.enabled = false; mouseLook.enabled = false; playerBody.linearVelocity = Vector3.zero; playerBody.isKinematic = true; frozen = true; }
-        else if (!stop && frozen) { playerBody.isKinematic = false; movement.enabled = wasMoving; mouseLook.enabled = wasLooking; frozen = false; }
+        if (stop && !frozen) { wasMoving = movement.enabled; wasLooking = mouseLook.enabled; wasBobbing = headBob != null && headBob.enabled; movement.enabled = false; mouseLook.enabled = false; if(headBob != null) headBob.enabled = false; playerBody.linearVelocity = Vector3.zero; playerBody.isKinematic = true; frozen = true; }
+        else if (!stop && frozen) { playerBody.isKinematic = false; movement.enabled = wasMoving; mouseLook.enabled = wasLooking; if(headBob != null) headBob.enabled = wasBobbing; frozen = false; }
         Cursor.lockState = stop ? CursorLockMode.None : CursorLockMode.Locked; Cursor.visible = stop;
         focus = null;
     }
@@ -57,6 +66,8 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
     void Update()
     {
         var k = Keyboard.current; if (k == null) return;
+        if (page == Page.Map && k.mKey.wasPressedThisFrame) { SetPage(Page.None); return; }
+        if (page == Page.Journal && k.tabKey.wasPressedThisFrame) { SetPage(Page.None); return; }
         if (k.escapeKey.wasPressedThisFrame && !IsCompleted) { SetPage(page == Page.None ? Page.Pause : Page.None); return; }
         if (page != Page.None) return;
         elapsed += Time.deltaTime;
@@ -141,6 +152,7 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
     }
     void OnGUI()
     {
+        if (canvasUI != null) return;
         InitStyles(); float scale = Mathf.Min(Screen.width/1200f, Screen.height/800f);
         GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one * scale);
         float w = Screen.width/scale, h = Screen.height/scale;
@@ -200,7 +212,7 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
         }
         GUILayout.EndArea();
     }
-    void Restart()
+    public void Restart()
     {
 #if UNITY_EDITOR
         UnityEditor.SceneManagement.EditorSceneManager.LoadSceneInPlayMode(gameObject.scene.path, new LoadSceneParameters(LoadSceneMode.Single));

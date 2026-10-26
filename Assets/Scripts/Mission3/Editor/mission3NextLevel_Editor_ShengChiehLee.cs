@@ -71,8 +71,8 @@ public static class mission3NextLevel_Editor_ShengChiehLee
     {
         if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Stop Play mode before editing the lift.");
         var original = SceneManager.GetActiveScene();
-        var paths = new HashSet<string> { "Assets/Mission 3.unity", "Assets/Scenes/Mission3.unity" };
-        if (!string.IsNullOrEmpty(original.path)) paths.Add(original.path);
+        var paths = new HashSet<string> { mission3Paths_Editor_ShengChiehLee.Scene };
+        // Only the canonical scene is upgraded; archived versions stay untouched.
         foreach (var path in paths)
         {
             if (AssetDatabase.LoadAssetAtPath<SceneAsset>(path) == null) continue;
@@ -94,7 +94,7 @@ public static class mission3NextLevel_Editor_ShengChiehLee
         if (original.IsValid() && original.isLoaded) SceneManager.SetActiveScene(original);
         // Keep existing scene order; register the user's active mission without adding duplicate variants.
         var activeManager = original.GetRootGameObjects().SelectMany(x => x.GetComponentsInChildren<mission3Hotel_Manager_ShengChiehLee>(true)).FirstOrDefault();
-        if (activeManager != null)
+        if (activeManager != null && original.path == mission3Paths_Editor_ShengChiehLee.Scene)
         {
             var build = EditorBuildSettings.scenes.ToList();
             var entry = build.Find(x => x.path == original.path);

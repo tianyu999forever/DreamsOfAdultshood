@@ -46,10 +46,10 @@ public static class mission3Lift_Editor_ShengChiehLee
 
     public static GameObject Create(Transform parent)
     {
-        brass = AssetDatabase.LoadAssetAtPath<Material>("Assets/Mission3/mission3_Brass.mat");
-        linen = AssetDatabase.LoadAssetAtPath<Material>("Assets/Mission3/mission3_Linen.mat");
-        walnut = AssetDatabase.LoadAssetAtPath<Material>("Assets/Mission3/mission3_Walnut.mat");
-        ink = AssetDatabase.LoadAssetAtPath<Material>("Assets/Mission3/mission3_Ink.mat");
+        brass = AssetDatabase.LoadAssetAtPath<Material>(mission3Paths_Editor_ShengChiehLee.Material("mission3_Brass"));
+        linen = AssetDatabase.LoadAssetAtPath<Material>(mission3Paths_Editor_ShengChiehLee.Material("mission3_Linen"));
+        walnut = AssetDatabase.LoadAssetAtPath<Material>(mission3Paths_Editor_ShengChiehLee.Material("mission3_Walnut"));
+        ink = AssetDatabase.LoadAssetAtPath<Material>(mission3Paths_Editor_ShengChiehLee.Material("mission3_Ink"));
         if (brass == null || linen == null || walnut == null || ink == null) throw new Exception("Missing Mission3 lift materials.");
         var root = new GameObject("Exit lift"); root.transform.SetParent(parent, false);
         root.transform.position = new Vector3(15, 0, -3.7f);
