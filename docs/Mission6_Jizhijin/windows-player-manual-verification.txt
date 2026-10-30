@@ -1,0 +1,6 @@
+PASS: Windows development player launches the supplied main startup scene.
+PASS: Clicking the visible MISSION 6 button opens the updated 20x20 crossword PLAN room.
+PASS: The actual player shows LEVEL 1, 180s, PLAN 30s and the synchronized map.
+PASS: Waiting in PLAN for 30 seconds opens the expected failure panel.
+PASS: Clicking RETRY LEVEL reloads the current Mission6 scene with a fresh PLAN timer.
+NOTE: Full two-level progression was tested in Unity Play mode; see campaign-verification.txt.

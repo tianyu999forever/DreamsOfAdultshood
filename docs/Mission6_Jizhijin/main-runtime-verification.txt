@@ -1,0 +1,21 @@
+PASS: main startup scene loads in the supplied build order
+PASS: main Mission2 enemies bind to their own NavMesh after startup
+PASS: main level selection menu exists
+PASS: MISSION 1 through 6 labels correspond to the correct serialized scenes
+PASS: main menu has a button bound to the serialized Mission6 entry
+PASS: the actual MISSION 6 button is the Mission6 entry
+PASS: main menu selects the updated Mission6 scene
+PASS: entering Mission6 resets time and player controls
+PASS: main scripts do not override Mission6 answer pause
+PASS: main scripts do not block return to maze
+PASS: Mission6 NEXT MISSION follows main build order to Mission1
+PASS: Mission1 retains its player and unpaused time after returning from Mission6
+PASS: main scene loads: Mission2_TianyuTang
+PASS: main scene retains a camera: Mission2_TianyuTang
+PASS: main scene loads: Mission3
+PASS: main scene retains a camera: Mission3
+PASS: main scene loads: ZhuohengWu Mission5
+PASS: main scene retains a camera: ZhuohengWu Mission5
+PASS: main scene loads: Mission4
+PASS: main scene retains a camera: Mission4
+PASS: no runtime errors across the main integration smoke test

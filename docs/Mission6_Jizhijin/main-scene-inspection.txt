@@ -1,0 +1,7 @@
+PASS: Assets/Scenes/Mission2_TianyuTang.unity | missing scripts: 0
+PASS: Assets/Scenes/Mission3.unity | missing scripts: 0
+PASS: Assets/Scenes/ZhuohengWu Mission5.unity | missing scripts: 0
+PASS: Assets/Scenes/Mission4.unity | missing scripts: 0
+PASS: Assets/Mission6_Jizhijin/Scenes/Mission6_Jizhijin.unity | missing scripts: 0
+PASS: Assets/Scenes/Mission1.unity | missing scripts: 0
+Build scene order: Mission2_TianyuTang -> Mission3 -> ZhuohengWu Mission5 -> Mission4 -> Mission6_Jizhijin -> Mission1

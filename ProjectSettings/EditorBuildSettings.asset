@@ -6,6 +6,18 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/Mission2_TianyuTang.unity
+    guid: 994305b442baa8a468ac4c78d5cda454
+  - enabled: 1
+    path: Assets/Scenes/Mission3.unity
+    guid: 48d0b153253f84ca798aa2e4d9f498d4
+  - enabled: 1
+    path: Assets/Scenes/ZhuohengWu Mission5.unity
+    guid: 42290403a1a2c4284b537f8f541af0d4
+  - enabled: 1
+    path: Assets/Scenes/Mission4.unity
+    guid: 5a16fa40422d5fa44b090cfd0ebbbb39
+  - enabled: 1
     path: Assets/Mission6_Jizhijin/Scenes/Mission6_Jizhijin.unity
     guid: c6777120f0468a14182bf240543b6573
   - enabled: 1
