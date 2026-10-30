@@ -10,6 +10,7 @@ public class Mission6_Letters_GameManager_Jizhijin : MonoBehaviour
     public IReadOnlyList<string> Letters => letters;
 
     void Start() => Refresh();
+    public void Clear() { letters.Clear(); Refresh(); }
 
     public bool AddLetter(string letter)
     {

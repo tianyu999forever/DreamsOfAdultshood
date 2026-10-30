@@ -1,0 +1,76 @@
+PASS: level one begins with a movable PLAN room
+PASS: clear view and closed physical gate at start
+PASS: PLAN cannot consume the photo
+PASS: level 1 word total and 70 percent pass requirement
+PASS: level 1 has 20 x 20 tiles
+PASS: level 1 pickups, word cells and exit are reachable
+PASS: level 1 has enough physical tiles for every missing letter
+PASS: every level 1 word requires at least one player answer
+PASS: level 1 map agrees with every terrain and crossword cell
+PASS: level 1 pickup count matches its map
+PASS: level 2 word total and 70 percent pass requirement
+PASS: level 2 has 28 x 28 tiles
+PASS: level 2 pickups, word cells and exit are reachable
+PASS: level 2 has enough physical tiles for every missing letter
+PASS: every level 2 word requires at least one player answer
+PASS: level 2 map agrees with every terrain and crossword cell
+PASS: level 2 pickup count matches its map
+PASS: both sentinels are bound to the generated level two NavMesh
+PASS: S A B C thresholds combine time and word count
+PASS: pass boundaries are exactly 7 of 10 and 11 of 15
+PASS: even full word completion cannot pass after the time limit
+PASS: WASD moves during PLAN
+PASS: walking through the opening starts level one early
+PASS: photo opens once and repeated use cannot extend it
+PASS: photo closes after five seconds while clear time keeps running
+PASS: physical level one pickup 1
+PASS: physical level one pickup 2
+PASS: physical level one pickup 3
+PASS: physical level one pickup 4
+PASS: physical level one pickup 5
+PASS: physical level one pickup 6
+PASS: physical level one pickup 7
+PASS: physical level one pickup 8
+PASS: physical level one pickup 9
+PASS: physical level one exit opens the crossword and pauses hazards
+PASS: empty answers do not pass and cannot open the gate
+PASS: time spent answering counts toward the score
+PASS: seven correct words pass with some blanks still empty
+PASS: passing level one records a grade and opens the door without changing scenes
+PASS: player walks through the physical doorway and corridor into level two
+PASS: level two resets the bag and photo and keeps PLAN safe
+PASS: sentinel follows its patrol route when level two starts
+PASS: level two restores one photo use
+PASS: sentinel sees an exposed player and starts chasing
+PASS: a solid maze wall blocks enemy line of sight
+PASS: catching the player opens failure UI and stops control
+PASS: retry restores the level two checkpoint and retains the level one grade
+PASS: physical level two pickup 1
+PASS: physical level two pickup 2
+PASS: physical level two pickup 3
+PASS: physical level two pickup 4
+PASS: physical level two pickup 5
+PASS: physical level two pickup 6
+PASS: physical level two pickup 7
+PASS: physical level two pickup 8
+PASS: physical level two pickup 9
+PASS: physical level two pickup 10
+PASS: physical level two pickup 11
+PASS: physical level two pickup 12
+PASS: physical level two pickup 13
+PASS: physical level two pickup 14
+PASS: physical level two pickup 15
+PASS: physical level two pickup 16
+PASS: physical level two pickup 17
+PASS: physical level two pickup 18
+PASS: level two exit displays its larger crossword with twelve missing squares
+PASS: ten of fifteen words cannot finish level two
+PASS: eleven of fifteen words meets the second level threshold
+PASS: full bag letter menu opens
+PASS: full bag menu has a working visible scrollbar
+PASS: last collected letter remains readable after scrolling
+PASS: last collected letter can be selected from the menu
+PASS: all fifteen crossing words can be completed with the collected physical tiles
+PASS: finishing level two displays campaign results
+PASS: results show each level's time, word count, and combined grade
+PASS: no runtime errors
