@@ -53,6 +53,7 @@ public static class mission3Playtest_Editor_ShengChiehLee
                 manager=UnityEngine.Object.FindFirstObjectByType<mission3Hotel_Manager_ShengChiehLee>();ui=manager.canvasUI;
                 props=UnityEngine.Object.FindObjectsByType<mission3Interact_Prop_ShengChiehLee>(FindObjectsSortMode.None);
                 Require(manager.CurrentPage==mission3Hotel_Manager_ShengChiehLee.Page.Welcome&&manager.playerBody.isKinematic,"Welcome modal failed to freeze the player.");
+                mission3Space_Editor_ShengChiehLee.Validate(manager.gameObject.scene);
                 Shot("01-welcome");ui.Begin();stage++;return;
             }
             if(stage==1)
@@ -65,6 +66,8 @@ public static class mission3Playtest_Editor_ShengChiehLee
             {
                 // Editor update callbacks can outpace player LateUpdate while the Game view is unfocused.
                 ui.Refresh();
+                Require(manager.guide!=null&&manager.guide.MapViewed,"Map did not advance the guided tutorial.");
+                Require(ui.mapRect.Find("Reception marker")!=null&&ui.mapRect.Find("Lift marker")!=null&&ui.mapRect.Find("Lounge marker")!=null,"Public map landmarks are missing.");
                 Require(ui.pages[2].activeInHierarchy&&!manager.movement.enabled&&!manager.headBob.enabled,"Map modal movement lock failed: page="+manager.CurrentPage+", panel="+ui.pages[2].activeInHierarchy+", move="+manager.movement.enabled+", bob="+manager.headBob.enabled);
                 Require(ui.itemMarkers.All(x=>x.rectTransform.anchorMin.x>0&&x.rectTransform.anchorMin.x<1&&x.rectTransform.anchorMin.y>0&&x.rectTransform.anchorMin.y<1),"Map marker fell outside the floor plan.");
                 Shot("03-floor-plan");
@@ -73,7 +76,10 @@ public static class mission3Playtest_Editor_ShengChiehLee
             if(stage==3)
             {
                 Require(manager.notesRead.Count(x=>x)==1,"Guest note was not retained.");Shot("04-guest-note");
+                Require(manager.guide.ObjectiveText.Contains("KEEP THE CLUES"),"Tutorial did not ask for the journal.");
+                ui.Journal();Require(manager.guide.JournalViewed,"Journal did not advance the tutorial.");ui.Begin();
                 manager.Interact(props.First(x=>x.kind==mission3Interact_Prop_ShengChiehLee.Kind.Checkout));Require(!manager.IsCompleted,"Empty checkout was allowed.");
+                Require(manager.CurrentPage==mission3Hotel_Manager_ShengChiehLee.Page.Checkout&&!ui.reviewButton.interactable&&ui.checkoutRequirement.text.Contains("3 more"),"Empty-bag preview or its explanation failed.");
                 foreach(var p in props.Where(x=>x.kind==mission3Interact_Prop_ShengChiehLee.Kind.GuestNote))manager.Interact(p);
                 foreach(var p in props.Where(x=>x.kind==mission3Interact_Prop_ShengChiehLee.Kind.LostProperty)){manager.Interact(p);manager.Interact(p);}
                 Require(manager.CollectedCount==6,"Collectible duplication or pickup failure.");
@@ -88,6 +94,7 @@ public static class mission3Playtest_Editor_ShengChiehLee
             {
                 for(int i=0;i<6;i++)ui.ownerButtons[i*3+i/2].onClick.Invoke();ui.Refresh();
                 Require(ui.reviewButton.interactable,"Fully assigned checkout did not unlock review.");Shot("06-checkout");
+                ui.Journal();ui.Begin();Require(manager.CurrentPage==mission3Hotel_Manager_ShengChiehLee.Page.Checkout&&ui.reviewButton.interactable,"Journal did not return to checkout with assignments retained.");
                 ui.reviewButton.onClick.Invoke();Require(manager.CurrentPage==mission3Hotel_Manager_ShengChiehLee.Page.Confirm,"Review button is not bound.");
                 manager.Interact(props.First(x=>x.kind==mission3Interact_Prop_ShengChiehLee.Kind.ServiceDoor));
                 Require(manager.ShortcutOpened&&!manager.serviceDoor.activeSelf,"Hidden passage did not open.");
@@ -96,11 +103,12 @@ public static class mission3Playtest_Editor_ShengChiehLee
             }
             if(stage==6)
             {
-                Shot("07-result");WorldShot("08-maze-corridor",new Vector3(9,2.4f,-16),new Vector3(9,2.2f,-29));
+                Shot("07-result");WorldShot("08-maze-corridor",mission3Space_Editor_ShengChiehLee.Expanded(new Vector3(9,2.4f,-16)),mission3Space_Editor_ShengChiehLee.Expanded(new Vector3(9,2.7f,-29)));
                 var compass=ui.itemPositions[0].position;ui.itemPositions[0].gameObject.SetActive(true);WorldShot("09-brass-compass",compass+new Vector3(0,.8f,-1.1f),compass);ui.itemPositions[0].gameObject.SetActive(false);
                 var fern=ui.itemPositions[5].position;ui.itemPositions[5].gameObject.SetActive(true);WorldShot("10-pressed-fern",fern+new Vector3(0,.75f,-1),fern);ui.itemPositions[5].gameObject.SetActive(false);
+                ui.itemPositions[0].gameObject.SetActive(true);WorldShot("11-side-display",mission3Space_Editor_ShengChiehLee.Expanded(new Vector3(18,2,-35)),mission3Space_Editor_ShengChiehLee.Expanded(new Vector3(18,1.7f,-29.15f)));ui.itemPositions[0].gameObject.SetActive(false);
                 Require(!hadError,"Unity reported a runtime error; inspect the Editor log.");
-                Stop("PLAYMODE_PASS\nWelcome, movement/head bob/physics, map pause, all marker positions, notes, duplicate pickup guard, collected marker changes, invalid checkout, owner buttons, review/confirm, secret door, 100-point result and one-shot completion verified.\nTen preview images captured. The editor remains open; Play mode stopped.");
+                Stop("PLAYMODE_PASS\nSpatial checks: 4.8 m clear ceilings, 15% larger plan, six non-blocking pickup volumes, six clear capsule approaches and E-interaction sightlines. Guided tutorial: map, public landmarks, first note, journal, empty-bag return preview and missing-item explanation verified. Journal returns to checkout with assignments retained. Player physics, six pickups, map state, ownership buttons, confirmation, hidden door and one-shot 100-point scoring verified.\nEleven preview images captured. Play mode stopped; guided demo launcher will open a fresh session.");
             }
         }
         catch(Exception e){Stop("PLAYMODE_FAIL\n"+e);Debug.LogException(e);}

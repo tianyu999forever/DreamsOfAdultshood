@@ -27,6 +27,7 @@ public static class mission3Build_Editor_ShengChiehLee
         Room(9,4,9,13);Room(5,4,9,4);Room(9,12,18,12);Room(3,13,9,13);Room(14,12,14,18);
         Room(1,9,2,11);Room(5,10,7,12);Room(5,14,7,16);Room(10,3,12,5);Room(14,3,16,5);Room(17,4,18,4);
         Room(18,10,19,12);Room(11,14,13,16);Room(14,15,14,15);Room(4,11,4,11);Room(4,15,4,15);Room(11,6,11,7);
+        Room(8,15,10,15);Room(9,14,9,14); // A public lounge loop shortens repeat journeys.
         cells[10,4]=false;
     }
     static Material Mat(string name, Color color, string source=null)
@@ -166,6 +167,7 @@ public static class mission3Build_Editor_ShengChiehLee
         // Deliberately mixed locations: infer owners from notes rather than room of discovery.
         Item(6,11,0);Item(18,11,1);Item(1.2f,11,2);Item(12,15.5f,3);Item(11,4,4);Item(6,15,5);
         mission3Presentation_Editor_ShengChiehLee.BuildPresentation(scene);
+        mission3Demo_Editor_ShengChiehLee.Upgrade(scene);
         mission3Architecture_Editor_ShengChiehLee.Organize(scene);
         AssetDatabase.SaveAssets();EditorSceneManager.SaveScene(scene,ScenePath);Validate();Debug.Log("MISSION3_BUILD_SUCCESS "+ScenePath);
     }
@@ -173,9 +175,10 @@ public static class mission3Build_Editor_ShengChiehLee
     [MenuItem("Mission3/Validate Hotel Scene")]
     public static void Validate()
     {
-        var m=UnityEngine.Object.FindFirstObjectByType<mission3Hotel_Manager_ShengChiehLee>();if(m==null)throw new Exception("No Mission3 manager");
+        var scene=SceneManager.GetActiveScene();
+        var m=scene.GetRootGameObjects().SelectMany(x=>x.GetComponentsInChildren<mission3Hotel_Manager_ShengChiehLee>(true)).FirstOrDefault();if(m==null)throw new Exception("No Mission3 manager");
         if(m.playerCamera==null||m.movement==null||m.mouseLook==null||m.floorMap==null)throw new Exception("Missing required references");
-        var objects=UnityEngine.Object.FindObjectsByType<mission3Interact_Prop_ShengChiehLee>(FindObjectsSortMode.None);
+        var objects=scene.GetRootGameObjects().SelectMany(x=>x.GetComponentsInChildren<mission3Interact_Prop_ShengChiehLee>(true)).ToArray();
         if(objects.Count(o=>o.kind==mission3Interact_Prop_ShengChiehLee.Kind.LostProperty)!=6)throw new Exception("Expected six belongings");
         if(objects.Count(o=>o.kind==mission3Interact_Prop_ShengChiehLee.Kind.GuestNote)!=3)throw new Exception("Expected three notes");
         var ids=objects.Where(o=>o.kind==mission3Interact_Prop_ShengChiehLee.Kind.LostProperty).Select(o=>o.index).Distinct();if(ids.Count()!=6)throw new Exception("Duplicate item ids");

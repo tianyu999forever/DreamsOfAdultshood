@@ -10,6 +10,7 @@ public class mission3Canvas_UI_ShengChiehLee : MonoBehaviour
     public GameObject backdrop;
     public GameObject[] pages;
     public TMP_Text status, bag, prompt, notice, clock, note, journal, summary, result;
+    public TMP_Text checkoutRequirement;
     public Button reviewButton;
     public Button[] ownerButtons;
     public RectTransform mapRect, playerMarker;
@@ -54,6 +55,7 @@ public class mission3Canvas_UI_ShengChiehLee : MonoBehaviour
         note.text=manager.CurrentNote;
         journal.text=string.Join("\n\n",Enumerable.Range(0,3).Select(g=>manager.notesRead[g]?mission3Rules_Manager_ShengChiehLee.Notes[g]:(301+g)+" / NOTE NOT READ\nFind the guest's letter in their room."));
         summary.text="RETURN LOST PROPERTY  /  "+manager.CollectedCount+" OF 6\nChoose an owner for each belonging. Final confirmation locks your score.";
+        if(checkoutRequirement!=null)checkoutRequirement.text=manager.CheckoutRequirement;
         for(int i=0;i<6;i++)
         {
             itemRows[i].text=(i+1).ToString("00")+"  "+mission3Rules_Manager_ShengChiehLee.Items[i]+(manager.collected[i]?"":"  / NOT FOUND");
@@ -88,9 +90,9 @@ public class mission3Canvas_UI_ShengChiehLee : MonoBehaviour
         marker.anchorMin=marker.anchorMax=pixel/1024f; marker.anchoredPosition=Vector2.zero;
     }
     void Assign(int item,int owner) { if(manager.collected[item]&&!manager.IsCompleted) manager.assignment[item]=owner; }
-    public void Begin() { manager.SetPage(mission3Hotel_Manager_ShengChiehLee.Page.None); }
+    public void Begin() { manager.BackToHotel(); }
     public void Map() { manager.SetPage(mission3Hotel_Manager_ShengChiehLee.Page.Map); }
-    public void Journal() { manager.SetPage(mission3Hotel_Manager_ShengChiehLee.Page.Journal); }
+    public void Journal() { manager.OpenJournal(); }
     public void Pause() { manager.SetPage(mission3Hotel_Manager_ShengChiehLee.Page.Pause); }
     public void Review() { if(reviewButton.interactable) manager.SetPage(mission3Hotel_Manager_ShengChiehLee.Page.Confirm); }
     public void Edit() { manager.SetPage(mission3Hotel_Manager_ShengChiehLee.Page.Checkout); }

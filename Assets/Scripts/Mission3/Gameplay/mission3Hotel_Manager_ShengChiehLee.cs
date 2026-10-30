@@ -15,6 +15,8 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
     public Rigidbody playerBody;
     public HeadBob headBob;
     public mission3Canvas_UI_ShengChiehLee canvasUI;
+    public mission3Guide_UI_ShengChiehLee guide;
+    public bool demoMode;
     public Texture2D floorMap;
     public GameObject serviceDoor;
     public Transform serviceDoorOpenPosition;
@@ -31,10 +33,12 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
     public int[] assignment = { -1, -1, -1, -1, -1, -1 };
     public enum Page { None, Welcome, Map, Journal, Note, Checkout, Confirm, Result, Pause }
     Page page = Page.Welcome;
+    Page journalReturnPage=Page.None;
     mission3Interact_Prop_ShengChiehLee focus;
     string noteText = "", notice = "";
     float noticeUntil, elapsed;
     bool wasMoving, wasLooking, wasBobbing, frozen;
+    int lookResumeFrames;
     Vector3 startPosition;
     Quaternion startRotation;
     mission3Rules_Manager_ShengChiehLee.Result result;
@@ -57,21 +61,22 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
     public void SetPage(Page value)
     {
         page = value; bool stop = value != Page.None;
-        if (stop && !frozen) { wasMoving = movement.enabled; wasLooking = mouseLook.enabled; wasBobbing = headBob != null && headBob.enabled; movement.enabled = false; mouseLook.enabled = false; if(headBob != null) headBob.enabled = false; playerBody.linearVelocity = Vector3.zero; playerBody.isKinematic = true; frozen = true; }
-        else if (!stop && frozen) { playerBody.isKinematic = false; movement.enabled = wasMoving; mouseLook.enabled = wasLooking; if(headBob != null) headBob.enabled = wasBobbing; frozen = false; }
+        if (stop && !frozen) { wasMoving = movement.enabled; wasLooking = mouseLook.enabled || (lookResumeFrames>0&&wasLooking); lookResumeFrames=0; wasBobbing = headBob != null && headBob.enabled; movement.enabled = false; mouseLook.enabled = false; if(headBob != null) headBob.enabled = false; playerBody.linearVelocity = Vector3.zero; playerBody.isKinematic = true; frozen = true; }
+        else if (!stop && frozen) { playerBody.isKinematic = false; movement.enabled = wasMoving; mouseLook.enabled = false; lookResumeFrames=3; if(headBob != null) headBob.enabled = wasBobbing; frozen = false; }
         Cursor.lockState = stop ? CursorLockMode.None : CursorLockMode.Locked; Cursor.visible = stop;
         focus = null;
+        if(guide!=null)guide.PageOpened(value);
+        if(canvasUI!=null)canvasUI.Refresh();
     }
-    void LateUpdate() { if (page != Page.None) { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; } }
+    void LateUpdate() { if (page != Page.None) { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; } else if(lookResumeFrames>0&&--lookResumeFrames==0)mouseLook.enabled=wasLooking; }
     void Update()
     {
         var k = Keyboard.current; if (k == null) return;
         if (page == Page.Map && k.mKey.wasPressedThisFrame) { SetPage(Page.None); return; }
-        if (page == Page.Journal && k.tabKey.wasPressedThisFrame) { SetPage(Page.None); return; }
-        if (k.escapeKey.wasPressedThisFrame && !IsCompleted) { SetPage(page == Page.None ? Page.Pause : Page.None); return; }
+        if(k.tabKey.wasPressedThisFrame&&(page==Page.None||page==Page.Checkout||page==Page.Journal)) { if(page==Page.Journal)BackToHotel();else OpenJournal();return; }
+        if (k.escapeKey.wasPressedThisFrame) { SetPage(page == Page.None ? Page.Pause : Page.None); return; }
         if (page != Page.None) return;
         elapsed += Time.deltaTime;
-        if (k.tabKey.wasPressedThisFrame) { SetPage(Page.Journal); return; }
         if (k.mKey.wasPressedThisFrame) { SetPage(Page.Map); return; }
         focus = null;
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, 3.4f, ~0, QueryTriggerInteraction.Collide))
@@ -94,7 +99,7 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
         {
             case mission3Interact_Prop_ShengChiehLee.Kind.LostProperty:
                 if (prop.index < 0 || prop.index >= 6 || collected[prop.index]) return;
-                collected[prop.index] = true; prop.gameObject.SetActive(false); Notify("Collected: " + mission3Rules_Manager_ShengChiehLee.Items[prop.index]); break;
+                collected[prop.index] = true; prop.gameObject.SetActive(false); Notify("Collected: " + mission3Rules_Manager_ShengChiehLee.Items[prop.index]); if(guide!=null)guide.ItemCollected(); break;
             case mission3Interact_Prop_ShengChiehLee.Kind.GuestNote:
                 notesRead[prop.index] = true; noteText = mission3Rules_Manager_ShengChiehLee.Notes[prop.index]; SetPage(Page.Note); break;
             case mission3Interact_Prop_ShengChiehLee.Kind.FloorMap: SetPage(Page.Map); break;
@@ -107,11 +112,23 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
                 if (lift != null) { lift.Open(); Notify("Lift doors opening. Use the checkout panel inside to return belongings."); }
                 break;
             case mission3Interact_Prop_ShengChiehLee.Kind.Checkout:
-                if (Count < 3) { Notify("Find at least 3 lost belongings before checkout. Six are available."); return; }
                 SetPage(Page.Checkout); break;
         }
     }
     void Notify(string text) { notice = text; noticeUntil = Time.unscaledTime + 4; }
+    public void OpenJournal(){journalReturnPage=page==Page.Checkout?Page.Checkout:Page.None;SetPage(Page.Journal);}
+    public void BackToHotel(){SetPage(page==Page.Journal?journalReturnPage:Page.None);}
+    public void ShowHint(string text) { notice=text; noticeUntil=Time.unscaledTime+8; }
+    public string CheckoutRequirement => Count<3 ? "Find "+(3-Count)+" more belongings to unlock checkout. You can preview the owner choices now." :
+        Enumerable.Range(0,6).Any(i=>collected[i]&&assignment[i]<0) ? "Choose an owner for "+Enumerable.Range(0,6).Count(i=>collected[i]&&assignment[i]<0)+" remaining belongings. TAB: guest journal." : "All collected belongings have an owner. Review your choices before finalizing.";
+    public void QuitDemo()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.ExitPlaymode();
+#else
+        Application.Quit();
+#endif
+    }
     public void CompleteCheckout()
     {
         if (IsCompleted || Count < 3) return;
@@ -124,12 +141,13 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
     public void RefreshNextLevelStatus()
     {
         if (nextLevelStatus == null) return;
-        nextLevelStatus.text = !IsCompleted ? "COMPLETE CHECKOUT FIRST" :
+        nextLevelStatus.text = !IsCompleted ? "RETURN BELONGINGS FIRST" : demoMode ? "DEMO COMPLETE / E OR CLICK TO EXIT" :
             (Application.CanStreamedLevelBeLoaded(nextSceneName) ? "READY  /  E OR CLICK TO CONTINUE" : "DESTINATION NOT ADDED YET");
     }
     public void LoadNextLevel()
     {
         if (!IsCompleted) { Notify("Complete checkout before travelling to the next level."); return; }
+        if(demoMode){QuitDemo();return;}
         string destination = (nextSceneName ?? "").Trim();
         if (string.IsNullOrEmpty(destination) || !Application.CanStreamedLevelBeLoaded(destination))
         {

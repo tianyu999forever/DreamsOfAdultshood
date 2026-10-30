@@ -236,7 +236,7 @@ public static class mission3Presentation_Editor_ShengChiehLee
         Button(panel.transform,"MapBackButton","BACK TO HOTEL  /  M",new Vector2(320,-388),new Vector2(560,52),ui.Begin);
     }
 
-    static void MakeMap(mission3Hotel_Manager_ShengChiehLee manager)
+    public static void MakeMap(mission3Hotel_Manager_ShengChiehLee manager)
     {
         bool[,] cells=new bool[21,21];
         foreach(var t in manager.gameObject.scene.GetRootGameObjects().SelectMany(x=>x.GetComponentsInChildren<Transform>(true)))
@@ -266,7 +266,8 @@ public static class mission3Presentation_Editor_ShengChiehLee
         var actions=manager.gameObject.scene.GetRootGameObjects().SelectMany(x=>x.GetComponentsInChildren<mission3Interact_Prop_ShengChiehLee>(true)).ToArray();
         foreach(var p in actions.Where(a=>a.kind==mission3Interact_Prop_ShengChiehLee.Kind.LostProperty||a.kind==mission3Interact_Prop_ShengChiehLee.Kind.GuestNote))
         {
-            int px=Mathf.RoundToInt(72+(p.transform.position.x+1.5f)/63*880),py=Mathf.RoundToInt(72+(p.transform.position.z+61.5f)/63*880);
+            var mapUI=manager.canvasUI;
+            int px=Mathf.RoundToInt(72+Mathf.InverseLerp(mapUI.mapWorldMin.x,mapUI.mapWorldMax.x,p.transform.position.x)*880),py=Mathf.RoundToInt(72+Mathf.InverseLerp(mapUI.mapWorldMin.y,mapUI.mapWorldMax.y,p.transform.position.z)*880);
             if(p.kind==mission3Interact_Prop_ShengChiehLee.Kind.LostProperty){for(int dy=-17;dy<=17;dy++)for(int dx=-17;dx<=17;dx++)if(dx*dx+dy*dy<=289)Box(px+dx,py+dy,1,1,Cyan);Number((p.index+1).ToString(),px-6,py-10,4,Color.white);}
             else { Box(px-10,py-10,20,20,Gold); }
         }
@@ -351,7 +352,8 @@ public static class mission3Presentation_Editor_ShengChiehLee
         var seen=new HashSet<Vector2Int>();var q=new Queue<Vector2Int>();q.Enqueue(new Vector2Int(3,4));seen.Add(new Vector2Int(3,4));
         var dirs=new[]{Vector2Int.left,Vector2Int.right,Vector2Int.up,Vector2Int.down};while(q.Count>0){var p=q.Dequeue();foreach(var d in dirs){var n=p+d;if(walk.Contains(n)&&seen.Add(n))q.Enqueue(n);}}
         if(seen.Count!=walk.Count)throw new Exception("Maze is disconnected.");
-        foreach(var p in ui.itemPositions.Concat(ui.notePositions))if(!seen.Contains(new Vector2Int(Mathf.RoundToInt(p.position.x/3),Mathf.RoundToInt(-p.position.z/3))))throw new Exception("Unreachable objective: "+p.name);
+        float gridStep=3*scene.GetRootGameObjects().Single(x=>x.name=="Mission3_HotelArchitecture").transform.lossyScale.x;
+        foreach(var p in ui.itemPositions.Concat(ui.notePositions))if(!seen.Contains(new Vector2Int(Mathf.RoundToInt(p.position.x/gridStep),Mathf.RoundToInt(-p.position.z/gridStep))))throw new Exception("Unreachable objective: "+p.name);
         mission3Build_Editor_ShengChiehLee.Validate();mission3NextLevel_Editor_ShengChiehLee.Validate(manager);
         mission3Session_Editor_ShengChiehLee.Write("VALIDATION_PASS\nOne camera; Mission1 player/hand/watch/head bob; Canvas pages and 18 owner buttons; six item and three note markers; no hidden-door marker; connected maze; all objectives reachable; scoring; NEXT LEVEL binding; no missing scripts.");
     }

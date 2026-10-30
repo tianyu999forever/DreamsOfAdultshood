@@ -90,3 +90,13 @@ Assets/
 
 生成器的資源路徑統一由 `Scripts/Mission3/Editor/mission3Paths_Editor_ShengChiehLee.cs` 管理，重新生成會沿用上述分類。
 `Mission3 > Organize Mission3 Folders` 可執行整理；`Mission3 > Validate Mission3 Folder Organization` 檢查 GUID、正式場景、打包設定和資源引用。
+
+
+## 空間與展示台調整（2026-10-29）
+
+- 全館、服務通道與電梯的室內淨高提高至 4.8 公尺；牆面、門框、天花板、燈具一起調整。
+- 平面長寬各擴大 15%，走道同步加寬；Player 體型和移動速度維持原設定。
+- 六件失物移到房間側邊的展示台，保留原物主與計分規則。拾取感應區可穿過，展示台保持實體碰撞，避免卡住玩家。
+- 入口地圖與 M 面板同步使用放大後的世界座標，隱藏門仍不顯示。
+- 使用 `Mission3 > Play Guided Demo` 試玩。`Mission3 > Test and Play Guided Demo` 會先檢查教程、地圖、六個展示台的站立空間與拾取視線、結算，再開始全新試玩。
+- 正式場景 `Assets/Scenes/Mission3.unity` 和試玩場景 `Assets/Scenes/Demos/Mission3_Demo.unity` 都已套用；重新生成時也會保留這套尺寸與擺放規則。
