@@ -1395,8 +1395,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Run-SHIFT, Jump-SPACE, WALK-WSAD, Q Light(shine light charge door), E
-    Watch
+  m_text: 'Run-SHIFT, Jump-SPACE, WALK-WSAD, E Watch
 
 '
   m_isRightToLeft: 0
@@ -1464,7 +1463,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 18.034967, w: 2.990045}
+  m_margin: {x: 0, y: 0, z: 19.065409, w: 2.990045}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   _SortingLayer: 0
@@ -1529,16 +1528,16 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 60000704}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.024999619}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -9.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1050085426}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.049995422, y: -2.06}
+  m_AnchoredPosition: {x: -17.126, y: 0.083}
   m_SizeDelta: {x: 20, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &70999558
@@ -1965,7 +1964,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: BATTERY  [ B ]          to charge light
+  m_text: BATTERY  ([ B ] in the Map)                       Pick to charge light,
+    watch your battery left time in bottom, non light then you blind in darkness
+    and cant open door!
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -2031,7 +2032,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 18.034967, w: 2.990045}
+  m_margin: {x: 0, y: 0, z: 16.33325, w: 2.990045}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   _SortingLayer: 0
@@ -2105,7 +2106,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -5.42, y: 0}
+  m_AnchoredPosition: {x: -5.976, y: 0.183}
   m_SizeDelta: {x: 20, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &115215340
@@ -4477,12 +4478,13 @@ RectTransform:
   - {fileID: 143139372}
   - {fileID: 1020300876}
   - {fileID: 1143504084}
+  - {fileID: 1690012507}
   m_Father: {fileID: 1597721343}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 25, y: 257}
-  m_SizeDelta: {x: -1559.107, y: -1435.839}
+  m_AnchoredPosition: {x: -0.6812744, y: 240.1535}
+  m_SizeDelta: {x: -1466.0221, y: -1381.3873}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &254210846
 MonoBehaviour:
@@ -6869,6 +6871,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &412257784 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 410855924253412887, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+  m_PrefabInstance: {fileID: 1375712222}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &412257785 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2080604669560750915, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+  m_PrefabInstance: {fileID: 1375712222}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &412257786
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 412257784}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b9aa1209d049f341a444a239105a829, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlickeringLight
+  targetLights: []
+  lightPanels: []
+  lensFlares: []
+  minPause: 2
+  maxPause: 3
+  minFlashes: 1
+  maxFlashes: 3
+  minOffTime: 0.05
+  maxOffTime: 0.15
 --- !u!1 &425736402
 GameObject:
   m_ObjectHideFlags: 0
@@ -10369,6 +10402,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 620423237}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &640526622 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 410855924253412887, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+  m_PrefabInstance: {fileID: 901515476}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &640526623 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2080604669560750915, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+  m_PrefabInstance: {fileID: 901515476}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &640526624
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 640526622}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b9aa1209d049f341a444a239105a829, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlickeringLight
+  targetLights: []
+  lightPanels: []
+  lensFlares: []
+  minPause: 2
+  maxPause: 3
+  minFlashes: 1
+  maxFlashes: 3
+  minOffTime: 0.05
+  maxOffTime: 0.15
 --- !u!1 &644832884
 GameObject:
   m_ObjectHideFlags: 0
@@ -11664,7 +11728,7 @@ Transform:
   m_GameObject: {fileID: 683369807}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 4.341, y: 0, z: -65.11}
+  m_LocalPosition: {x: 4.599, y: 0, z: -64.898}
   m_LocalScale: {x: 0.2, y: 0.55, z: 0.2}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -15123,6 +15187,70 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2988810229281212192, guid: 2a95cb54551dd874e935203bf4349b0c, type: 3}
   m_PrefabInstance: {fileID: 1026197836}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &901515476
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1916917637}
+    m_Modifications:
+    - target: {fileID: 410855924253412887, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      propertyPath: m_Name
+      value: CeilinglampTwoGroup (7)
+      objectReference: {fileID: 0}
+    - target: {fileID: 2080604669560750915, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 21.856
+      objectReference: {fileID: 0}
+    - target: {fileID: 2080604669560750915, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2080604669560750915, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 2080604669560750915, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2080604669560750915, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2080604669560750915, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2080604669560750915, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2080604669560750915, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2080604669560750915, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2080604669560750915, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5581586470048375824, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      propertyPath: useOcclusion
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 410855924253412887, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 640526624}
+  m_SourcePrefab: {fileID: 100100000, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
 --- !u!1 &909005376
 GameObject:
   m_ObjectHideFlags: 0
@@ -24487,6 +24615,70 @@ Transform:
   m_Children: []
   m_Father: {fileID: 25651836}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &1375712222
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1916917637}
+    m_Modifications:
+    - target: {fileID: 410855924253412887, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      propertyPath: m_Name
+      value: CeilinglampTwoGroup (8)
+      objectReference: {fileID: 0}
+    - target: {fileID: 2080604669560750915, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 3.025
+      objectReference: {fileID: 0}
+    - target: {fileID: 2080604669560750915, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2080604669560750915, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 20.46
+      objectReference: {fileID: 0}
+    - target: {fileID: 2080604669560750915, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2080604669560750915, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2080604669560750915, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2080604669560750915, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2080604669560750915, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2080604669560750915, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2080604669560750915, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5581586470048375824, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      propertyPath: useOcclusion
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 410855924253412887, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 412257786}
+  m_SourcePrefab: {fileID: 100100000, guid: 172080fb56acee248a02ccefdae8cec3, type: 3}
 --- !u!1 &1380537280
 GameObject:
   m_ObjectHideFlags: 0
@@ -25378,10 +25570,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'If not walk out the door in your back in PLAN TIME U WILL DEAD~
-
-
-'
+  m_text: Leave this preparation room in PLAN time(or DEAD)
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -25447,7 +25636,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 18.034967, w: 2.990045}
+  m_margin: {x: 0, y: 0, z: 17.560549, w: 2.990045}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   _SortingLayer: 0
@@ -25521,7 +25710,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -16.755999, y: 0}
+  m_AnchoredPosition: {x: -16.4, y: 2.018}
   m_SizeDelta: {x: 20, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!4 &1411073466 stripped
@@ -28504,7 +28693,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -18.56, y: 2.68}
+  m_AnchoredPosition: {x: -19.025, y: 2.981}
   m_SizeDelta: {x: 20, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1659904215
@@ -28527,7 +28716,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Remember map to escape!           Watch your light!
+  m_text: 'Remember Map to escape!  You are at START, go to EXIT before time runs
+    out in your watch!
 
 '
   m_isRightToLeft: 0
@@ -28595,7 +28785,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 14.719669, w: 2.990045}
+  m_margin: {x: 0, y: 0, z: 15.596567, w: 2.990045}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   _SortingLayer: 0
@@ -29234,6 +29424,143 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_IsOn: 1
+--- !u!1 &1690012506
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1690012507}
+  - component: {fileID: 1690012509}
+  - component: {fileID: 1690012508}
+  m_Layer: 5
+  m_Name: Text (TMP)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1690012507
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1690012506}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 254210845}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 11, y: 38}
+  m_SizeDelta: {x: 449.1017, y: 40}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1690012508
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1690012506}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: Choose one mission to start
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: -1183493901
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 36
+  m_fontSizeBase: 36
+  m_fontWeight: 400
+  m_enableAutoSizing: 0
+  m_fontSizeMin: 18
+  m_fontSizeMax: 72
+  m_fontStyle: 0
+  m_HorizontalAlignment: 1
+  m_VerticalAlignment: 256
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_characterHorizontalScale: 1
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_TextWrappingMode: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 0
+  m_ActiveFontFeatures: 6e72656b
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_EmojiFallbackSupport: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!222 &1690012509
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1690012506}
+  m_CullTransparentMesh: 1
 --- !u!1 &1700330587
 GameObject:
   m_ObjectHideFlags: 0
@@ -29459,9 +29786,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Door  [ D1 ]               Press Q to shine 1s to open it, watch your
-    battery in bottom right corner!           (Monster in the darkness also love
-    light)
+  m_text: 'Door  ([ D1 ] in the Map)               Press Q open/close light,  come
+    close to the door and shine 1s to open charge door ( if monster feel light will
+    chase you)
 
 '
   m_isRightToLeft: 0
@@ -29529,7 +29856,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 18.477554, w: 2.990045}
+  m_margin: {x: 0, y: 0, z: 17.831043, w: 2.990045}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   _SortingLayer: 0
@@ -29603,7 +29930,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0.14}
   m_SizeDelta: {x: 20, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1711641920
@@ -32608,6 +32935,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 226147126}
+  - {fileID: 640526623}
+  - {fileID: 412257785}
   - {fileID: 898513248}
   - {fileID: 54192667}
   - {fileID: 168484853}
@@ -36349,7 +36678,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 1094, y: -659}
+  m_AnchoredPosition: {x: -25, y: -609}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2122792404
@@ -36372,7 +36701,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: BATTERY 10s
+  m_text: 'Battery Left: 10s'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -36399,8 +36728,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 43
+  m_fontSizeBase: 43
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
