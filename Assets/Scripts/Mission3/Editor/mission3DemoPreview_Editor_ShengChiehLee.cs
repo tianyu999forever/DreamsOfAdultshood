@@ -8,7 +8,13 @@ public static class mission3DemoPreview_Editor_ShengChiehLee
 {
     const string Pending="Mission3.GuidedPreview.Pending";
     const string Scene="Assets/Scenes/Demos/Mission3_Demo.unity";
-    static mission3DemoPreview_Editor_ShengChiehLee(){EditorApplication.update+=Tick;}
+    static bool editModeReady;
+    static mission3DemoPreview_Editor_ShengChiehLee()
+    {
+        editModeReady=!EditorApplication.isPlayingOrWillChangePlaymode&&!UnityEngine.Application.isPlaying;
+        EditorApplication.playModeStateChanged+=state=>editModeReady=state==PlayModeStateChange.EnteredEditMode;
+        EditorApplication.update+=Tick;
+    }
     [MenuItem("Mission3/Test and Play Guided Demo")]
     public static void TestAndPlay()
     {
@@ -42,7 +48,7 @@ public static class mission3DemoPreview_Editor_ShengChiehLee
             if(EditorApplication.isPlaying){EditorApplication.ExitPlaymode();return;}
             if(!EditorApplication.isPlayingOrWillChangePlaymode){SessionState.SetBool("Mission3.GuidedPreview.Restart",false);TestAndPlay();return;}
         }
-        if(!SessionState.GetBool(Pending,false)||EditorApplication.isCompiling||EditorApplication.isUpdating||EditorApplication.isPlayingOrWillChangePlaymode||SessionState.GetBool("Mission3.PresentationTest",false))return;
+        if(!SessionState.GetBool(Pending,false)||!editModeReady||EditorApplication.isCompiling||EditorApplication.isUpdating||EditorApplication.isPlayingOrWillChangePlaymode||SessionState.GetBool("Mission3.PresentationTest",false))return;
         SessionState.SetBool(Pending,false);
         if(!File.Exists("Library/Mission3UpgradeTest.txt")||!File.ReadAllText("Library/Mission3UpgradeTest.txt").StartsWith("PLAYMODE_PASS"))
         {mission3Session_Editor_ShengChiehLee.Write("GUIDED_DEMO_PREVIEW_TEST_FAILED / inspect Library/Mission3UpgradeTest.txt");return;}
