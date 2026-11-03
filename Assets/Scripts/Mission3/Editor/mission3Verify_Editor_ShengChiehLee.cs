@@ -69,7 +69,7 @@ public static class mission3Verify_Editor_ShengChiehLee
     public static void Capture()
     {
         Directory.CreateDirectory("../outputs/mission3-preview");
-        AssetDatabase.ExportPackage(new[]{mission3Build_Editor_ShengChiehLee.ScenePath,"Assets/Mission3","Assets/Scripts/Mission3"}, "../outputs/mission3-preview/Mission3_Hotel24_ShengChiehLee.unitypackage", ExportPackageOptions.Recurse);
+        AssetDatabase.ExportPackage(new[]{mission3Paths_Editor_ShengChiehLee.Scene,mission3Paths_Editor_ShengChiehLee.Materials,mission3Paths_Editor_ShengChiehLee.Textures,mission3Paths_Editor_ShengChiehLee.Scripts,mission3Paths_Editor_ShengChiehLee.Documentation}, "../outputs/mission3-preview/Mission3_Hotel24_ShengChiehLee.unitypackage", ExportPackageOptions.Recurse);
         EditorSceneManager.OpenScene(mission3Build_Editor_ShengChiehLee.ScenePath);
         var m=UnityEngine.Object.FindFirstObjectByType<mission3Hotel_Manager_ShengChiehLee>();var cam=m.playerCamera;
         Directory.CreateDirectory("../outputs/mission3-preview");
