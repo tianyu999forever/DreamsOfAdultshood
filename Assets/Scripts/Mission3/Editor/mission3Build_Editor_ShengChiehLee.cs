@@ -147,10 +147,10 @@ public static class mission3Build_Editor_ShengChiehLee
         manager=new GameObject("Mission3_Manager_ShengChiehLee").AddComponent<mission3Hotel_Manager_ShengChiehLee>();manager.playerCamera=cam;manager.movement=moving;manager.mouseLook=look;manager.playerBody=rb;manager.floorMap=MapTexture();
         // Entry map is physical, directly ahead of the spawn, with an inspectable copy in the HUD.
         var mapMat=Mat("mission3_MapDisplay",Color.white);mapMat.shader=Shader.Find("Universal Render Pipeline/Unlit");mapMat.SetTexture("_BaseMap",manager.floorMap);EditorUtility.SetDirty(mapMat);
-        Box("Map frame",new Vector3(9,1.85f,-1.64f),new Vector3(3.05f,3.05f,.14f),gold,props);
-        var board=GameObject.CreatePrimitive(PrimitiveType.Quad);board.name="Entrance wall floor map";board.transform.SetParent(props);board.transform.position=new Vector3(9,1.85f,-1.73f);board.transform.localScale=new Vector3(2.9f,2.9f,1);board.GetComponent<Renderer>().sharedMaterial=mapMat;Action(board,mission3Interact_Prop_ShengChiehLee.Kind.FloorMap,"Inspect floor map");
-        Label("Map header","HOTEL 24 / FLOOR 3",new Vector3(9,3.45f,-1.8f),2.3f);
-        Label("Map legend","YOU ARE HERE\n301  WEST WING\n302  NORTH WING\n303  EAST WING\nE : inspect    M : map",new Vector3(13,2,-1.8f),1.7f);
+        Box("Map frame",new Vector3(9,2.35f,-1.64f),new Vector3(3.05f,3.05f,.14f),gold,props);
+        var board=GameObject.CreatePrimitive(PrimitiveType.Quad);board.name="Entrance wall floor map";board.transform.SetParent(props);board.transform.position=new Vector3(9,2.35f,-1.73f);board.transform.localScale=new Vector3(2.9f,2.9f,1);board.GetComponent<Renderer>().sharedMaterial=mapMat;Action(board,mission3Interact_Prop_ShengChiehLee.Kind.FloorMap,"Inspect floor map");
+        Label("Map header","HOTEL 24 / FLOOR 3",new Vector3(9,4.15f,-1.82f),2.3f);
+        Label("Map legend","YOU ARE HERE\n301  WEST WING\n302  NORTH WING\n303  EAST WING\nE : inspect    M : map",new Vector3(5.5f,2.35f,-1.82f),1.7f);
         Box("Reception desk",W(2,2,.55f),new Vector3(3.2f,1.1f,1.3f),wood,props);
         var checkout=Box("Checkout terminal",W(2,2,1.35f),new Vector3(1,.5f,.25f),ink,props);Action(checkout,mission3Interact_Prop_ShengChiehLee.Kind.Checkout,"Checkout / return belongings");Label("Checkout label","CHECKOUT\nLOST & FOUND",W(2,2.06f,1.4f),1.8f);
         mission3Lift_Editor_ShengChiehLee.Create(props);

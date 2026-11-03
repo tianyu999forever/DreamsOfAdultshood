@@ -30,6 +30,10 @@ public static class mission3Session_Editor_ShengChiehLee
             return;
         }
         SessionState.SetBool("Mission3.RefreshedForCommand",false);
+        if(command=="next-level-sign"&&EditorApplication.isPlayingOrWillChangePlaymode)
+        {
+            if(EditorApplication.isPlaying)EditorApplication.ExitPlaymode();return;
+        }
         File.Delete(Command);
         try
         {
@@ -42,6 +46,7 @@ public static class mission3Session_Editor_ShengChiehLee
             else if(command == "organize") mission3Folders_Editor_ShengChiehLee.Apply();
             else if(command == "folders-validate") mission3Folders_Editor_ShengChiehLee.Validate();
             else if(command == "architecture") mission3Architecture_Editor_ShengChiehLee.Apply();
+            else if(command == "next-level-sign") mission3NextLevel_Editor_ShengChiehLee.UpdateSigns();
             else throw new InvalidOperationException("Unknown Mission3 operation");
         }
         catch(Exception e) { File.WriteAllText(ReportPath,"ERROR\n"+e); Debug.LogException(e); }

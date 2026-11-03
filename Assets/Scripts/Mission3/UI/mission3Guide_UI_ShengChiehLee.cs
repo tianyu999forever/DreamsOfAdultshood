@@ -16,12 +16,13 @@ public class mission3Guide_UI_ShengChiehLee : MonoBehaviour
         get
         {
             if(manager.IsCompleted)return "SHIFT COMPLETE\nYour belongings have been returned.";
+            if(manager.ReturnsSubmitted)return "07 / ENTER THE LIFT\nBelongings returned. Settle your score inside, then continue.";
             if(!MapViewed)return "01 / GET YOUR BEARINGS\nInspect the lobby map with E, or press M.";
             if(!manager.notesRead.Any(x=>x))return "02 / MEET THE GUESTS\nRead a guest note. Start with 301 / west wing.";
             if(!JournalViewed)return "03 / KEEP THE CLUES\nPress TAB to open your saved guest journal.";
             if(manager.CollectedCount==0)return "04 / FIND A BELONGING\nFind a cyan number on the map. E picks it up.";
             if(manager.CollectedCount<3)return "05 / SEARCH THE HOTEL\nFind at least 3 belongings: "+manager.CollectedCount+" / 3.";
-            return "06 / RETURN TO RECEPTION\nReturn your belongings, or find all 6 for more points.";
+            return "06 / RETURN TO RECEPTION\nUse the Checkout / Lost & Found desk. Find all 6 for more points.";
         }
     }
     public void PageOpened(mission3Hotel_Manager_ShengChiehLee.Page page)

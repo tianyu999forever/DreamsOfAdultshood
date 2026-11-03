@@ -33,9 +33,9 @@ public static class mission3Demo_Editor_ShengChiehLee
             mission3Presentation_Editor_ShengChiehLee.Validate();
             if(!AssetDatabase.IsValidFolder("Assets/Scenes/Demos"))AssetDatabase.CreateFolder("Assets/Scenes","Demos");
             if(!EditorSceneManager.SaveScene(scene,Demo,true))throw new IOException("Could not create demo scene.");
-            scene=EditorSceneManager.OpenScene(Demo);var manager=Find<mission3Hotel_Manager_ShengChiehLee>(scene);manager.demoMode=true;manager.nextSceneName="";
+            scene=EditorSceneManager.OpenScene(Demo);var manager=Find<mission3Hotel_Manager_ShengChiehLee>(scene);manager.demoMode=true;
             var check=new GameObject("Demo automated check (command-line only)").AddComponent<mission3DemoCheck_Manager_ShengChiehLee>();
-            ButtonLabel(manager.canvasUI.pages[7].transform.Find("ContinueButton").GetComponent<Button>(),"EXIT DEMO");
+            ButtonLabel(manager.canvasUI.resultsCanvas.continueButton,"NEXT LEVEL");
             var pause=manager.canvasUI.pages[8].transform;
             var quit=MakeButton(pause,"ExitDemoButton","EXIT DEMO",new Vector2(525,-345),manager.QuitDemo);
             quit.GetComponent<RectTransform>().sizeDelta=new Vector2(460,54);
@@ -50,7 +50,7 @@ public static class mission3Demo_Editor_ShengChiehLee
                 File.WriteAllText(Output+"/build-info.txt","BUILD_PASS\nGuided Mission3 demo\n"+DateTime.Now.ToString("s")+"\nSize: "+report.summary.totalSize+" bytes\nOnly the demo scene is included.");
             }
             finally{PlayerSettings.defaultScreenWidth=oldSize.x;PlayerSettings.defaultScreenHeight=oldSize.y;PlayerSettings.fullScreenMode=oldMode;PlayerSettings.runInBackground=oldBackground;AssetDatabase.SaveAssets();}
-            File.WriteAllText(Output+"/HOW-TO-PLAY.txt","MISSION 3 / HOTEL 24\n\nRun Mission3Demo.exe from this folder. Keep its _Data folder and UnityPlayer.dll beside it.\n\nWASD: move / Mouse: look / Shift: run / E: interact\nM: map / TAB: guest journal / Q: watch / ESC: pause\n\nFollow the objective card. Read the guest notes, collect at least three belongings, then return them at reception or inside the lift. The map shows all six belongings, guest notes and public landmarks. Item location does not reveal ownership. No countdown.\n\nUse Explore Again after checkout to restart. ESC > Exit Demo closes the game.\n");
+            File.WriteAllText(Output+"/HOW-TO-PLAY.txt","MISSION 3 / HOTEL 24\n\nRun Mission3Demo.exe from this folder. Keep its _Data folder and UnityPlayer.dll beside it.\n\nWASD: move / Mouse: look / Shift: run / E: interact\nM: map / TAB: guest journal / Q: watch / ESC: pause\n\nFollow the objective card. Read the guest notes, collect at least three belongings, then return them only at the Checkout / Lost & Found desk. Enter the lift to settle your score and continue. The map shows all six belongings, guest notes and public landmarks. Item location does not reveal ownership. No countdown.\n\nUse Explore Again after checkout to restart. ESC > Exit Demo closes the game.\n");
             Debug.Log("MISSION3_GUIDED_DEMO_BUILD_PASS");
             if(Application.isBatchMode)EditorApplication.Exit(0);
         }
@@ -101,13 +101,16 @@ public static class mission3Demo_Editor_ShengChiehLee
         MapMarker(markerRoot,"Reception marker","R",new Vector3(6,0,-6),Gold);
         MapMarker(markerRoot,"Lift marker","L",new Vector3(15,0,-2.75f),new Color(.43f,.47f,.75f));
         MapMarker(markerRoot,"Lounge marker","S",new Vector3(36,0,-46.5f),new Color(.31f,.54f,.39f));
-        ui.pages[2].transform.Find("Legend key").GetComponent<TMP_Text>().text="RED ARROW: You    /    CYAN: Belonging\nAMBER N: Note    /    MUTED +: Collected\nR: RECEPTION    L: LIFT    S: LOUNGE\n\n301  Traveller / west wing\n302  Musician / north wing\n303  Botanist / east wing\nAll items are shown. North is up.";
-        Text(ui.pages[2].transform,"Navigation hint","R / L  Return belongings here",new Vector2(360,203),new Vector2(660,30),19,Gold);
+        ui.pages[2].transform.Find("Legend key").GetComponent<TMP_Text>().text="RED ARROW: You    /    CYAN: Belonging\nAMBER N: Note    /    MUTED +: Collected\nR: RETURN DESK    L: SETTLE / NEXT    S: LOUNGE\n\n301  Traveller / west wing\n302  Musician / north wing\n303  Botanist / east wing\nAll items are shown. North is up.";
+        Text(ui.pages[2].transform,"Navigation hint","R  RETURN ITEMS / L  SETTLE + NEXT LEVEL",new Vector2(360,203),new Vector2(660,30),19,Gold);
         MakeButton(ui.pages[5].transform,"JournalButton","VIEW GUEST NOTES / TAB",new Vector2(-40,-358),ui.Journal).GetComponent<RectTransform>().sizeDelta=new Vector2(440,54);
         mission3Space_Editor_ShengChiehLee.Apply(scene);
         mission3Presentation_Editor_ShengChiehLee.MakeMap(m);
         ui.mapRect.GetComponent<RawImage>().texture=AssetDatabase.LoadAssetAtPath<Texture2D>(mission3Paths_Editor_ShengChiehLee.Maps+"/mission3FloorPlan.png");
         mission3Architecture_Editor_ShengChiehLee.Organize(scene);
+        mission3EntranceMap_Editor_ShengChiehLee.Align(scene);
+        mission3Result_Editor_ShengChiehLee.Install(scene);
+        mission3CheckoutFlow_Editor_ShengChiehLee.Install(scene);
         guide.Refresh();ui.Refresh();EditorUtility.SetDirty(m);EditorUtility.SetDirty(ui);EditorSceneManager.MarkSceneDirty(scene);
     }
     static Material Mat(string name)=>AssetDatabase.LoadAssetAtPath<Material>(mission3Paths_Editor_ShengChiehLee.Material(name));
@@ -205,11 +208,21 @@ public static class mission3Demo_Editor_ShengChiehLee
         UnityEventTools.AddPersistentListener(button.onClick,action);var label=Text(image.transform,"Text (TMP)",text,Vector2.zero,new Vector2(430,48),20,Paper);label.alignment=TextAlignmentOptions.Center;return button;
     }
     static void ButtonLabel(Button button,string value){button.GetComponentInChildren<TMP_Text>().text=value;}
+    public static void RefreshMapLandmarks(mission3Hotel_Manager_ShengChiehLee manager)
+    {
+        var root=manager.canvasUI.mapRect;
+        MapMarker(root,"Reception marker","R",new Vector3(6,0,-6),Gold);
+        MapMarker(root,"Lift marker","L",new Vector3(15,0,-2.75f),new Color(.43f,.47f,.75f));
+        MapMarker(root,"Lounge marker","S",new Vector3(36,0,-46.5f),new Color(.31f,.54f,.39f));
+    }
     static void MapMarker(Transform parent,string name,string glyph,Vector3 world,Color color)
     {
-        var marker=Panel(parent,name,Vector2.zero,new Vector2(23,23),color);var r=marker.rectTransform;
-        // Markers are authored in the base grid; expansion preserves their floor-plan location.
-        r.anchorMin=r.anchorMax=new Vector2((72+(world.x+1.5f)/63*880)/1024,(72+(world.z+61.5f)/63*880)/1024);r.anchoredPosition=Vector2.zero;
-        var label=Text(r,"Landmark letter",glyph,Vector2.zero,new Vector2(23,23),16,Ink);label.alignment=TextAlignmentOptions.Center;
+        var existing=parent.Find(name);var marker=existing==null?Panel(parent,name,Vector2.zero,new Vector2(23,23),color):existing.GetComponent<Image>();var r=marker.rectTransform;
+        var ui=parent.GetComponentInParent<mission3Canvas_UI_ShengChiehLee>();
+        var architecture=ui.manager.gameObject.scene.GetRootGameObjects().Single(x=>x.name=="Mission3_HotelArchitecture").transform;
+        world=architecture.TransformPoint(world);
+        var uv=new Vector2(Mathf.InverseLerp(ui.mapWorldMin.x,ui.mapWorldMax.x,world.x),Mathf.InverseLerp(ui.mapWorldMin.y,ui.mapWorldMax.y,world.z));
+        r.anchorMin=r.anchorMax=(ui.mapPixelMin+Vector2.Scale(uv,ui.mapPixelMax-ui.mapPixelMin))/1024f;r.anchoredPosition=Vector2.zero;
+        if(existing==null){var label=Text(r,"Landmark letter",glyph,Vector2.zero,new Vector2(23,23),16,Ink);label.alignment=TextAlignmentOptions.Center;}
     }
 }

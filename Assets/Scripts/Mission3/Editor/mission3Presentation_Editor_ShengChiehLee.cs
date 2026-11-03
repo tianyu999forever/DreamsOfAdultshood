@@ -49,7 +49,7 @@ public static class mission3Presentation_Editor_ShengChiehLee
         foreach(var p in manager.canvasUI.pages.Where(x=>x!=null))p.GetComponent<Image>().color=new Color(.055f,.10f,.12f,1);
         manager.canvasUI.Refresh();
         var legend=manager.gameObject.scene.GetRootGameObjects().SelectMany(x=>x.GetComponentsInChildren<Transform>(true)).FirstOrDefault(x=>x.name=="Map legend");
-        if(legend!=null){legend.position=new Vector3(5.5f,2.15f,-1.8f);var text=legend.GetComponent<TMP_Text>();text.text="FLOOR 03\nCYAN 1-6 : BELONGINGS\nAMBER : GUEST NOTES\nE : INSPECT    M : MAP";text.fontSize=1.15f;text.rectTransform.sizeDelta=new Vector2(3.2f,1.6f);}
+        if(legend!=null){legend.position=new Vector3(5.5f,2.35f,-1.82f);var text=legend.GetComponent<TMP_Text>();text.text="FLOOR 03\nCYAN 1-6 : BELONGINGS\nAMBER : GUEST NOTES\nE : INSPECT    M : MAP";text.fontSize=1.15f;text.rectTransform.sizeDelta=new Vector2(3.2f,1.6f);}
         var wayfinding=manager.gameObject.scene.GetRootGameObjects().SelectMany(x=>x.GetComponentsInChildren<Transform>(true)).FirstOrDefault(x=>x.name=="Mission3_Wayfinding");
         if(wayfinding!=null)
         {
@@ -60,6 +60,7 @@ public static class mission3Presentation_Editor_ShengChiehLee
                 var reverse=UnityEngine.Object.Instantiate(front.gameObject,wayfinding);reverse.name="Direction text reverse";reverse.transform.position=front.transform.position+Vector3.forward*.11f;reverse.transform.rotation=Quaternion.Euler(0,180,0);
             }
         }
+        mission3EntranceMap_Editor_ShengChiehLee.Align(manager.gameObject.scene);
         EditorSceneManager.MarkSceneDirty(manager.gameObject.scene);AssetDatabase.SaveAssets();EditorSceneManager.SaveScene(manager.gameObject.scene);
         Validate();
         Selection.activeGameObject=Find<mission3Canvas_UI_ShengChiehLee>().gameObject;
@@ -239,46 +240,162 @@ public static class mission3Presentation_Editor_ShengChiehLee
     public static void MakeMap(mission3Hotel_Manager_ShengChiehLee manager)
     {
         bool[,] cells=new bool[21,21];
-        foreach(var t in manager.gameObject.scene.GetRootGameObjects().SelectMany(x=>x.GetComponentsInChildren<Transform>(true)))
+        var architecture=manager.gameObject.scene.GetRootGameObjects().Single(x=>x.name=="Mission3_HotelArchitecture").transform;
+        var floors=architecture.GetComponentsInChildren<Transform>(true).Where(t=>{var p=t.name.Split('_');return p.Length==3&&p[0]=="Floor";}).ToArray();
+        var bounds=floors[0].GetComponent<Renderer>().bounds;
+        foreach(var t in floors)
         {
-            var parts=t.name.Split('_');if(parts.Length==3&&parts[0]=="Floor"&&int.TryParse(parts[1],out int x)&&int.TryParse(parts[2],out int y))cells[x,y]=true;
+            var parts=t.name.Split('_');if(int.TryParse(parts[1],out int x)&&int.TryParse(parts[2],out int y))cells[x,y]=true;
+            bounds.Encapsulate(t.GetComponent<Renderer>().bounds);
         }
+        var mapUI=manager.canvasUI;
+        // Fit the visible floor footprint to the paper; service passage remains hidden.
+        mapUI.mapWorldMin=new Vector2(bounds.min.x,bounds.min.z);mapUI.mapWorldMax=new Vector2(bounds.max.x,bounds.max.z);
+        mapUI.mapPixelMin=new Vector2(24,24);mapUI.mapPixelMax=new Vector2(1000,1000);
         var texture=new Texture2D(1024,1024,TextureFormat.RGBA32,false);var pixels=Enumerable.Repeat(new Color(.93f,.91f,.85f),1024*1024).ToArray();
         void Box(int x,int y,int w,int h,Color c){for(int py=Mathf.Max(0,y);py<Mathf.Min(1024,y+h);py++)for(int px=Mathf.Max(0,x);px<Mathf.Min(1024,x+w);px++)pixels[py*1024+px]=c;}
-        int Edge(int n)=>Mathf.RoundToInt(72+n*(880f/21));
-        Color floor=new Color(.995f,.985f,.95f);
-        for(int y=0;y<21;y++)for(int x=0;x<21;x++)if(cells[x,y])Box(Edge(x),Edge(20-y),Edge(x+1)-Edge(x),Edge(21-y)-Edge(20-y),floor);
+        Vector2 Pixel(Vector3 world)=>mapUI.mapPixelMin+Vector2.Scale(new Vector2(Mathf.InverseLerp(mapUI.mapWorldMin.x,mapUI.mapWorldMax.x,world.x),Mathf.InverseLerp(mapUI.mapWorldMin.y,mapUI.mapWorldMax.y,world.z)),mapUI.mapPixelMax-mapUI.mapPixelMin);
+        int EdgeX(int n)=>Mathf.RoundToInt(Pixel(architecture.TransformPoint(new Vector3((n-.5f)*3,0,0))).x);
+        int EdgeZ(int n)=>Mathf.RoundToInt(Pixel(architecture.TransformPoint(new Vector3(0,0,-(n-.5f)*3))).y);
+        Color floor=new Color(.995f,.985f,.95f);const int wallWidth=12,halfWall=wallWidth/2;
+        for(int y=0;y<21;y++)for(int x=0;x<21;x++)if(cells[x,y])Box(EdgeX(x),EdgeZ(y+1),EdgeX(x+1)-EdgeX(x),EdgeZ(y)-EdgeZ(y+1),floor);
         for(int y=0;y<21;y++)for(int x=0;x<21;x++)if(cells[x,y])
         {
-            int l=Edge(x),r=Edge(x+1),b=Edge(20-y),t=Edge(21-y);
-            if(x==0||!cells[x-1,y])Box(l-3,b-3,6,t-b+6,Ink);
-            if(x==20||!cells[x+1,y])Box(r-3,b-3,6,t-b+6,Ink);
-            if(y==0||!cells[x,y-1])Box(l-3,t-3,r-l+6,6,Ink);
-            if(y==20||!cells[x,y+1])Box(l-3,b-3,r-l+6,6,Ink);
+            int l=EdgeX(x),r=EdgeX(x+1),b=EdgeZ(y+1),t=EdgeZ(y);
+            if(x==0||!cells[x-1,y])Box(l-halfWall,b-halfWall,wallWidth,t-b+wallWidth,Ink);
+            if(x==20||!cells[x+1,y])Box(r-halfWall,b-halfWall,wallWidth,t-b+wallWidth,Ink);
+            if(y==0||!cells[x,y-1])Box(l-halfWall,t-halfWall,r-l+wallWidth,wallWidth,Ink);
+            if(y==20||!cells[x,y+1])Box(l-halfWall,b-halfWall,r-l+wallWidth,wallWidth,Ink);
         }
         var digits=new[]{"111101101101111","010110010010111","111001111100111","111001111001111","101101111001001","111100111001111","111100111101111","111001001001001","111101111101111","111101111001111"};
         void Number(string n,int x,int y,int scale,Color color){foreach(char ch in n){if(ch>='0'&&ch<='9'){var glyph=digits[ch-'0'];for(int gy=0;gy<5;gy++)for(int gx=0;gx<3;gx++)if(glyph[gy*3+gx]=='1')Box(x+gx*scale,y+(4-gy)*scale,scale,scale,color);}x+=4*scale;}}
         // Room numbers label real rooms; the closed service passage is drawn as ordinary solid wall.
-        Number("301",Edge(1)+7,Edge(11)+5,3,Gold);Number("302",Edge(10)+7,Edge(17)+5,3,Gold);Number("303",Edge(18)+2,Edge(10)+4,3,Gold);
+        Number("301",EdgeX(1)+9,EdgeZ(10)+9,3,Gold);Number("302",EdgeX(10)+9,EdgeZ(4)+9,3,Gold);Number("303",EdgeX(18)+9,EdgeZ(11)+9,3,Gold);
         // Discreet north arrow in the paper margin.
         Box(948,975,3,23,Ink);for(int a=0;a<8;a++){Box(949-a,995-a,2,2,Ink);Box(949+a,995-a,2,2,Ink);}
         texture.SetPixels(pixels);texture.Apply();SaveTexture(texture,mission3Paths_Editor_ShengChiehLee.Maps+"/mission3FloorPlan.png");
         var actions=manager.gameObject.scene.GetRootGameObjects().SelectMany(x=>x.GetComponentsInChildren<mission3Interact_Prop_ShengChiehLee>(true)).ToArray();
         foreach(var p in actions.Where(a=>a.kind==mission3Interact_Prop_ShengChiehLee.Kind.LostProperty||a.kind==mission3Interact_Prop_ShengChiehLee.Kind.GuestNote))
         {
-            var mapUI=manager.canvasUI;
-            int px=Mathf.RoundToInt(72+Mathf.InverseLerp(mapUI.mapWorldMin.x,mapUI.mapWorldMax.x,p.transform.position.x)*880),py=Mathf.RoundToInt(72+Mathf.InverseLerp(mapUI.mapWorldMin.y,mapUI.mapWorldMax.y,p.transform.position.z)*880);
+            var pixel=Pixel(p.transform.position);int px=Mathf.RoundToInt(pixel.x),py=Mathf.RoundToInt(pixel.y);
             if(p.kind==mission3Interact_Prop_ShengChiehLee.Kind.LostProperty){for(int dy=-17;dy<=17;dy++)for(int dx=-17;dx<=17;dx++)if(dx*dx+dy*dy<=289)Box(px+dx,py+dy,1,1,Cyan);Number((p.index+1).ToString(),px-6,py-10,4,Color.white);}
             else { Box(px-10,py-10,20,20,Gold); }
         }
-        // Static reception/lift markers, deliberately no service-door marker.
-        Number("0",Edge(2)+13,Edge(18)+10,3,new Color(.78f,.23f,.18f));
+        // Place the public symbols from the real desk and cabin, leaving the service door hidden.
+        var desk=manager.returnDesk!=null?manager.returnDesk:actions.Single(a=>a.kind==mission3Interact_Prop_ShengChiehLee.Kind.Checkout);
+        var lift=manager.departureLift!=null?manager.departureLift:manager.gameObject.scene.GetRootGameObjects().SelectMany(x=>x.GetComponentsInChildren<mission3Lift_Prop_ShengChiehLee>(true)).Single();
+        var lobbyPixel=Pixel(desk.transform.position);var liftPixel=Pixel(lift.transform.TransformPoint(lift.settlementCenter));
+        // The pin tip points to the desk; the cabin icon is centered over the passenger space.
+        DrawLobbyMapSymbol(pixels,Mathf.RoundToInt(lobbyPixel.x),Mathf.RoundToInt(lobbyPixel.y)+34,1);
+        DrawElevatorMapSymbol(pixels,Mathf.RoundToInt(liftPixel.x),Mathf.RoundToInt(liftPixel.y),1);
+        DrawWallMapLegend(pixels);
         texture.SetPixels(pixels);texture.Apply();SaveTexture(texture,mission3Paths_Editor_ShengChiehLee.Maps+"/mission3FloorMap.png");UnityEngine.Object.DestroyImmediate(texture);
         manager.floorMap=AssetDatabase.LoadAssetAtPath<Texture2D>(mission3Paths_Editor_ShengChiehLee.Maps+"/mission3FloorMap.png");
+        mission3Demo_Editor_ShengChiehLee.RefreshMapLandmarks(manager);EditorUtility.SetDirty(mapUI);
         var map=AssetDatabase.LoadAssetAtPath<Material>(mission3Paths_Editor_ShengChiehLee.Material("mission3_MapDisplay"));map.SetTexture("_BaseMap",manager.floorMap);EditorUtility.SetDirty(map);
         var arrow=new Texture2D(40,48,TextureFormat.RGBA32,false);var ap=new Color[40*48];for(int y=0;y<48;y++)for(int x=0;x<40;x++){float width=(47-y)*.37f;if(Mathf.Abs(x-19.5f)<=width&&y>3)ap[y*40+x]=new Color(.9f,.20f,.17f);}
         arrow.SetPixels(ap);arrow.Apply();SaveTexture(arrow,mission3Paths_Editor_ShengChiehLee.InterfaceTextures+"/mission3PlayerArrow.png");UnityEngine.Object.DestroyImmediate(arrow);
     }
+    static readonly Color LiftMapColor=new Color(.34f,.36f,.65f),LobbyMapColor=new Color(.82f,.24f,.18f);
+    // Shared drawing keeps the map and its legend visually identical at both sizes.
+    static void DrawLobbyMapSymbol(Color[] pixels,int cx,int cy,float scale)
+    {
+        void Pixel(int x,int y,Color color)
+        {
+            int left=Mathf.RoundToInt(cx+x*scale),bottom=Mathf.RoundToInt(cy+y*scale),size=Mathf.CeilToInt(scale);
+            for(int py=bottom;py<bottom+size;py++)for(int px=left;px<left+size;px++)if(px>=0&&px<1024&&py>=0&&py<1024)pixels[py*1024+px]=color;
+        }
+        // Gold-rimmed coral pin with a white reception bell.
+        for(int y=-34;y<=23;y++)for(int x=-23;x<=23;x++)
+            if(x*x+y*y<=23*23||(y<=-12&&Mathf.Abs(x)<=(y+34)*.9f))Pixel(x,y,Gold);
+        for(int y=-29;y<=20;y++)for(int x=-20;x<=20;x++)
+            if(x*x+y*y<=20*20||(y<=-12&&Mathf.Abs(x)<=(y+29)*.82f))Pixel(x,y,LobbyMapColor);
+        for(int y=-7;y<=14;y++)for(int x=-14;x<=14;x++)
+        {
+            bool dome=y>=-3&&y<=9&&x*x+(y+3)*(y+3)<=12*12;
+            bool baseLine=y>=-7&&y<=-5&&Mathf.Abs(x)<=14;
+            bool knob=y>=11&&Mathf.Abs(x)<=2;
+            if(dome||baseLine||knob)Pixel(x,y,Color.white);
+        }
+    }
+    static void DrawElevatorMapSymbol(Color[] pixels,int cx,int cy,float scale)
+    {
+        void Box(int x,int y,int w,int h,Color color)
+        {
+            int left=Mathf.RoundToInt(cx+x*scale),bottom=Mathf.RoundToInt(cy+y*scale),right=Mathf.RoundToInt(cx+(x+w)*scale),top=Mathf.RoundToInt(cy+(y+h)*scale);
+            for(int py=Mathf.Max(0,bottom);py<Mathf.Min(1024,top);py++)for(int px=Mathf.Max(0,left);px<Mathf.Min(1024,right);px++)pixels[py*1024+px]=color;
+        }
+        Box(-18,-20,36,40,Ink);Box(-16,-18,32,36,LiftMapColor);
+        // Paired doors below the standard up/down arrows.
+        Box(-12,-15,24,21,Color.white);Box(-9,-13,18,17,LiftMapColor);Box(-1,-13,2,17,Color.white);
+        Box(-8,9,2,6,Color.white);Box(6,9,2,6,Color.white);
+        for(int i=0;i<4;i++){Box(-8-i,14-i,2+2*i,1,Color.white);Box(6-i,9+i,2+2*i,1,Color.white);}
+    }
+
+    // Keep the wall-poster key inside the unused top-right paper, above every corridor.
+    // The interactive map already has its own key, so this is baked only into the wall map.
+    static void DrawWallMapLegend(Color[] pixels)
+    {
+        var glyphs=new Dictionary<char,string>
+        {
+            ['A']="01110/10001/10001/11111/10001/10001/10001",
+            ['B']="11110/10001/10001/11110/10001/10001/11110",
+            ['E']="11111/10000/10000/11110/10000/10000/11111",
+            ['G']="01110/10001/10000/10111/10001/10001/01110",
+            ['H']="10001/10001/10001/11111/10001/10001/10001",
+            ['I']="11111/00100/00100/00100/00100/00100/11111",
+            ['L']="10000/10000/10000/10000/10000/10000/11111",
+            ['M']="10001/11011/10101/10101/10001/10001/10001",
+            ['N']="10001/11001/10101/10011/10001/10001/10001",
+            ['O']="01110/10001/10001/10001/10001/10001/01110",
+            ['R']="11110/10001/10001/11110/10100/10010/10001",
+            ['S']="01111/10000/10000/01110/00001/00001/11110",
+            ['T']="11111/00100/00100/00100/00100/00100/00100",
+            ['U']="10001/10001/10001/10001/10001/10001/01110",
+            ['V']="10001/10001/10001/10001/10001/01010/00100",
+            ['Y']="10001/10001/01010/00100/00100/00100/00100",
+            ['1']="00100/01100/00100/00100/00100/00100/01110",
+            ['6']="01110/10000/10000/11110/10001/10001/01110",
+            ['-']="00000/00000/00000/11111/00000/00000/00000"
+        };
+        void Box(int x,int y,int w,int h,Color color)
+        {
+            for(int py=y;py<y+h;py++)for(int px=x;px<x+w;px++)pixels[py*1024+px]=color;
+        }
+        void Label(string text,int x,int y)
+        {
+            foreach(char ch in text)
+            {
+                if(ch!=' ')
+                {
+                    var rows=glyphs[ch].Split('/');
+                    for(int row=0;row<7;row++)for(int col=0;col<5;col++)
+                        if(rows[row][col]=='1')Box(x+col*3,y+(6-row)*3,3,3,Ink);
+                }
+                x+=18;
+            }
+        }
+        void Digits(string text,int x,int y,Color color)
+        {
+            var digits=new[]{"111101101101111","010110010010111","111001111100111","111001111001111"};
+            foreach(char ch in text)
+            {
+                var glyph=digits[ch-'0'];
+                for(int row=0;row<5;row++)for(int col=0;col<3;col++)if(glyph[row*3+col]=='1')Box(x+col*3,y+(4-row)*3,3,3,color);
+                x+=12;
+            }
+        }
+        for(int y=-12;y<=12;y++)for(int x=-12;x<=12;x++)if(x*x+y*y<=144)Box(328+x,984+y,1,1,Cyan);
+        Digits("1",324,977,Color.white);Label("ITEMS 1-6",350,974);
+        Box(319,945,18,18,Gold);Label("GUEST NOTES",350,943);
+        DrawElevatorMapSymbol(pixels,328,922,.55f);Label("ELEVATOR",350,912);
+        DrawLobbyMapSymbol(pixels,654,987,.4f);Label("LOBBY",690,974);
+        Digits("301",637,946,Gold);Label("GUEST ROOMS",690,943);
+        Box(652,912,3,21,Ink);
+        for(int i=0;i<8;i++){Box(652-i,932-i,3,3,Ink);Box(652+i,932-i,3,3,Ink);}
+        Label("NORTH",690,912);
+    }
+
     static void SaveTexture(Texture2D texture,string path)
     {
         File.WriteAllBytes(path,texture.EncodeToPNG());AssetDatabase.ImportAsset(path,ImportAssetOptions.ForceSynchronousImport);

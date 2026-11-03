@@ -24,7 +24,7 @@ public class mission3DemoCheck_Manager_ShengChiehLee : MonoBehaviour
         yield return new WaitForSeconds(1);
         Check(m.playerBody.position.y>.9f&&m.playerBody.position.y<1.8f,"Player remains on lobby floor");
         yield return Shot("demo-objective");
-        m.Interact(props.First(x=>x.kind==mission3Interact_Prop_ShengChiehLee.Kind.Checkout));ui.Refresh();
+        MoveToDesk(m);m.Interact(props.First(x=>x.kind==mission3Interact_Prop_ShengChiehLee.Kind.Checkout));ui.Refresh();
         Check(m.CurrentPage==mission3Hotel_Manager_ShengChiehLee.Page.Checkout&&!ui.reviewButton.interactable,"Empty bag can preview returns but cannot finalize");
         Check(ui.checkoutRequirement.text.Contains("3 more"),"Checkout explains missing items");
         m.CompleteCheckout();Check(!m.IsCompleted,"Empty checkout rejected");
@@ -38,15 +38,21 @@ public class mission3DemoCheck_Manager_ShengChiehLee : MonoBehaviour
         Check(m.CollectedCount==6,"Six unique pickups, no duplicate collection");ui.Map();yield return null;ui.Refresh();
         Check(ui.itemMarkers.All(x=>x.GetComponentInChildren<TMPro.TMP_Text>().text=="+"),"Collected map markers updated");ui.Begin();
         foreach(var p in props.Where(x=>x.kind==mission3Interact_Prop_ShengChiehLee.Kind.GuestNote))m.Interact(p);
-        m.Interact(props.First(x=>x.kind==mission3Interact_Prop_ShengChiehLee.Kind.Checkout));ui.Refresh();
+        MoveToDesk(m);m.Interact(props.First(x=>x.kind==mission3Interact_Prop_ShengChiehLee.Kind.Checkout));ui.Refresh();
         Check(!ui.reviewButton.interactable&&ui.checkoutRequirement.text.Contains("6 remaining"),"Unassigned items explain disabled review");
         for(int i=0;i<6;i++)ui.ownerButtons[i*3+i/2].onClick.Invoke();ui.Refresh();
         Check(ui.reviewButton.interactable,"Owner buttons unlock review");yield return Shot("demo-checkout");
         ui.Review();Check(m.CurrentPage==mission3Hotel_Manager_ShengChiehLee.Page.Confirm,"Confirmation page required");
         m.Interact(props.First(x=>x.kind==mission3Interact_Prop_ShengChiehLee.Kind.ServiceDoor));
         int events=0;m.onMissionCompleted.AddListener(_=>events++);ui.Finish();ui.Finish();
-        Check(m.FinalScore==100&&events==1,"100-point scoring and one-shot completion");yield return Shot("demo-result");
+        Check(m.ReturnsSubmitted&&!m.IsCompleted&&events==0,"Desk confirms returns without scoring");
+        m.departureLift.Open();var passenger=m.departureLift.transform.TransformPoint(new Vector3(0,1.42f,.95f));m.playerBody.transform.position=passenger;m.playerBody.position=passenger;Physics.SyncTransforms();m.UseLiftTerminal();m.UseLiftTerminal();
+        Check(m.FinalScore==100&&events==1,"100-point lift scoring and one-shot completion");yield return Shot("demo-result");
         Finish();
+    }
+    static void MoveToDesk(mission3Hotel_Manager_ShengChiehLee m)
+    {
+        m.SetPage(mission3Hotel_Manager_ShengChiehLee.Page.None);var point=m.returnDesk.transform.position+Vector3.back*2.1f;point.y=1.42f;m.playerBody.transform.position=point;m.playerBody.position=point;Physics.SyncTransforms();
     }
     IEnumerator Shot(string name)
     {

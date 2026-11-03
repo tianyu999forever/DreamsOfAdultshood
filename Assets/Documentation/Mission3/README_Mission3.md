@@ -9,7 +9,7 @@
 3. 打开 `Assets/Scenes/Mission3.unity`，按 Play，点击 Begin the night shift。
 4. WASD 移动，Shift 跑步，E 交互，Q 查看怀表，Tab 日志，M 地图，Esc 暂停。Space 跳跃。M / Tab 再按一次可关闭对应面板。
 5. 读 301 / 302 / 303 的住客留言，寻找六件失物。物品出现的房间不等于物主房间。
-6. 收集至少三件即可在大厅前台或电梯处结算。建议找齐六件再归还。每件物品指定物主，确认后本次得分锁定。
+6. 收集至少三件後，只能在大廳 Checkout / Lost & Found 桌指定物主並確認交還。確認後收集與物主選擇鎖定；接著走進電梯，使用 SETTLE SCORE 結算，最後在電梯內按 NEXT LEVEL。建議找齊六件再交還。
 
 没有倒计时、自动失败或负重减速。怀表显示本轮探索用时。入口墙面和 M 面板使用实际关卡布局生成的楼层图：六件收集物以 1–6 编号，三份住客留言以琥珀色标示。M 面板的红色箭头追踪玩家位置和朝向；收集后对应标记变为淡色 +。地图不显示隐藏服务门、门锁或隐藏通路。
 
@@ -100,3 +100,25 @@ Assets/
 - 入口地圖與 M 面板同步使用放大後的世界座標，隱藏門仍不顯示。
 - 使用 `Mission3 > Play Guided Demo` 試玩。`Mission3 > Test and Play Guided Demo` 會先檢查教程、地圖、六個展示台的站立空間與拾取視線、結算，再開始全新試玩。
 - 正式場景 `Assets/Scenes/Mission3.unity` 和試玩場景 `Assets/Scenes/Demos/Mission3_Demo.unity` 都已套用；重新生成時也會保留這套尺寸與擺放規則。
+
+
+## 關卡結算 Canvas（2026-10-31）
+
+- 獨立 Prefab：`Assets/Prefabs/Mission3/UI/Mission3ResultCanvas.prefab`，已接入正式場景與 Demo。
+- `Mission3_ResultCanvas/ResultPanel` 可編輯總分、60/30/10 加分明細、六件物品的歸還結果，以及 PLAY AGAIN / NEXT LEVEL 按鈕。
+- `mission3Result_UI_ShengChiehLee` 指向當前場景的 Manager；Manager 的 `Settlement` 提供完整結算明細，`FinalScore` 提供總分，`onMissionCompleted(int)` 仍只觸發一次。
+- 結算後停止 Player 並開啟滑鼠，Esc 不會意外關閉結果。下一關尚未設定或未加入 Scene List 時，按鈕停用並保留結算畫面；Demo 的 NEXT LEVEL 也使用正式場景切換入口，不再代替 EXIT DEMO。
+- 依照使用者選擇，正式版與 Demo 的 `nextSceneName` 都先設為 `Assets/Scenes/Mission1.unity`，用於實際測試關卡切換；Mission1 已在 Scene List 啟用。之後接正式下一關時，修改此欄位並啟用該場景即可。
+- `Mission3 > Preview Score Results` 開啟 100 分範例，PLAY AGAIN 可開始正常新一輪；先停止播放再使用此選單。
+- 已測試 100 分與部分歸還 30 分、正確/錯誤/未找到狀態、重複結算防護、實際重玩與 NEXT LEVEL 切換。NEXT LEVEL 使用場景中實際儲存的 Mission1 入口完成切換，沒有在測試時臨時覆寫目的地。
+
+
+## 櫃台交還與電梯結算（2026-11-02）
+
+- 只有大廳 `Checkout terminal` 能接受物品；電梯內原本的交還功能已移除。
+- 交還確認呼叫 `CompleteCheckout()`，設定 `ReturnsSubmitted`，鎖定收集與物主選擇，恢復玩家移動並提示前往電梯。此時不計分、不觸發 `onMissionCompleted`。
+- 玩家必須走進電梯的乘客區域，再操作 SETTLE SCORE。`UseLiftTerminal()` 只在已交還且身處電梯時結算分數、開啟結果 Canvas、觸發一次完成事件。
+- `LoadNextLevel()` 與結果 Canvas 的 NEXT LEVEL 都再次檢查玩家在電梯內；目前仍接到 Mission1。
+- `mission3Lift_Prop_ShengChiehLee` 的 Settlement Center / Size 可調整電梯內判定範圍，座標跟隨電梯的 Transform。
+- 大廳電梯旁新增 `Mission3_PropsAndInteractions/CheckoutFlowNotice` 告示。教程目標、交還確認、電梯提醒及 M 地圖也已更新為：R 交還物品、L 結算與下一關。
+- `Mission3 > Apply Desk Returns and Lift Settlement` 可套用這套流程；重新生成正式場景也會保留此設定。

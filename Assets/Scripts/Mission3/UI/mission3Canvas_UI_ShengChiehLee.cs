@@ -11,6 +11,7 @@ public class mission3Canvas_UI_ShengChiehLee : MonoBehaviour
     public GameObject[] pages;
     public TMP_Text status, bag, prompt, notice, clock, note, journal, summary, result;
     public TMP_Text checkoutRequirement;
+    public mission3Result_UI_ShengChiehLee resultsCanvas;
     public Button reviewButton;
     public Button[] ownerButtons;
     public RectTransform mapRect, playerMarker;
@@ -19,8 +20,8 @@ public class mission3Canvas_UI_ShengChiehLee : MonoBehaviour
     public TMP_Text[] itemRows;
     public Vector2 mapWorldMin = new Vector2(-1.5f,-61.5f);
     public Vector2 mapWorldMax = new Vector2(61.5f,1.5f);
-    public Vector2 mapPixelMin = new Vector2(72,72);
-    public Vector2 mapPixelMax = new Vector2(952,952);
+    public Vector2 mapPixelMin = new Vector2(24,24);
+    public Vector2 mapPixelMax = new Vector2(1000,1000);
     int lastPage = -1;
     static readonly Color Cyan = new Color(.03f,.72f,.87f);
     static readonly Color Gold = new Color(.79f,.60f,.29f);
@@ -54,7 +55,7 @@ public class mission3Canvas_UI_ShengChiehLee : MonoBehaviour
         clock.text=System.TimeSpan.FromSeconds(manager.ElapsedSeconds).ToString(@"mm\:ss");
         note.text=manager.CurrentNote;
         journal.text=string.Join("\n\n",Enumerable.Range(0,3).Select(g=>manager.notesRead[g]?mission3Rules_Manager_ShengChiehLee.Notes[g]:(301+g)+" / NOTE NOT READ\nFind the guest's letter in their room."));
-        summary.text="RETURN LOST PROPERTY  /  "+manager.CollectedCount+" OF 6\nChoose an owner for each belonging. Final confirmation locks your score.";
+        summary.text="RETURN AT CHECKOUT / LOST & FOUND  /  "+manager.CollectedCount+" OF 6\nChoose owners here. Confirm the return, then enter the lift to settle your score.";
         if(checkoutRequirement!=null)checkoutRequirement.text=manager.CheckoutRequirement;
         for(int i=0;i<6;i++)
         {
@@ -63,11 +64,11 @@ public class mission3Canvas_UI_ShengChiehLee : MonoBehaviour
             for(int g=0;g<3;g++)
             {
                 var button=ownerButtons[i*3+g];
-                button.interactable=manager.collected[i]&&!manager.IsCompleted;
+                button.interactable=manager.collected[i]&&!manager.ReturnsSubmitted&&!manager.IsCompleted;
                 button.GetComponent<Image>().color=manager.assignment[i]==g?Cyan:new Color(.16f,.20f,.22f);
             }
         }
-        reviewButton.interactable=manager.CollectedCount>=3 && Enumerable.Range(0,6).All(i=>!manager.collected[i]||manager.assignment[i]>=0);
+        reviewButton.interactable=!manager.ReturnsSubmitted&&manager.IsAtReturnDesk&&manager.CollectedCount>=3 && Enumerable.Range(0,6).All(i=>!manager.collected[i]||manager.assignment[i]>=0);
         for(int i=0;i<itemMarkers.Length;i++)
         {
             if(itemPositions[i]!=null) Place(itemMarkers[i].rectTransform,itemPositions[i].position);
@@ -81,7 +82,8 @@ public class mission3Canvas_UI_ShengChiehLee : MonoBehaviour
         }
         Place(playerMarker,manager.playerBody.position);
         playerMarker.localEulerAngles=new Vector3(0,0,-manager.playerBody.rotation.eulerAngles.y);
-        if(manager.IsCompleted) result.text=manager.ResultDescription;
+        if(resultsCanvas!=null)resultsCanvas.Refresh();
+        else if(manager.IsCompleted)result.text=manager.ResultDescription;
     }
     void Place(RectTransform marker,Vector3 world)
     {
@@ -89,7 +91,7 @@ public class mission3Canvas_UI_ShengChiehLee : MonoBehaviour
         var pixel=mapPixelMin+Vector2.Scale(uv,mapPixelMax-mapPixelMin);
         marker.anchorMin=marker.anchorMax=pixel/1024f; marker.anchoredPosition=Vector2.zero;
     }
-    void Assign(int item,int owner) { if(manager.collected[item]&&!manager.IsCompleted) manager.assignment[item]=owner; }
+    void Assign(int item,int owner) { if(manager.collected[item]&&!manager.ReturnsSubmitted&&!manager.IsCompleted) manager.assignment[item]=owner; }
     public void Begin() { manager.BackToHotel(); }
     public void Map() { manager.SetPage(mission3Hotel_Manager_ShengChiehLee.Page.Map); }
     public void Journal() { manager.OpenJournal(); }
