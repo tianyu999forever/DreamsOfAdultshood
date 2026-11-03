@@ -13,31 +13,58 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
     public Moving movement;
     public MouseLook mouseLook;
     public Rigidbody playerBody;
+    public HeadBob headBob;
+    public mission3Canvas_UI_ShengChiehLee canvasUI;
+    public mission3Guide_UI_ShengChiehLee guide;
+    public bool demoMode;
     public Texture2D floorMap;
     public GameObject serviceDoor;
+    public mission3Interact_Prop_ShengChiehLee returnDesk;
+    public mission3Lift_Prop_ShengChiehLee departureLift;
     public Transform serviceDoorOpenPosition;
     [Tooltip("Exact destination scene name or Assets/... scene path. Add the destination to Build Settings before playing.")]
-    public string nextSceneName = "Mission4";
+    public string nextSceneName = "Assets/Scenes/Mission4.unity";
     public Button nextLevelButton;
     public TMP_Text nextLevelStatus;
     public UnityEvent<int> onMissionCompleted = new UnityEvent<int>();
     public int FinalScore { get; private set; }
     public bool IsCompleted { get; private set; }
+    public bool ReturnsSubmitted { get; private set; }
+    bool previouslyInsideLift;
     public bool ShortcutOpened { get; private set; }
     public bool[] collected = new bool[6];
     public bool[] notesRead = new bool[3];
     public int[] assignment = { -1, -1, -1, -1, -1, -1 };
-    enum Page { None, Welcome, Map, Journal, Note, Checkout, Confirm, Result, Pause }
+    public enum Page { None, Welcome, Map, Journal, Note, Checkout, Confirm, Result, Pause }
     Page page = Page.Welcome;
+    Page journalReturnPage=Page.None;
     mission3Interact_Prop_ShengChiehLee focus;
     string noteText = "", notice = "";
     float noticeUntil, elapsed;
-    bool wasMoving, wasLooking, frozen;
+    bool wasMoving, wasLooking, wasBobbing, frozen;
+    int lookResumeFrames;
+    bool loadingNextLevel;
     Vector3 startPosition;
     Quaternion startRotation;
     mission3Rules_Manager_ShengChiehLee.Result result;
     GUIStyle title, body, small, button;
     int Count => collected.Count(x => x);
+    public Page CurrentPage => page;
+    public int CollectedCount => Count;
+    public mission3Rules_Manager_ShengChiehLee.Result Settlement => result;
+    public bool NextLevelAvailable => !string.IsNullOrWhiteSpace(nextSceneName)&&Application.CanStreamedLevelBeLoaded(nextSceneName.Trim());
+    public bool IsInsideLift => departureLift!=null&&playerBody!=null&&departureLift.ContainsPassenger(playerBody.position);
+    public bool IsAtReturnDesk => returnDesk!=null&&playerCamera!=null&&returnDesk.gameObject.scene==gameObject.scene&&
+        returnDesk.GetComponent<Collider>()!=null&&Vector3.Distance(playerCamera.transform.position,returnDesk.GetComponent<Collider>().ClosestPoint(playerCamera.transform.position))<=3.4f;
+    public bool CanEnterNextLevel => ReturnsSubmitted&&IsCompleted&&IsInsideLift&&!loadingNextLevel&&NextLevelAvailable;
+    public string NextLevelHint => !ReturnsSubmitted?"Return belongings at the Checkout / Lost & Found desk first.":!IsInsideLift?"Enter the lift to settle your score and continue.":
+        !IsCompleted?"Use the lift terminal to settle your score.":loadingNextLevel?"Opening the next level...":
+        NextLevelAvailable?"Score settled inside the lift. Continue when you are ready.":"The next level is not available yet. You can replay this mission.";
+    public string FocusPrompt => focus == null ? "" : focus.Prompt;
+    public string Notice => Time.unscaledTime < noticeUntil ? notice : "";
+    public string CurrentNote => noteText;
+    public float ElapsedSeconds => elapsed;
+    public string ResultDescription => "CHECKED OUT  /  " + FinalScore + " / 100\n\nCorrect returns: " + result.correct + "/6  (+" + result.itemPoints + ")\nComplete guest pairs: " + result.sets + "/3  (+" + result.setPoints + ")\nExploration bonus: +" + result.explorationPoints + "\n\n" + string.Join("\n", Enumerable.Range(0,6).Select(i => mission3Rules_Manager_ShengChiehLee.Items[i] + "  >  " + (301+mission3Rules_Manager_ShengChiehLee.Owner(i)) + (!collected[i] ? " / NOT FOUND" : assignment[i] == mission3Rules_Manager_ShengChiehLee.Owner(i) ? " / RETURNED" : " / WRONG OWNER")));
 
     void Start()
     {
@@ -45,22 +72,35 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
         SetPage(Page.Welcome);
         RefreshNextLevelStatus();
     }
-    void SetPage(Page value)
+    public void SetPage(Page value)
     {
+        if((value==Page.Checkout||value==Page.Confirm)&&(!IsAtReturnDesk||ReturnsSubmitted)){Notify("Return belongings only at the Checkout / Lost & Found desk.");return;}
+        if(value==Page.Result&&(!IsCompleted||!IsInsideLift)){Notify("Enter the lift to settle your score.");return;}
         page = value; bool stop = value != Page.None;
-        if (stop && !frozen) { wasMoving = movement.enabled; wasLooking = mouseLook.enabled; movement.enabled = false; mouseLook.enabled = false; playerBody.linearVelocity = Vector3.zero; playerBody.isKinematic = true; frozen = true; }
-        else if (!stop && frozen) { playerBody.isKinematic = false; movement.enabled = wasMoving; mouseLook.enabled = wasLooking; frozen = false; }
+        if (stop && !frozen) { wasMoving = movement.enabled; wasLooking = mouseLook.enabled || (lookResumeFrames>0&&wasLooking); lookResumeFrames=0; wasBobbing = headBob != null && headBob.enabled; movement.enabled = false; mouseLook.enabled = false; if(headBob != null) headBob.enabled = false; playerBody.linearVelocity = Vector3.zero; playerBody.isKinematic = true; frozen = true; }
+        else if (!stop && frozen) { playerBody.isKinematic = false; movement.enabled = wasMoving; mouseLook.enabled = false; lookResumeFrames=3; if(headBob != null) headBob.enabled = wasBobbing; frozen = false; }
         Cursor.lockState = stop ? CursorLockMode.None : CursorLockMode.Locked; Cursor.visible = stop;
         focus = null;
+        if(guide!=null)guide.PageOpened(value);
+        if(canvasUI!=null)canvasUI.Refresh();
     }
-    void LateUpdate() { if (page != Page.None) { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; } }
+    void LateUpdate()
+    {
+        bool inside=IsInsideLift;
+        if(inside!=previouslyInsideLift){previouslyInsideLift=inside;RefreshNextLevelStatus();}
+        if(page==Page.Result&&!inside)SetPage(Page.None);
+        if(page!=Page.None){Cursor.lockState=CursorLockMode.None;Cursor.visible=true;}
+        else if(lookResumeFrames>0&&--lookResumeFrames==0)mouseLook.enabled=wasLooking;
+    }
     void Update()
     {
+        if(page==Page.Result)return;
         var k = Keyboard.current; if (k == null) return;
-        if (k.escapeKey.wasPressedThisFrame && !IsCompleted) { SetPage(page == Page.None ? Page.Pause : Page.None); return; }
+        if (page == Page.Map && k.mKey.wasPressedThisFrame) { SetPage(Page.None); return; }
+        if(k.tabKey.wasPressedThisFrame&&(page==Page.None||page==Page.Checkout||page==Page.Journal)) { if(page==Page.Journal)BackToHotel();else OpenJournal();return; }
+        if (k.escapeKey.wasPressedThisFrame) { SetPage(page == Page.None ? Page.Pause : Page.None); return; }
         if (page != Page.None) return;
         elapsed += Time.deltaTime;
-        if (k.tabKey.wasPressedThisFrame) { SetPage(Page.Journal); return; }
         if (k.mKey.wasPressedThisFrame) { SetPage(Page.Map); return; }
         focus = null;
         if (Physics.Raycast(playerCamera.transform.position, playerCamera.transform.forward, out RaycastHit hit, 3.4f, ~0, QueryTriggerInteraction.Collide))
@@ -82,8 +122,9 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
         switch (prop.kind)
         {
             case mission3Interact_Prop_ShengChiehLee.Kind.LostProperty:
+                if(ReturnsSubmitted){Notify("Your returns are confirmed. Enter the lift to settle your score.");return;}
                 if (prop.index < 0 || prop.index >= 6 || collected[prop.index]) return;
-                collected[prop.index] = true; prop.gameObject.SetActive(false); Notify("Collected: " + mission3Rules_Manager_ShengChiehLee.Items[prop.index]); break;
+                collected[prop.index] = true; prop.gameObject.SetActive(false); Notify("Collected: " + mission3Rules_Manager_ShengChiehLee.Items[prop.index]); if(guide!=null)guide.ItemCollected(); break;
             case mission3Interact_Prop_ShengChiehLee.Kind.GuestNote:
                 notesRead[prop.index] = true; noteText = mission3Rules_Manager_ShengChiehLee.Notes[prop.index]; SetPage(Page.Note); break;
             case mission3Interact_Prop_ShengChiehLee.Kind.FloorMap: SetPage(Page.Map); break;
@@ -93,42 +134,76 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
                 prop.gameObject.SetActive(false); Notify("Service passage opened. Exploration bonus: +10."); break;
             case mission3Interact_Prop_ShengChiehLee.Kind.LiftDoors:
                 var lift = prop.GetComponentInParent<mission3Lift_Prop_ShengChiehLee>();
-                if (lift != null) { lift.Open(); Notify("Lift doors opening. Use the checkout panel inside to return belongings."); }
+                if (lift != null) { lift.Open(); Notify(ReturnsSubmitted?"Lift doors opening. Step inside to settle your score.":"Return belongings at the Checkout / Lost & Found desk before settling in the lift."); }
                 break;
             case mission3Interact_Prop_ShengChiehLee.Kind.Checkout:
-                if (Count < 3) { Notify("Find at least 3 lost belongings before checkout. Six are available."); return; }
+                if(prop!=returnDesk||!IsAtReturnDesk){Notify("Return belongings only at the Checkout / Lost & Found desk.");break;}
+                if(ReturnsSubmitted){Notify("Belongings already returned. Enter the lift to settle your score.");break;}
                 SetPage(Page.Checkout); break;
         }
     }
     void Notify(string text) { notice = text; noticeUntil = Time.unscaledTime + 4; }
+    public void OpenJournal(){journalReturnPage=page==Page.Checkout?Page.Checkout:Page.None;SetPage(Page.Journal);}
+    public void BackToHotel(){SetPage(page==Page.Journal?journalReturnPage:Page.None);}
+    public void ShowHint(string text) { notice=text; noticeUntil=Time.unscaledTime+8; }
+    public string CheckoutRequirement => ReturnsSubmitted?"Belongings returned. Enter the lift to settle your score.":Count<3 ? "Find "+(3-Count)+" more belongings to unlock checkout. You can preview the owner choices now." :
+        Enumerable.Range(0,6).Any(i=>collected[i]&&assignment[i]<0) ? "Choose an owner for "+Enumerable.Range(0,6).Count(i=>collected[i]&&assignment[i]<0)+" remaining belongings. TAB: guest journal." : "All collected belongings have an owner. Confirm the return here, then enter the lift to settle.";
+    public void QuitDemo()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.ExitPlaymode();
+#else
+        Application.Quit();
+#endif
+    }
     public void CompleteCheckout()
     {
-        if (IsCompleted || Count < 3) return;
-        for (int i = 0; i < 6; i++) if (collected[i] && assignment[i] < 0) { Notify("Assign every collected item before checkout."); return; }
-        result = mission3Rules_Manager_ShengChiehLee.Settle(collected, assignment, ShortcutOpened);
-        FinalScore = result.score; IsCompleted = true; SetPage(Page.Result);
-        RefreshNextLevelStatus();
-        onMissionCompleted.Invoke(FinalScore);
+        if(ReturnsSubmitted||IsCompleted||Count<3||page!=Page.Confirm||!IsAtReturnDesk)return;
+        for(int i=0;i<6;i++)if(collected[i]&&assignment[i]<0){Notify("Assign every collected item before returning it.");return;}
+        ReturnsSubmitted=true;SetPage(Page.None);RefreshNextLevelStatus();
+        ShowHint("Belongings returned. Enter the lift and use NEXT LEVEL to settle your score. The next level is available only inside the lift.");
+    }
+    public void UseLiftTerminal()
+    {
+        if(!ReturnsSubmitted){Notify("Return belongings at the Checkout / Lost & Found desk first.");return;}
+        if(!IsInsideLift){Notify("Step inside the lift to settle your score.");return;}
+        if(!IsCompleted)
+        {
+            result=mission3Rules_Manager_ShengChiehLee.Settle(collected,assignment,ShortcutOpened);
+            FinalScore=result.score;IsCompleted=true;SetPage(Page.Result);RefreshNextLevelStatus();onMissionCompleted.Invoke(FinalScore);
+        }
+        else{SetPage(Page.Result);RefreshNextLevelStatus();}
     }
     public void RefreshNextLevelStatus()
     {
-        if (nextLevelStatus == null) return;
-        nextLevelStatus.text = !IsCompleted ? "COMPLETE CHECKOUT FIRST" :
-            (Application.CanStreamedLevelBeLoaded(nextSceneName) ? "READY  /  E OR CLICK TO CONTINUE" : "DESTINATION NOT ADDED YET");
+        if(nextLevelButton!=null)
+        {
+            nextLevelButton.interactable=ReturnsSubmitted&&IsInsideLift&&!loadingNextLevel;
+            var label=nextLevelButton.GetComponentInChildren<TMP_Text>();if(label!=null)label.text="NEXT LEVEL";
+        }
+        if(nextLevelStatus!=null)nextLevelStatus.text=!ReturnsSubmitted?"RETURN ITEMS AT LOST & FOUND FIRST":!IsInsideLift?"STEP INSIDE THE LIFT TO SETTLE":
+            loadingNextLevel?"OPENING NEXT LEVEL...":IsCompleted?"VIEW SCORE / NEXT LEVEL INSIDE":"E OR CLICK TO SETTLE SCORE";
+        if(canvasUI!=null&&canvasUI.resultsCanvas!=null)canvasUI.resultsCanvas.Refresh();
     }
     public void LoadNextLevel()
     {
-        if (!IsCompleted) { Notify("Complete checkout before travelling to the next level."); return; }
+        if(!ReturnsSubmitted||!IsCompleted||!IsInsideLift){Notify("Return items at the desk, then settle and continue from inside the lift.");return;}
+        if(loadingNextLevel)return;
         string destination = (nextSceneName ?? "").Trim();
         if (string.IsNullOrEmpty(destination) || !Application.CanStreamedLevelBeLoaded(destination))
         {
             Notify("Next level is not available yet: " + (string.IsNullOrEmpty(destination) ? "no destination configured" : destination) + ".");
             return;
         }
-        if (nextLevelButton != null) nextLevelButton.interactable = false;
+        loadingNextLevel=true;RefreshNextLevelStatus();
         Time.timeScale = 1;
         Cursor.lockState = CursorLockMode.None; Cursor.visible = true;
-        SceneManager.LoadScene(destination);
+        try{SceneManager.LoadScene(destination);}
+        catch(Exception error)
+        {
+            loadingNextLevel=false;RefreshNextLevelStatus();
+            Notify("The next level could not be opened. Please try again.");Debug.LogException(error);
+        }
     }
     void OnDisable() { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; }
     void InitStyles()
@@ -141,6 +216,7 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
     }
     void OnGUI()
     {
+        if (canvasUI != null) return;
         InitStyles(); float scale = Mathf.Min(Screen.width/1200f, Screen.height/800f);
         GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one * scale);
         float w = Screen.width/scale, h = Screen.height/scale;
@@ -161,7 +237,7 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
         {
             case Page.Welcome:
                 GUILayout.Label("Some guests left more than their luggage.", title); GUILayout.Space(18);
-                GUILayout.Label("Explore the hotel. Read the three guest notes, collect lost belongings, then return to the reception checkout beside the lift. Assign each belonging to its owner and settle your score.", body);
+                GUILayout.Label("Explore the hotel. Read the three guest notes, collect lost belongings, then return to the reception checkout beside the lift. Assign owners and return belongings at the desk. Then enter the lift to settle your score.", body);
                 GUILayout.Space(18); GUILayout.Label("Correct return: 10 points each (60 max)\nComplete guest pair: 10 bonus points (30 max)\nOpen the service shortcut: 10 points\nTotal: 100. You may leave with 3 or more items. No countdown.", body);
                 GUILayout.Space(18); GUILayout.Label("The entrance wall carries the real floor plan. M opens a copy; TAB keeps the notes you have read. Items found in a room do not necessarily belong to that guest.", body);
                 if (GUILayout.Button("Begin the night shift",button)) SetPage(Page.None); break;
@@ -185,7 +261,7 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
                 if(GUILayout.Button("Return to exploration / read journal",button)) SetPage(Page.None); break;
             case Page.Confirm:
                 GUILayout.Label("Ready to leave the hotel?",title);
-                GUILayout.Label("You collected "+Count+" of 6 belongings. Finalizing ends this run and locks the score. Any missing or incorrectly assigned belongings earn no return points.",body);
+                GUILayout.Label("You collected "+Count+" of 6 belongings. Confirming ends collection and locks your owner choices. Enter the lift afterwards to settle your score.",body);
                 if(GUILayout.Button("Finalize checkout and reveal score",button)) CompleteCheckout();
                 if(GUILayout.Button("Keep editing assignments",button)) SetPage(Page.Checkout); break;
             case Page.Result:
@@ -200,7 +276,7 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
         }
         GUILayout.EndArea();
     }
-    void Restart()
+    public void Restart()
     {
 #if UNITY_EDITOR
         UnityEditor.SceneManagement.EditorSceneManager.LoadSceneInPlayMode(gameObject.scene.path, new LoadSceneParameters(LoadSceneMode.Single));
