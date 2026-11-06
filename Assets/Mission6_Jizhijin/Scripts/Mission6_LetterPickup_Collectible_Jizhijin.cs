@@ -9,9 +9,13 @@ public class Mission6_LetterPickup_Collectible_Jizhijin : MonoBehaviour
     public Transform visual;
     bool collected;
 
-    void OnTriggerEnter(Collider other)
+    void OnTriggerEnter(Collider other) => TryCollect(other);
+    void OnTriggerStay(Collider other) => TryCollect(other);
+    void TryCollect(Collider other)
     {
         if (collected || (!other.CompareTag("Player") && !other.transform.root.CompareTag("Player"))) return;
+        var level = GetComponentInParent<Mission6_Grid_Level_Jizhijin>();
+        if (level != null && (level.campaign.CurrentLevel != level || level.campaign.Phase != Mission6_Phase_Jizhijin.Exploring || level.campaign.night.IsNight)) return;
         if (inventory == null || !inventory.AddLetter(letter)) return;
         collected = true;
         GetComponent<Collider>().enabled = false;

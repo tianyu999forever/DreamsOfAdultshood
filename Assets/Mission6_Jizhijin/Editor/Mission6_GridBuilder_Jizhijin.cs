@@ -57,11 +57,14 @@ public static class Mission6_GridBuilder_Jizhijin
         player.GetComponent<Rigidbody>().isKinematic = false;
         var rootGo = new GameObject("Mission6_TwoLevels_Jizhijin"); var campaign = rootGo.AddComponent<Mission6_Campaign_Jizhijin>();
         campaign.moving = player; campaign.mouseLook = player.GetComponentInChildren<MouseLook>(); campaign.headBob = player.GetComponentInChildren<HeadBob>(); campaign.watch = watch; campaign.inventory = inventory; campaign.nextSceneName = nextScene;
+        campaign.night = rootGo.AddComponent<Mission6_NightCycle_Jizhijin>(); campaign.night.campaign = campaign;
         campaign.photo = player.GetComponent<Mission6_Photo_Player_Jizhijin>(); campaign.photo.moving = player;
         var scaler = canvas.GetComponent<CanvasScaler>(); scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize; scaler.referenceResolution = new Vector2(1280,720); scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
         campaign.objective = Label("Objective_Jizhijin", canvas.transform, "", 18, new Vector2(0,310),new Vector2(1200,32));
         campaign.timer = Label("StageTimer_Jizhijin", canvas.transform, "", 20, new Vector2(0,340),new Vector2(1000,30));
         var status = Label("PhotoStatus_Jizhijin", canvas.transform,"",17,new Vector2(0,280),new Vector2(1000,26)); campaign.photo.statusText=status; campaign.photoHint=status.gameObject;
+        campaign.night.countdown=Label("NightCountdown_Jizhijin",canvas.transform,"",18,new Vector2(0,250),new Vector2(1100,30));campaign.night.countdown.gameObject.SetActive(false);
+        var enterSecond=Button("EnterLevel2_Anytime",canvas.transform,"ENTER LEVEL 2 [2]",new Vector2(445,-260));UnityEventTools.AddPersistentListener(enterSecond.onClick,campaign.GoToSecondLevel);campaign.enterSecondButton=enterSecond.gameObject;enterSecond.GetComponent<RectTransform>().sizeDelta=new Vector2(260,64);enterSecond.transform.Find("Label").GetComponent<RectTransform>().anchoredPosition=new Vector2(0,9);Label("EnterLevel2_CursorHint",enterSecond.transform,"TAB: LOOK / CURSOR",13,new Vector2(0,-18),new Vector2(250,18));
         campaign.stageResult=Label("LastGrade_Jizhijin",canvas.transform,"",18,new Vector2(0,-275),new Vector2(1100,55));
         var bag=Panel("LetterBag_Jizhijin",canvas.transform,new Color(.035f,.07f,.09f,.94f),false); bag.GetComponent<RectTransform>().anchoredPosition=new Vector2(0,-320);bag.GetComponent<RectTransform>().sizeDelta=new Vector2(1000,60);
         inventory.inventoryText=Label("InventoryText",bag.transform,"",18,Vector2.zero,new Vector2(980,58));campaign.bagPanel=bag;
@@ -72,6 +75,7 @@ public static class Mission6_GridBuilder_Jizhijin
             var stage=BuildTerrain(rootGo.transform,data);stage.campaign=campaign;campaign.levels[n-1]=stage;
             var map=Mission6_GridMap_Jizhijin.Create(data);
             var photo=MapPanel("Photo_Level"+n,canvas.transform,map,"LEVEL "+n+" MAP",out var photoTitle);photo.SetActive(false);stage.photoPanel=photo;stage.photoTitle=photoTitle;
+            if(n==2){campaign.night.photoMap=photo.transform.Find("GridMapImage").GetComponent<RawImage>();campaign.night.dayMap=map;campaign.night.nightMap=Mission6_GridMap_Jizhijin.Create(data,true);}
             var board=new GameObject("PLAN_Board_Level"+n,typeof(RectTransform),typeof(Canvas));board.GetComponent<Canvas>().renderMode=RenderMode.WorldSpace;board.transform.SetParent(stage.transform,false);board.transform.position=data.origin+new Vector3(4.8f,3.35f,9.53f);board.transform.localScale=Vector3.one*.01f;board.GetComponent<RectTransform>().sizeDelta=new Vector2(800,800);
             var poster=MapPanel("Poster",board.transform,map,"LEVEL "+n+" / PLAN",out var boardTitle);boardTitle.gameObject.SetActive(false);
             Label("Legend",poster.transform,"GOLD LETTERS / BLUE PLATFORMS / RED SENTINELS",15,new Vector2(0,-287),new Vector2(790,25));
@@ -94,9 +98,10 @@ public static class Mission6_GridBuilder_Jizhijin
         Cube("Connecting_Corridor",rootGo.transform,new Vector3(52.8f,-.1f,44.4f),new Vector3(9.6f,.2f,2.4f),floor);
         Cube("Corridor_North",rootGo.transform,new Vector3(52.8f,1.8f,45.8f),new Vector3(9.6f,3.6f,.4f),wall);Cube("Corridor_South",rootGo.transform,new Vector3(52.8f,1.8f,43),new Vector3(9.6f,3.6f,.4f),wall);
         var gate=Cube("Level1_Gate_To_Level2",rootGo.transform,new Vector3(48,1.8f,44.4f),new Vector3(.45f,3.6f,2.4f),Material("Gate",new Color(.65f,.48f,.18f)));campaign.firstGate=gate.transform;campaign.gateCollider=gate.GetComponent<Collider>();
-        WorldText("GateHint",rootGo.transform,new Vector3(47.7f,3.9f,44.4f),"7 / 10 WORDS TO OPEN",3).gameObject.AddComponent<FaceCamera>();
+        WorldText("GateHint",rootGo.transform,new Vector3(47.7f,3.9f,44.4f),"OPEN PASSAGE / LEVEL 2",3).gameObject.AddComponent<FaceCamera>();
         Trigger("Level2_Entrance",campaign.levels[1],2,new Vector3(58.2f,2,44.4f),new Vector3(.4f,5,2.2f));
-        var sunlight=new GameObject("Sunlight",typeof(Light));sunlight.transform.SetParent(rootGo.transform);sunlight.transform.rotation=Quaternion.Euler(55,-25,0);var light=sunlight.GetComponent<Light>();light.type=LightType.Directional;light.color=new Color(1,.94f,.84f);light.intensity=1.1f;light.shadows=LightShadows.Soft;
+        var sunlight=new GameObject("Sunlight",typeof(Light));sunlight.transform.SetParent(rootGo.transform);sunlight.transform.rotation=Quaternion.Euler(55,-25,0);var light=sunlight.GetComponent<Light>();light.type=LightType.Directional;light.color=new Color(1,.94f,.84f);light.intensity=1.1f;light.shadows=LightShadows.Soft;campaign.night.sunlight=light;
+        campaign.night.letterRenderers=campaign.levels[1].GetComponentsInChildren<TextMeshPro>(true).Where(t=>t.name=="LetterVisual"||t.name.StartsWith("Word_")).SelectMany(t=>t.GetComponentsInChildren<Renderer>(true)).Distinct().ToArray();
         BuildNavigation(campaign);
         BuildEnemies(campaign);
         campaign.deathPanel=Panel("DeathPanel_Jizhijin",canvas.transform,new Color(.02f,.04f,.06f,1),true);Label("Title",campaign.deathPanel.transform,"TRY ANOTHER ROUTE",36,new Vector2(0,100),new Vector2(1100,60));campaign.deathReason=Label("Reason",campaign.deathPanel.transform,"",22,new Vector2(0,20),new Vector2(1050,100));UnityEventTools.AddPersistentListener(Button("Retry",campaign.deathPanel.transform,"RETRY LEVEL",new Vector2(0,-100)).onClick,campaign.Replay);campaign.deathPanel.SetActive(false);watch.deathPanel=campaign.deathPanel;
@@ -143,9 +148,9 @@ public static class Mission6_GridBuilder_Jizhijin
             var cell=d.enemies[i];var go=new GameObject("Sentinel_"+(i+1),typeof(NavMeshAgent),typeof(Mission6_Enemy_Jizhijin));go.transform.SetParent(campaign.levels[1].transform);go.transform.position=d.Center(cell.x,cell.y,.05f);
             var agent=go.GetComponent<NavMeshAgent>();agent.enabled=false;agent.radius=.35f;agent.height=1.8f;agent.baseOffset=0;agent.stoppingDistance=.6f;
             var body=GameObject.CreatePrimitive(PrimitiveType.Capsule);body.name="Body";body.transform.SetParent(go.transform,false);body.transform.localPosition=new Vector3(0,1,0);body.transform.localScale=new Vector3(.85f,1,.85f);body.GetComponent<Renderer>().sharedMaterial=mat;Object.DestroyImmediate(body.GetComponent<Collider>());
-            Cube("Eyes",go.transform,go.transform.position+new Vector3(0,1.5f,.4f),new Vector3(.5f,.16f,.12f),eye);
+            var eyes=Cube("Eyes",go.transform,go.transform.position+new Vector3(0,1.5f,.4f),new Vector3(.5f,.16f,.12f),eye);Object.DestroyImmediate(eyes.GetComponent<Collider>());
             var enemy=go.GetComponent<Mission6_Enemy_Jizhijin>();enemy.player=campaign.moving.transform;enemy.campaign=campaign;
-            var points=i==0?new[]{new Vector2Int(12,6),new Vector2Int(23,6),new Vector2Int(23,8),new Vector2Int(12,8)}:new[]{new Vector2Int(14,12),new Vector2Int(20,12),new Vector2Int(20,14),new Vector2Int(14,14)};
+            var points=i==0?new[]{new Vector2Int(19,7),new Vector2Int(23,7),new Vector2Int(23,9),new Vector2Int(15,9)}:new[]{new Vector2Int(21,13),new Vector2Int(23,13),new Vector2Int(23,17),new Vector2Int(19,17)};
             enemy.patrolPoints=points.Select((p,index)=>{var t=new GameObject("Patrol_"+i+"_"+index).transform;t.SetParent(campaign.levels[1].transform);t.position=d.Center(p.x,p.y);return t;}).ToArray();list.Add(enemy);
         }
         campaign.enemies=list.ToArray();
@@ -157,7 +162,7 @@ public static class Mission6_GridBuilder_Jizhijin
     static Mission6_Spelling_ExitPanel_Jizhijin BuildPuzzle(Transform parent,TMP_Dropdown template,Mission6_Grid_Level_Jizhijin level,Mission6_Letters_GameManager_Jizhijin inventory)
     {
         var data=level.Data;var panel=Panel("CrosswordPanel_Level"+data.number,parent,new Color(.025f,.05f,.065f,1),true);var p=panel.AddComponent<Mission6_Spelling_ExitPanel_Jizhijin>();p.inventory=inventory;p.level=level;
-        Label("Title",panel.transform,"LEVEL "+data.number+" CROSSWORD",32,new Vector2(0,310),new Vector2(1200,48));Label("Hint",panel.transform,"PASS "+data.minimumWords+" / "+data.words.Length+" WORDS   |   MORE WORDS + LESS TIME = BETTER GRADE",18,new Vector2(0,267),new Vector2(1200,30));
+        Label("Title",panel.transform,"LEVEL "+data.number+" CROSSWORD",32,new Vector2(0,310),new Vector2(1200,48));Label("Hint",panel.transform,(data.number==1?"OPTIONAL PUZZLE   /   NEXT LEVEL ENTERS LEVEL 2 ANYTIME":"PASS "+data.minimumWords+" / "+data.words.Length+" WORDS   |   MORE WORDS + LESS TIME = BETTER GRADE"),18,new Vector2(0,267),new Vector2(1200,30));
         p.bagText=Label("CollectedLetters",panel.transform,"",16,new Vector2(0,232),new Vector2(1200,28));p.bagText.color=new Color(1,.86f,.5f);
         p.timeText=Label("AnswerTimer",panel.transform,"",16,new Vector2(0,204),new Vector2(1200,25));
         int minX=data.crossword.Keys.Min(v=>v.x),maxX=data.crossword.Keys.Max(v=>v.x),minY=data.crossword.Keys.Min(v=>v.y),maxY=data.crossword.Keys.Max(v=>v.y);

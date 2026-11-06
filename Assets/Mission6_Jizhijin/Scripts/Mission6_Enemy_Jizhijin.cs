@@ -39,10 +39,11 @@ public class Mission6_Enemy_Jizhijin : MonoBehaviour
         bool visible = CanSeePlayer();
         if (visible) { Chasing = true; lastKnownPlayerPosition = player.position; lostSightTimer = 0; }
         else if (Chasing) { lostSightTimer += Time.deltaTime; if (lostSightTimer >= loseSightTime) Chasing = false; }
-        if (Chasing) { Agent.speed = chaseSpeed; Agent.acceleration = 22; Agent.SetDestination(lastKnownPlayerPosition); }
+        float speedMultiplier = campaign.night.IsNight ? Mission6_NightCycle_Jizhijin.EnemyMultiplier : 1;
+        if (Chasing) { Agent.speed = chaseSpeed * speedMultiplier; Agent.acceleration = 22; Agent.SetDestination(lastKnownPlayerPosition); }
         else if (patrolPoints.Length > 0)
         {
-            Agent.speed = patrolSpeed; Agent.acceleration = 10; Agent.SetDestination(patrolPoints[patrolIndex].position);
+            Agent.speed = patrolSpeed * speedMultiplier; Agent.acceleration = 10; Agent.SetDestination(patrolPoints[patrolIndex].position);
             if (!Agent.pathPending && Agent.remainingDistance <= .5f) patrolIndex = (patrolIndex + 1) % patrolPoints.Length;
         }
         Vector3 a = transform.position, b = player.position; a.y = b.y = 0;

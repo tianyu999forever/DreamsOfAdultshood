@@ -12,8 +12,7 @@ using UnityEngine.SceneManagement;
 
 public static class mission3Build_Editor_ShengChiehLee
 {
-    const string Root = "Assets/Mission3";
-    public const string ScenePath = "Assets/Scenes/Mission3.unity";
+    public const string ScenePath = mission3Paths_Editor_ShengChiehLee.Scene;
     static bool[,] cells;
     static Transform environment, props;
     static Material wall, wood, carpet, gold, cream, ink, green, sharedCeiling;
@@ -23,13 +22,17 @@ public static class mission3Build_Editor_ShengChiehLee
     static void Room(int x0,int y0,int x1,int y1) { for(int y=y0;y<=y1;y++)for(int x=x0;x<=x1;x++)cells[x,y]=true; }
     static void Layout()
     {
-        cells=new bool[21,21];Room(1,1,5,5);Room(3,5,3,18);Room(3,8,17,8);Room(17,3,17,18);Room(3,17,17,17);Room(9,4,9,17);Room(9,12,17,12);Room(5,4,9,4);
-        Room(1,9,2,11);Room(5,10,7,12);Room(5,14,7,16);Room(10,3,12,5);Room(14,3,16,5);Room(18,10,19,12);Room(11,14,13,16);Room(4,11,4,11);Room(4,15,4,15);Room(11,6,11,7);
+        // Mission1-inspired outer circuit and staggered inner branches, with distinct hotel rooms.
+        cells=new bool[21,21];Room(1,1,5,5);Room(3,5,3,18);Room(3,7,18,7);Room(18,4,18,18);Room(3,18,18,18);
+        Room(9,4,9,13);Room(5,4,9,4);Room(9,12,18,12);Room(3,13,9,13);Room(14,12,14,18);
+        Room(1,9,2,11);Room(5,10,7,12);Room(5,14,7,16);Room(10,3,12,5);Room(14,3,16,5);Room(17,4,18,4);
+        Room(18,10,19,12);Room(11,14,13,16);Room(14,15,14,15);Room(4,11,4,11);Room(4,15,4,15);Room(11,6,11,7);
+        Room(8,15,10,15);Room(9,14,9,14); // A public lounge loop shortens repeat journeys.
         cells[10,4]=false;
     }
     static Material Mat(string name, Color color, string source=null)
     {
-        string path=Root+"/"+name+".mat";
+        string path=mission3Paths_Editor_ShengChiehLee.Material(name);
         var m=AssetDatabase.LoadAssetAtPath<Material>(path);
         bool fresh=m==null;
         if(fresh) { var shared=source==null?null:AssetDatabase.LoadAssetAtPath<Material>(source); m=shared!=null?new Material(shared):new Material(Shader.Find("Universal Render Pipeline/Lit")); }
@@ -100,14 +103,14 @@ public static class mission3Build_Editor_ShengChiehLee
         for(int y=0;y<504;y++)for(int x=0;x<504;x++){int cx=x/24,cy=20-y/24;colors[y*504+x]=cells[cx,cy]?new Color(.86f,.75f,.52f):new Color(.18f,.13f,.11f);}
         void Mark(int cx,int cy,Color c){for(int y=0;y<14;y++)for(int x=0;x<14;x++)colors[((20-cy)*24+5+y)*504+cx*24+5+x]=c;}
         Mark(3,1,Color.red);Mark(5,2,Color.cyan);Mark(10,4,Color.green);Mark(2,10,new Color(.95f,.5f,.2f));Mark(11,4,new Color(.95f,.5f,.2f));Mark(18,11,new Color(.95f,.5f,.2f));
-        t.SetPixels(colors);t.Apply();string p=Root+"/mission3FloorMap.png";File.WriteAllBytes(p,t.EncodeToPNG());UnityEngine.Object.DestroyImmediate(t);AssetDatabase.ImportAsset(p);
+        t.SetPixels(colors);t.Apply();string p=mission3Paths_Editor_ShengChiehLee.Maps+"/mission3FloorMap.png";File.WriteAllBytes(p,t.EncodeToPNG());UnityEngine.Object.DestroyImmediate(t);AssetDatabase.ImportAsset(p);
         var imp=(TextureImporter)AssetImporter.GetAtPath(p);imp.textureType=TextureImporterType.Default;imp.sRGBTexture=true;imp.mipmapEnabled=false;imp.textureCompression=TextureImporterCompression.Uncompressed;imp.filterMode=FilterMode.Point;imp.SaveAndReimport();return AssetDatabase.LoadAssetAtPath<Texture2D>(p);
     }
     [MenuItem("Mission3/Build Hotel 24 Scene (replaces Mission3 only)")]
     public static void Build()
     {
         if(!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())return;
-        Directory.CreateDirectory(Root);AssetDatabase.Refresh();Layout();
+        mission3Paths_Editor_ShengChiehLee.EnsureFolders();AssetDatabase.Refresh();Layout();
         var scene=EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);
         environment=new GameObject("Mission3_HotelArchitecture").transform;props=new GameObject("Mission3_PropsAndInteractions").transform;
         const string common="Assets/Materials/Materials/Environment/";
@@ -144,10 +147,10 @@ public static class mission3Build_Editor_ShengChiehLee
         manager=new GameObject("Mission3_Manager_ShengChiehLee").AddComponent<mission3Hotel_Manager_ShengChiehLee>();manager.playerCamera=cam;manager.movement=moving;manager.mouseLook=look;manager.playerBody=rb;manager.floorMap=MapTexture();
         // Entry map is physical, directly ahead of the spawn, with an inspectable copy in the HUD.
         var mapMat=Mat("mission3_MapDisplay",Color.white);mapMat.shader=Shader.Find("Universal Render Pipeline/Unlit");mapMat.SetTexture("_BaseMap",manager.floorMap);EditorUtility.SetDirty(mapMat);
-        Box("Map frame",new Vector3(9,1.85f,-1.64f),new Vector3(3.05f,3.05f,.14f),gold,props);
-        var board=GameObject.CreatePrimitive(PrimitiveType.Quad);board.name="Entrance wall floor map";board.transform.SetParent(props);board.transform.position=new Vector3(9,1.85f,-1.73f);board.transform.localScale=new Vector3(2.9f,2.9f,1);board.GetComponent<Renderer>().sharedMaterial=mapMat;Action(board,mission3Interact_Prop_ShengChiehLee.Kind.FloorMap,"Inspect floor map");
-        Label("Map header","HOTEL 24 / FLOOR 3",new Vector3(9,3.45f,-1.8f),2.3f);
-        Label("Map legend","YOU ARE HERE\n301  WEST WING\n302  NORTH WING\n303  EAST WING\nE : inspect    M : map",new Vector3(13,2,-1.8f),1.7f);
+        Box("Map frame",new Vector3(9,2.35f,-1.64f),new Vector3(3.05f,3.05f,.14f),gold,props);
+        var board=GameObject.CreatePrimitive(PrimitiveType.Quad);board.name="Entrance wall floor map";board.transform.SetParent(props);board.transform.position=new Vector3(9,2.35f,-1.73f);board.transform.localScale=new Vector3(2.9f,2.9f,1);board.GetComponent<Renderer>().sharedMaterial=mapMat;Action(board,mission3Interact_Prop_ShengChiehLee.Kind.FloorMap,"Inspect floor map");
+        Label("Map header","HOTEL 24 / FLOOR 3",new Vector3(9,4.15f,-1.82f),2.3f);
+        Label("Map legend","YOU ARE HERE\n301  WEST WING\n302  NORTH WING\n303  EAST WING\nE : inspect    M : map",new Vector3(5.5f,2.35f,-1.82f),1.7f);
         Box("Reception desk",W(2,2,.55f),new Vector3(3.2f,1.1f,1.3f),wood,props);
         var checkout=Box("Checkout terminal",W(2,2,1.35f),new Vector3(1,.5f,.25f),ink,props);Action(checkout,mission3Interact_Prop_ShengChiehLee.Kind.Checkout,"Checkout / return belongings");Label("Checkout label","CHECKOUT\nLOST & FOUND",W(2,2.06f,1.4f),1.8f);
         mission3Lift_Editor_ShengChiehLee.Create(props);
@@ -163,15 +166,19 @@ public static class mission3Build_Editor_ShengChiehLee
         Box("Lounge sofa",W(12,14.4f,.5f),new Vector3(3.5f,.65f,1.1f),carpet,props);Box("Sofa back",W(12,14.25f,1),new Vector3(3.5f,.7f,.25f),wood,props);
         // Deliberately mixed locations: infer owners from notes rather than room of discovery.
         Item(6,11,0);Item(18,11,1);Item(1.2f,11,2);Item(12,15.5f,3);Item(11,4,4);Item(6,15,5);
+        mission3Presentation_Editor_ShengChiehLee.BuildPresentation(scene);
+        mission3Demo_Editor_ShengChiehLee.Upgrade(scene);
+        mission3Architecture_Editor_ShengChiehLee.Organize(scene);
         AssetDatabase.SaveAssets();EditorSceneManager.SaveScene(scene,ScenePath);Validate();Debug.Log("MISSION3_BUILD_SUCCESS "+ScenePath);
     }
     public static void BuildAndCapture() { Build(); mission3Verify_Editor_ShengChiehLee.Capture(); }
     [MenuItem("Mission3/Validate Hotel Scene")]
     public static void Validate()
     {
-        var m=UnityEngine.Object.FindFirstObjectByType<mission3Hotel_Manager_ShengChiehLee>();if(m==null)throw new Exception("No Mission3 manager");
+        var scene=SceneManager.GetActiveScene();
+        var m=scene.GetRootGameObjects().SelectMany(x=>x.GetComponentsInChildren<mission3Hotel_Manager_ShengChiehLee>(true)).FirstOrDefault();if(m==null)throw new Exception("No Mission3 manager");
         if(m.playerCamera==null||m.movement==null||m.mouseLook==null||m.floorMap==null)throw new Exception("Missing required references");
-        var objects=UnityEngine.Object.FindObjectsByType<mission3Interact_Prop_ShengChiehLee>(FindObjectsSortMode.None);
+        var objects=scene.GetRootGameObjects().SelectMany(x=>x.GetComponentsInChildren<mission3Interact_Prop_ShengChiehLee>(true)).ToArray();
         if(objects.Count(o=>o.kind==mission3Interact_Prop_ShengChiehLee.Kind.LostProperty)!=6)throw new Exception("Expected six belongings");
         if(objects.Count(o=>o.kind==mission3Interact_Prop_ShengChiehLee.Kind.GuestNote)!=3)throw new Exception("Expected three notes");
         var ids=objects.Where(o=>o.kind==mission3Interact_Prop_ShengChiehLee.Kind.LostProperty).Select(o=>o.index).Distinct();if(ids.Count()!=6)throw new Exception("Duplicate item ids");

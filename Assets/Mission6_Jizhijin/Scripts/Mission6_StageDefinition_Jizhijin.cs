@@ -27,25 +27,20 @@ public sealed class Mission6_StageDefinition_Jizhijin
     public Dictionary<Vector2Int, Mission6_CrosswordCell_Jizhijin> crossword;
     public Vector2Int[] blanks, pickups, enemies;
     public string letters;
+    bool[,] mazeWalls;
     public Vector2Int Start => new Vector2Int(1, 1);
     public Vector2Int Exit => new Vector2Int(size - 2, size - 2);
     public Vector3 Center(int x, int row, float y = 0) => origin + new Vector3((x + .5f) * CellSize, y + Height(x, row), (row + .5f) * CellSize);
     public bool IsWall(int x, int row)
     {
         if (x < 0 || row < 0 || x >= size || row >= size) return true;
+        if (number == 2) return mazeWalls[x, row];
         if (crossword.ContainsKey(new Vector2Int(x, row))) return false;
         if (x == 4 && row < 4 && row != 1) return true;
         if (number == 1)
         {
             if (row == 4 || row == 12) return x < 6 || x > 8;
             if (row == 8 || row == 16) return x < 11 || x > 13;
-        }
-        else
-        {
-            if (row == 4) return x < 6 || x > 8;
-            if (row == 10) return x < 16 || x > 18;
-            if (row == 16) return x < 9 || x > 11;
-            if (row == 22) return x < 22 || x > 24;
         }
         return false;
     }
@@ -85,6 +80,34 @@ public sealed class Mission6_StageDefinition_Jizhijin
             letters = new string(list);
         }
         if (letters.Length != pickups.Length) throw new InvalidOperationException("Pickup layout mismatch for level " + number + ": " + letters.Length);
+        if (number == 2) BuildMaze();
+    }
+    void BuildMaze()
+    {
+        mazeWalls = new bool[size, size];
+        for (int y = 0; y < size; y++) for (int x = 0; x < size; x++) mazeWalls[x, y] = true;
+        var rng = new System.Random(61106);
+        var stack = new Stack<Vector2Int>(); var first = new Vector2Int(5, 1);
+        mazeWalls[first.x, first.y] = false; stack.Push(first);
+        var directions = new[] { Vector2Int.up * 2, Vector2Int.right * 2, Vector2Int.down * 2, Vector2Int.left * 2 };
+        while (stack.Count > 0)
+        {
+            var p = stack.Peek();
+            var options = directions.Select(v => p + v).Where(v => v.x >= 1 && v.y >= 1 && v.x <= size - 3 && v.y <= size - 3 && !(v.x < 5 && v.y < 5) && mazeWalls[v.x, v.y]).ToArray();
+            if (options.Length == 0) { stack.Pop(); continue; }
+            var n = options[rng.Next(options.Length)]; var middle = (p + n) / 2;
+            mazeWalls[n.x, n.y] = mazeWalls[middle.x, middle.y] = false; stack.Push(n);
+        }
+        // A few loops give alternate escape routes while leaving branching dead ends.
+        var loopCandidates = new List<Vector2Int>();
+        for (int y = 5; y <= 25; y++) for (int x = 5; x <= 25; x++)
+            if (mazeWalls[x, y] && ((x % 2 == 0 && y % 2 == 1 && !mazeWalls[x - 1, y] && !mazeWalls[x + 1, y]) || (x % 2 == 1 && y % 2 == 0 && !mazeWalls[x, y - 1] && !mazeWalls[x, y + 1]))) loopCandidates.Add(new Vector2Int(x, y));
+        for (int i = 0; i < 8 && loopCandidates.Count > 0; i++) { int j = rng.Next(loopCandidates.Count); var p = loopCandidates[j]; mazeWalls[p.x, p.y] = false; loopCandidates.RemoveAt(j); }
+        for (int y = 0; y < 4; y++) for (int x = 0; x < 4; x++) mazeWalls[x, y] = false;
+        mazeWalls[4, 1] = false;
+        foreach (var p in crossword.Keys) mazeWalls[p.x, p.y] = false;
+        for (int y = 11; y <= 13; y++) for (int x = 22; x <= 26; x++) mazeWalls[x, y] = false;
+        mazeWalls[26, 25] = mazeWalls[25, 26] = mazeWalls[26, 26] = false;
     }
     static Mission6_WordClue_Jizhijin W(string word, string mask, int x, int row, bool down, string hint) => new Mission6_WordClue_Jizhijin(word, mask, x, row, 0, down, hint);
     public static readonly Mission6_StageDefinition_Jizhijin First = Build(false);
@@ -108,9 +131,9 @@ public sealed class Mission6_StageDefinition_Jizhijin
             W("HER", "_ER", 6, 12, false, "Belonging to a woman"), W("HE", "_E", 6, 12, true, "A male person"),
             W("KEY", "_EY", 7, 13, false, "Opens a lock"), W("FEW", "_EW", 12, 15, true, "A small number")
         };
-        d.pickups = second ? new[] { new Vector2Int(8,2),new Vector2Int(16,3),new Vector2Int(25,6),new Vector2Int(4,7),new Vector2Int(12,8),new Vector2Int(19,9),new Vector2Int(23,12),new Vector2Int(15,13),new Vector2Int(6,14),new Vector2Int(3,17),new Vector2Int(11,18),new Vector2Int(20,19),new Vector2Int(25,20),new Vector2Int(18,23),new Vector2Int(23,25),new Vector2Int(6,26),new Vector2Int(16,26),new Vector2Int(25,26) }
+        d.pickups = second ? new[] { new Vector2Int(9,3),new Vector2Int(17,3),new Vector2Int(25,7),new Vector2Int(3,7),new Vector2Int(13,9),new Vector2Int(19,9),new Vector2Int(23,13),new Vector2Int(15,13),new Vector2Int(3,15),new Vector2Int(3,17),new Vector2Int(11,17),new Vector2Int(21,19),new Vector2Int(25,21),new Vector2Int(19,23),new Vector2Int(23,25),new Vector2Int(5,25),new Vector2Int(17,25),new Vector2Int(25,25) }
             : new[] { new Vector2Int(9,2),new Vector2Int(13,3),new Vector2Int(18,6),new Vector2Int(12,9),new Vector2Int(8,10),new Vector2Int(4,14),new Vector2Int(14,15),new Vector2Int(9,18),new Vector2Int(17,18) };
-        d.letters = "KARFEOHUV"; d.enemies = second ? new[] { new Vector2Int(18,7), new Vector2Int(20,13) } : Array.Empty<Vector2Int>();
+        d.letters = "KARFEOHUV"; d.enemies = second ? new[] { new Vector2Int(19,7), new Vector2Int(21,13) } : Array.Empty<Vector2Int>();
         d.Prepare(); return d;
     }
 }

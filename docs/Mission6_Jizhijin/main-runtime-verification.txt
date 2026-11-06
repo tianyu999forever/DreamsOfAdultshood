@@ -6,6 +6,10 @@ PASS: main menu has a button bound to the serialized Mission6 entry
 PASS: the actual MISSION 6 button is the Mission6 entry
 PASS: main menu selects the updated Mission6 scene
 PASS: entering Mission6 resets time and player controls
+PASS: first PLAN allows direct mouse clicking while WASD stays active
+PASS: TAB can switch the first PLAN to normal mouse look
+PASS: TAB returns to a clickable cursor without disabling PLAN movement
+PASS: 2 shortcut directly enters level two from the released cursor state
 PASS: main scripts do not override Mission6 answer pause
 PASS: main scripts do not block return to maze
 PASS: Mission6 NEXT MISSION follows main build order to Mission1

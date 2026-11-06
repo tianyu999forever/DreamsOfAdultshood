@@ -1,6 +1,6 @@
-PASS: Windows development player launches the supplied main startup scene.
-PASS: Clicking the visible MISSION 6 button opens the updated 20x20 crossword PLAN room.
-PASS: The actual player shows LEVEL 1, 180s, PLAN 30s and the synchronized map.
-PASS: Waiting in PLAN for 30 seconds opens the expected failure panel.
-PASS: Clicking RETRY LEVEL reloads the current Mission6 scene with a fresh PLAN timer.
-NOTE: Full two-level progression was tested in Unity Play mode; see campaign-verification.txt.
+PASS: Windows development build launches the latest main startup menu.
+PASS: Clicking MISSION 6 opens the updated first-level PLAN room.
+PASS: The first PLAN exposes a directly clickable ENTER LEVEL 2 button without requiring keyboard input.
+PASS: Clicking ENTER LEVEL 2 with zero letters and zero answers opens the second-level PLAN room.
+PASS: The second-level map displays the new 28x28 branching maze and its own 300-second timer.
+NOTE: Full crossword, enemy and two real-time night cycles were verified in Unity Play mode; see campaign-verification.txt.

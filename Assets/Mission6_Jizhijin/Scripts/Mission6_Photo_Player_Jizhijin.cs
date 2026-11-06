@@ -23,7 +23,7 @@ public class Mission6_Photo_Player_Jizhijin : MonoBehaviour
         if (Keyboard.current != null && Keyboard.current.zKey.wasPressedThisFrame) TryUsePhoto();
         if (!IsVisible) return;
         if (!CanUse() || Time.unscaledTime >= expiresAt) { Close(); return; }
-        countdownText.text = "MAP PHOTO / " + Mathf.CeilToInt(expiresAt - Time.unscaledTime) + "s";
+        countdownText.text = "MAP PHOTO / " + Mathf.CeilToInt(expiresAt - Time.unscaledTime) + "s" + (level.stageNumber == 2 ? "   |   " + level.campaign.night.Status : "");
     }
     public bool TryUsePhoto()
     {

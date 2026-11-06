@@ -12,6 +12,9 @@ public class Mission6_Campaign_Jizhijin : MonoBehaviour
     public Moving moving; public MouseLook mouseLook; public HeadBob headBob; public PocketWatch watch;
     public Mission6_Letters_GameManager_Jizhijin inventory;
     public Mission6_Photo_Player_Jizhijin photo;
+    public Mission6_NightCycle_Jizhijin night;
+    public GameObject enterSecondButton;
+    public bool FirstSkipped { get; private set; }
     public Mission6_Spelling_ExitPanel_Jizhijin[] puzzles;
     public GameObject bagPanel, photoHint, deathPanel, finishPanel;
     public TMP_Text objective, timer, stageResult, deathReason, finishText;
@@ -32,6 +35,7 @@ public class Mission6_Campaign_Jizhijin : MonoBehaviour
     NavMeshDataInstance navigationInstance;
     Vector3 gateClosed;
     bool watchVisible;
+    bool entryCursor;
     static int restartAt;
     static Mission6_Score_Jizhijin checkpointScore;
     void Awake() { if (navigation != null) navigationInstance = NavMesh.AddNavMeshData(navigation); }
@@ -40,7 +44,8 @@ public class Mission6_Campaign_Jizhijin : MonoBehaviour
         Time.timeScale = 1; RenderSettings.fog = false;
         watch.enabled = false; gateClosed = firstGate.localPosition;
         int initial = restartAt; restartAt = 0;
-        if (initial == 2) { FirstScore = checkpointScore; GateOpen = true; gateCollider.enabled = false; firstGate.localPosition = gateClosed + Vector3.up * 4.5f; }
+        GateOpen = true; gateCollider.enabled = false; firstGate.localPosition = gateClosed + Vector3.up * 4.5f;
+        if (initial == 2) { FirstScore = checkpointScore; FirstSkipped = !FirstScore.passed; }
         StartLevel(initial == 2 ? 2 : 1, true);
     }
     public void StartLevel(int number, bool reposition)
@@ -49,10 +54,12 @@ public class Mission6_Campaign_Jizhijin : MonoBehaviour
         Elapsed = 0; PlanLeft = 30; PuzzleOpen = false;
         foreach (var p in puzzles) p.gameObject.SetActive(false);
         foreach (var l in levels) { l.planPanel.SetActive(l == CurrentLevel); l.photoPanel.SetActive(false); }
-        inventory.Clear(); photo.SetLevel(CurrentLevel);
+        inventory.Clear(); photo.SetLevel(CurrentLevel); night.ResetCycle();
+        enterSecondButton.SetActive(number == 1);
         bagPanel.SetActive(false); photoHint.SetActive(false); deathPanel.SetActive(false); finishPanel.SetActive(false);
         stageResult.text = "";
-        SetPlayerControl(true);
+        entryCursor = number == 1; SetPlayerControl(true);
+        if (entryCursor) ApplyEntryCursor();
         if (reposition)
         {
             var rb = moving.GetComponent<Rigidbody>(); rb.position = CurrentLevel.Data.Center(1, 1, 1.4f); rb.rotation = Quaternion.identity; rb.linearVelocity = Vector3.zero;
@@ -61,19 +68,32 @@ public class Mission6_Campaign_Jizhijin : MonoBehaviour
         watchVisible = false; if (watch.watchVisuals != null) watch.watchVisuals.SetActive(false);
         RefreshHud();
     }
-    public void EnterSecondLevel()
+    public void EnterSecondLevel() { EnterSecond(false); }
+    public void GoToSecondLevel() { EnterSecond(true); }
+    bool EnterSecond(bool reposition)
     {
-        if (!GateOpen || CurrentLevel != levels[0] || Phase != Mission6_Phase_Jizhijin.Transition) return;
-        checkpointScore = FirstScore; StartLevel(2, false);
+        if (CurrentLevel != levels[0] || Phase == Mission6_Phase_Jizhijin.Failed || Phase == Mission6_Phase_Jizhijin.Finished) return false;
+        var p = puzzles[0];
+        if (PuzzleOpen) p.CheckAnswer();
+        FirstScore = Mission6_Score_Jizhijin.Calculate(1, p.CorrectWords, levels[0].Data.words.Length, levels[0].Data.minimumWords, Elapsed, levels[0].Data.timeLimit);
+        FirstSkipped = !FirstScore.passed;
+        if (FirstSkipped) { var score = FirstScore; score.points = 0; score.rank = "SKIPPED"; FirstScore = score; }
+        checkpointScore = FirstScore; Time.timeScale = 1; StartLevel(2, reposition); return true;
     }
     public void BeginExploration()
     {
         if (Phase != Mission6_Phase_Jizhijin.Planning) return;
+        entryCursor = false; SetPlayerControl(true);
         Phase = Mission6_Phase_Jizhijin.Exploring; CurrentLevel.planPanel.SetActive(false);
         bagPanel.SetActive(true); photoHint.SetActive(true); RefreshHud();
     }
     void Update()
     {
+        if (CurrentLevel == levels[0] && (Phase == Mission6_Phase_Jizhijin.Planning || Phase == Mission6_Phase_Jizhijin.Exploring) && !PuzzleOpen && Keyboard.current != null)
+        {
+            if (Keyboard.current.digit2Key.wasPressedThisFrame) { GoToSecondLevel(); return; }
+            if (Keyboard.current.tabKey.wasPressedThisFrame) { entryCursor = !entryCursor; ApplyEntryCursor(); }
+        }
         if (watch != null && Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame) watchVisible = !watchVisible;
         if (watch != null)
         {
@@ -101,11 +121,11 @@ public class Mission6_Campaign_Jizhijin : MonoBehaviour
         if (CurrentLevel == null) return;
         var d = CurrentLevel.Data;
         timer.text = "LEVEL " + d.number + "   " + Mathf.Max(0, d.timeLimit - Elapsed).ToString("0") + "s";
-        foreach (var p in puzzles) if (p.gameObject.activeSelf && p.timeText != null) p.timeText.text = "TIME LEFT " + Mathf.Max(0, d.timeLimit - Elapsed).ToString("0") + "s   |   ELAPSED " + Elapsed.ToString("0.0") + "s   |   SCROLL LETTER LIST FOR MORE TILES";
+        foreach (var p in puzzles) if (p.gameObject.activeSelf && p.timeText != null) p.timeText.text = "TIME LEFT " + Mathf.Max(0, d.timeLimit - Elapsed).ToString("0") + "s   |   ELAPSED " + Elapsed.ToString("0.0") + "s   |   " + (d.number == 2 ? night.Status + " (PAUSED)" : "SCROLL LETTER LIST FOR MORE TILES");
         if (watch.timerText != null) watch.timerText.text = Mathf.FloorToInt(Mathf.Max(0, d.timeLimit - Elapsed) / 60).ToString("00") + ":" + Mathf.CeilToInt(Mathf.Max(0, d.timeLimit - Elapsed) % 60).ToString("00");
         objective.text = Phase == Mission6_Phase_Jizhijin.Planning ? "LEVEL " + d.number + "   PLAN " + Mathf.CeilToInt(PlanLeft) + "s   /   MOVE AND LEAVE EARLY" :
             Phase == Mission6_Phase_Jizhijin.Transition ? "GATE OPEN   /   WALK THROUGH TO LEVEL 2" :
-            "LEVEL " + d.number + "   COMPLETE AT LEAST " + d.minimumWords + " / " + d.words.Length + " WORDS" + (d.number == 2 ? "   /   AVOID THE SENTINELS" : "");
+            "LEVEL " + d.number + (d.number == 1 ? "   OPTIONAL PUZZLE / ENTER LEVEL 2 ANYTIME   " : "   COMPLETE AT LEAST ") + d.minimumWords + " / " + d.words.Length + " WORDS" + (d.number == 2 ? "   /   AVOID THE SENTINELS" : "");
     }
     public void OpenPuzzle(Mission6_Grid_Level_Jizhijin level)
     {
@@ -118,22 +138,17 @@ public class Mission6_Campaign_Jizhijin : MonoBehaviour
     {
         if (Phase != Mission6_Phase_Jizhijin.Exploring) return;
         foreach (var p in puzzles) p.gameObject.SetActive(false);
-        PuzzleOpen = false; Time.timeScale = 1; SetPlayerControl(true); bagPanel.SetActive(true); photoHint.SetActive(true);
+        PuzzleOpen = false; entryCursor = false; Time.timeScale = 1; SetPlayerControl(true); bagPanel.SetActive(true); photoHint.SetActive(true);
     }
     public bool CompleteCurrentLevel()
     {
         if (Phase != Mission6_Phase_Jizhijin.Exploring || !PuzzleOpen) return false;
-        var d = CurrentLevel.Data; var p = puzzles[d.number - 1]; p.CheckAnswer();
+        var d = CurrentLevel.Data;
+        if (d.number == 1) return EnterSecond(true);
+        var p = puzzles[d.number - 1]; p.CheckAnswer();
         var score = Mission6_Score_Jizhijin.Calculate(d.number, p.CorrectWords, d.words.Length, d.minimumWords, Elapsed, d.timeLimit);
-        if (!score.passed) { p.resultText.text = p.CorrectWords + " / " + d.words.Length + " correct. Need at least " + d.minimumWords + " to open the gate."; return false; }
+        if (!score.passed) { p.resultText.text = p.CorrectWords + " / " + d.words.Length + " correct. Need at least " + d.minimumWords + " to finish level 2."; return false; }
         p.gameObject.SetActive(false); PuzzleOpen = false; photo.Close(); Time.timeScale = 1;
-        if (d.number == 1)
-        {
-            FirstScore = score; checkpointScore = score; GateOpen = true; gateCollider.enabled = false;
-            Phase = Mission6_Phase_Jizhijin.Transition; stageResult.text = score.Summary;
-            bagPanel.SetActive(false); photoHint.SetActive(false); SetPlayerControl(true);
-        }
-        else
         {
             SecondScore = score; Phase = Mission6_Phase_Jizhijin.Finished;
             SetPlayerControl(false); finishPanel.SetActive(true);
@@ -147,27 +162,32 @@ public class Mission6_Campaign_Jizhijin : MonoBehaviour
     public void Fail(string reason)
     {
         if (Phase == Mission6_Phase_Jizhijin.Failed || Phase == Mission6_Phase_Jizhijin.Finished) return;
-        Phase = Mission6_Phase_Jizhijin.Failed; PuzzleOpen = false; photo.Close();
+        Phase = Mission6_Phase_Jizhijin.Failed; PuzzleOpen = false; photo.Close(); enterSecondButton.SetActive(false);
         foreach (var p in puzzles) p.gameObject.SetActive(false);
         deathPanel.SetActive(true); deathReason.text = reason; SetPlayerControl(false); Time.timeScale = 0;
     }
     public void Replay()
     {
         restartAt = CurrentLevel != null && CurrentLevel.stageNumber == 2 && Phase != Mission6_Phase_Jizhijin.Finished ? 2 : 1;
-        checkpointScore = FirstScore; Time.timeScale = 1; SceneManager.LoadScene(SceneManager.GetActiveScene().path);
+        checkpointScore = FirstScore; night.RestoreDay(); Time.timeScale = 1; SceneManager.LoadScene(SceneManager.GetActiveScene().path);
     }
     public void NextMission()
     {
         int index = SceneManager.GetActiveScene().buildIndex + 1;
         string path = string.IsNullOrWhiteSpace(nextSceneName) ? (index < SceneManager.sceneCountInBuildSettings ? SceneUtility.GetScenePathByBuildIndex(index) : "") : nextSceneName.Trim();
         if (string.IsNullOrEmpty(path) || !Application.CanStreamedLevelBeLoaded(path)) return;
-        restartAt = 0; Time.timeScale = 1; SceneManager.LoadScene(path);
+        restartAt = 0; night.RestoreDay(); Time.timeScale = 1; SceneManager.LoadScene(path);
     }
     public void SetPlayerControl(bool enabled)
     {
         moving.enabled = mouseLook.enabled = headBob.enabled = enabled;
         if (!enabled) moving.GetComponent<Rigidbody>().linearVelocity = Vector3.zero;
         Cursor.lockState = enabled ? CursorLockMode.Locked : CursorLockMode.None; Cursor.visible = !enabled;
+    }
+    void ApplyEntryCursor()
+    {
+        SetPlayerControl(!entryCursor);
+        if (entryCursor && Phase == Mission6_Phase_Jizhijin.Planning) moving.enabled = headBob.enabled = true;
     }
     void OnDestroy() { if (navigationInstance.valid) navigationInstance.Remove(); }
 }

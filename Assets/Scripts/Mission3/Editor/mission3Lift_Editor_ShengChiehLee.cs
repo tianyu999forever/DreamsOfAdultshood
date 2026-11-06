@@ -43,10 +43,10 @@ public static class mission3Lift_Editor_ShengChiehLee
 
     public static GameObject Create(Transform parent)
     {
-        brass = AssetDatabase.LoadAssetAtPath<Material>("Assets/Mission3/mission3_Brass.mat");
-        linen = AssetDatabase.LoadAssetAtPath<Material>("Assets/Mission3/mission3_Linen.mat");
-        walnut = AssetDatabase.LoadAssetAtPath<Material>("Assets/Mission3/mission3_Walnut.mat");
-        ink = AssetDatabase.LoadAssetAtPath<Material>("Assets/Mission3/mission3_Ink.mat");
+        brass = AssetDatabase.LoadAssetAtPath<Material>(mission3Paths_Editor_ShengChiehLee.Material("mission3_Brass"));
+        linen = AssetDatabase.LoadAssetAtPath<Material>(mission3Paths_Editor_ShengChiehLee.Material("mission3_Linen"));
+        walnut = AssetDatabase.LoadAssetAtPath<Material>(mission3Paths_Editor_ShengChiehLee.Material("mission3_Walnut"));
+        ink = AssetDatabase.LoadAssetAtPath<Material>(mission3Paths_Editor_ShengChiehLee.Material("mission3_Ink"));
         if (brass == null || linen == null || walnut == null || ink == null) throw new Exception("Missing Mission3 lift materials.");
         var root = new GameObject("Exit lift"); root.transform.SetParent(parent, false);
         root.transform.position = new Vector3(15, 0, -3.7f);
@@ -78,8 +78,8 @@ public static class mission3Lift_Editor_ShengChiehLee
         Box(t, "Floor indicator", new Vector3(0, 3.34f, -.1f), new Vector3(1.5f, .38f, .12f), ink);
         Label(t, "Lift floor number", "Elevator / EXIT", new Vector3(0, 3.34f, -.17f), 1.6f);
         var checkout = Box(t, "Lift checkout panel", new Vector3(0, 1.25f, 1.73f), new Vector3(.85f, .6f, .08f), ink);
-        Action(checkout, mission3Interact_Prop_ShengChiehLee.Kind.Checkout, "Checkout / return belongings");
-        Label(t, "Lift checkout text", "CHECKOUT\nLOST & FOUND", new Vector3(0, 1.25f, 1.67f), 1.35f, .8f);
+        UnityEngine.Object.DestroyImmediate(checkout.GetComponent<Collider>());
+        Label(t, "Lift checkout text", "RETURN ITEMS AT\nLOBBY DESK FIRST", new Vector3(0, 1.25f, 1.67f), 1.1f, .8f);
         var lightGo = new GameObject("Cabin light"); lightGo.transform.SetParent(t, false);
         lightGo.transform.localPosition = new Vector3(0, 2.7f, .9f);
         var light = lightGo.AddComponent<Light>(); light.type = LightType.Point;
@@ -107,7 +107,7 @@ public static class mission3Lift_Editor_ShengChiehLee
             if (action.kind == mission3Interact_Prop_ShengChiehLee.Kind.Checkout) checkout++;
             if (action.kind == mission3Interact_Prop_ShengChiehLee.Kind.LiftDoors) buttons++;
         }
-        if (checkout != 1 || buttons != 3) throw new Exception("Unexpected lift interactions.");
+        if (checkout != 0 || buttons != 3) throw new Exception("Unexpected lift interactions.");
         float gap = 2 * lift.travel;
         if (gap < .9f) throw new Exception("Lift doorway is too narrow for the player.");
     }

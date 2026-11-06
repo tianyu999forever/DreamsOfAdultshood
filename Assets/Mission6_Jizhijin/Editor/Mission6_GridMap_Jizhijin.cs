@@ -49,15 +49,15 @@ public static class Mission6_GridMap_Jizhijin
     }
     public static Color TerrainColor(Mission6_StageDefinition_Jizhijin d,int x,int row)
     { if(d.IsWall(x,row))return WallColor;if(d.Height(x,row)>0)return RaisedColor;if(d.Ramp(x,row)!=0)return RampColor;return FloorColor; }
-    public static Texture2D Create(Mission6_StageDefinition_Jizhijin d)
+    public static Texture2D Create(Mission6_StageDefinition_Jizhijin d,bool hideLetters=false)
     {
         int dim=Margin*2+d.size*Cell;var texture=new Texture2D(dim,dim,TextureFormat.RGB24,false);
         Rect(texture,0,0,dim,dim,new Color32(245,247,240,255));
         for(int row=0;row<d.size;row++)for(int x=0;x<d.size;x++)
         {int px=Margin+x*Cell,py=Margin+row*Cell;Rect(texture,px,py,Cell,Cell,TerrainColor(d,x,row));Rect(texture,px,py,1,Cell,new Color32(160,177,170,255));Rect(texture,px,py,Cell,1,new Color32(160,177,170,255));}
         foreach(var pair in d.crossword)
-        {int px=Margin+pair.Key.x*Cell,py=Margin+pair.Key.y*Cell;var c=pair.Value;Rect(texture,px+1,py+1,Cell-1,Cell-1,WallColor);Rect(texture,px+3,py+3,Cell-5,Cell-5,Color.white);Text(texture,c.missing?"_":c.answer.ToString(),px+12,py+5,4,c.missing?new Color32(198,81,25,255):WallColor);if(c.number>0)Text(texture,c.number.ToString(),px+4,py+31,1,WallColor);}
-        for(int i=0;i<d.pickups.Length;i++)
+        {int px=Margin+pair.Key.x*Cell,py=Margin+pair.Key.y*Cell;var c=pair.Value;Rect(texture,px+1,py+1,Cell-1,Cell-1,WallColor);Rect(texture,px+3,py+3,Cell-5,Cell-5,Color.white);if(!hideLetters)Text(texture,c.missing?"_":c.answer.ToString(),px+12,py+5,4,c.missing?new Color32(198,81,25,255):WallColor);if(c.number>0)Text(texture,c.number.ToString(),px+4,py+31,1,WallColor);}
+        if(!hideLetters)for(int i=0;i<d.pickups.Length;i++)
         {var c=d.pickups[i];int px=Margin+c.x*Cell,py=Margin+c.y*Cell;Rect(texture,px+3,py+3,38,38,WallColor);Rect(texture,px+5,py+5,34,34,new Color32(249,211,108,255));Text(texture,d.letters[i].ToString(),px+12,py+8,4,WallColor);}
         foreach(var c in d.enemies)
         {int px=Margin+c.x*Cell,py=Margin+c.y*Cell;Rect(texture,px+3,py+3,38,38,new Color32(180,45,45,255));Text(texture,"X",px+10,py+5,5,Color.white);}
@@ -65,7 +65,7 @@ public static class Mission6_GridMap_Jizhijin
         {int px=Margin+c.x*Cell,py=Margin+c.y*Cell;Rect(texture,px+2,py+2,41,41,new Color32(90,171,128,255));Text(texture,c==d.Start?"S":"E",px+10,py+5,5,Color.white);}
         for(int i=0;i<d.size;i++){Text(texture,(i+1).ToString(),Margin+i*Cell+9,34,2,WallColor);Text(texture,(i+1).ToString(),26,Margin+i*Cell+14,2,WallColor);}
         Text(texture,d.size+" X "+d.size,dim/2-80,dim-36,3,WallColor);texture.Apply();
-        string path="Assets/Mission6_Jizhijin/Materials/"+(d.number==1?"Mission6_GridMap_Jizhijin.png":"Mission6_GridMap_Level2_Jizhijin.png");
+        string path="Assets/Mission6_Jizhijin/Materials/"+(d.number==1?"Mission6_GridMap_Jizhijin.png":(hideLetters?"Mission6_GridMap_Level2_Night_Jizhijin.png":"Mission6_GridMap_Level2_Jizhijin.png"));
         File.WriteAllBytes(path,texture.EncodeToPNG());Object.DestroyImmediate(texture);AssetDatabase.ImportAsset(path,ImportAssetOptions.ForceSynchronousImport);
         var importer=(TextureImporter)AssetImporter.GetAtPath(path);importer.textureCompression=TextureImporterCompression.Uncompressed;importer.mipmapEnabled=true;importer.isReadable=true;importer.npotScale=TextureImporterNPOTScale.None;importer.filterMode=FilterMode.Trilinear;importer.SaveAndReimport();return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
     }

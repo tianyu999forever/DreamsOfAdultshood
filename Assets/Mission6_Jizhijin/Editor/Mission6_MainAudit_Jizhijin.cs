@@ -18,6 +18,7 @@ public static class Mission6_MainAudit_Jizhijin
     static int step, sceneIndex;
     static string[] otherScenes;
     static bool oldBackground;
+    static UnityEngine.InputSystem.Keyboard keyboard;
     static Mission6_MainAudit_Jizhijin()
     {
         EditorApplication.update += Tick;
@@ -83,7 +84,7 @@ public static class Mission6_MainAudit_Jizhijin
     static void Finish()
     {
         checks.Add(errors.Count == 0 ? "PASS: no runtime errors across the main integration smoke test" : "FAIL: runtime errors captured");
-        Save(); Time.timeScale = 1; Application.runInBackground = oldBackground; step = 100;
+        Save(); if(keyboard!=null)UnityEngine.InputSystem.InputSystem.RemoveDevice(keyboard); Time.timeScale = 1; Application.runInBackground = oldBackground; step = 100;
         EditorApplication.ExitPlaymode();
     }
     public static void BuildWindows()
@@ -146,7 +147,22 @@ public static class Mission6_MainAudit_Jizhijin
                     var c = UnityEngine.Object.FindFirstObjectByType<Mission6_Campaign_Jizhijin>();
                     Check(SceneManager.GetActiveScene().name == "Mission6_Jizhijin" && c != null, "main menu selects the updated Mission6 scene");
                     Check(c.Phase == Mission6_Phase_Jizhijin.Planning && c.moving.enabled && Time.timeScale == 1, "entering Mission6 resets time and player controls");
-                    c.BeginExploration(); c.OpenPuzzle(c.CurrentLevel); Advance(2, .2); break;
+                    Check(Cursor.lockState==CursorLockMode.None&&Cursor.visible&&c.moving.enabled,"first PLAN allows direct mouse clicking while WASD stays active");
+                    keyboard=UnityEngine.InputSystem.InputSystem.AddDevice<UnityEngine.InputSystem.Keyboard>();
+                    UnityEngine.InputSystem.InputSystem.QueueStateEvent(keyboard,new UnityEngine.InputSystem.LowLevel.KeyboardState(UnityEngine.InputSystem.Key.Tab));Advance(11,.2);break;
+                case 11:
+                    var entry=UnityEngine.Object.FindFirstObjectByType<Mission6_Campaign_Jizhijin>();
+                    Check(entry.moving.enabled&&entry.mouseLook.enabled&&Cursor.lockState==CursorLockMode.Locked,"TAB can switch the first PLAN to normal mouse look");
+                    UnityEngine.InputSystem.InputSystem.QueueStateEvent(keyboard,new UnityEngine.InputSystem.LowLevel.KeyboardState());Advance(111,.1);break;
+                case 111:
+                    UnityEngine.InputSystem.InputSystem.QueueStateEvent(keyboard,new UnityEngine.InputSystem.LowLevel.KeyboardState(UnityEngine.InputSystem.Key.Tab));Advance(112,.1);break;
+                case 112:
+                    var free=UnityEngine.Object.FindFirstObjectByType<Mission6_Campaign_Jizhijin>();Check(free.moving.enabled&&!free.mouseLook.enabled&&Cursor.lockState==CursorLockMode.None,"TAB returns to a clickable cursor without disabling PLAN movement");
+                    UnityEngine.InputSystem.InputSystem.QueueStateEvent(keyboard,new UnityEngine.InputSystem.LowLevel.KeyboardState(UnityEngine.InputSystem.Key.Digit2));Advance(12,.2);break;
+                case 12:
+                    var second=UnityEngine.Object.FindFirstObjectByType<Mission6_Campaign_Jizhijin>();
+                    Check(second.CurrentLevel.stageNumber==2&&second.FirstSkipped&&second.moving.enabled,"2 shortcut directly enters level two from the released cursor state");
+                    UnityEngine.InputSystem.InputSystem.QueueStateEvent(keyboard,new UnityEngine.InputSystem.LowLevel.KeyboardState());second.BeginExploration();second.OpenPuzzle(second.CurrentLevel);Advance(2,.2);break;
                 case 2:
                     var campaign = UnityEngine.Object.FindFirstObjectByType<Mission6_Campaign_Jizhijin>();
                     Check(campaign.PuzzleOpen && Time.timeScale == 0 && !campaign.moving.enabled, "main scripts do not override Mission6 answer pause");
