@@ -17,6 +17,7 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
     public mission3Canvas_UI_ShengChiehLee canvasUI;
     public mission3Guide_UI_ShengChiehLee guide;
     public bool demoMode;
+    public mission3Monster_Manager_ShengChiehLee nightPatrol;
     public Texture2D floorMap;
     public GameObject serviceDoor;
     public mission3Interact_Prop_ShengChiehLee returnDesk;
@@ -83,6 +84,7 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
         focus = null;
         if(guide!=null)guide.PageOpened(value);
         if(canvasUI!=null)canvasUI.Refresh();
+        if(nightPatrol!=null)nightPatrol.PageChanged();
     }
     void LateUpdate()
     {
@@ -94,7 +96,7 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
     }
     void Update()
     {
-        if(page==Page.Result)return;
+        if(page==Page.Result||(nightPatrol!=null&&nightPatrol.IsRecovering))return;
         var k = Keyboard.current; if (k == null) return;
         if (page == Page.Map && k.mKey.wasPressedThisFrame) { SetPage(Page.None); return; }
         if(k.tabKey.wasPressedThisFrame&&(page==Page.None||page==Page.Checkout||page==Page.Journal)) { if(page==Page.Journal)BackToHotel();else OpenJournal();return; }

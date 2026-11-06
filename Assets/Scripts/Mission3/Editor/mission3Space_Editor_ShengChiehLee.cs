@@ -57,8 +57,8 @@ public static class mission3Space_Editor_ShengChiehLee
         var items=props.GetComponentsInChildren<mission3Interact_Prop_ShengChiehLee>(true).Where(x=>x.kind==mission3Interact_Prop_ShengChiehLee.Kind.LostProperty).OrderBy(x=>x.index).ToArray();
         var displays=props.GetComponentsInChildren<Transform>(true).Where(x=>x.name.StartsWith("Lost property display")).ToList();
         // Each display sits against a room boundary, outside both the doorway and through route.
-        var positions=new[]{new Vector3(18,1.04f,-29.15f),new Vector3(57.85f,1.04f,-34.5f),new Vector3(2.15f,1.33f,-33.6f),new Vector3(36,1.04f,-48.85f),new Vector3(36,1.04f,-15.85f),new Vector3(18,1.04f,-48.85f)};
-        var yaw=new[]{0f,90f,-90f,180f,180f,180f};
+        var positions=new[]{new Vector3(18,1.04f,-29.15f),new Vector3(57,1.04f,-36.2f),new Vector3(2.15f,1.33f,-33.6f),new Vector3(36,1.04f,-48.85f),new Vector3(36,1.04f,-15.85f),new Vector3(18,1.04f,-48.85f)};
+        var yaw=new[]{0f,180f,-90f,180f,180f,180f};
         foreach(var item in items)
         {
             var shelf=displays.OrderBy(x=>(x.position-item.transform.position).sqrMagnitude).First();displays.Remove(shelf);
@@ -67,7 +67,28 @@ public static class mission3Space_Editor_ShengChiehLee
             item.transform.position=positions[i];item.transform.rotation=Quaternion.Euler(0,yaw[i],0);
             // Raycastable pickup volumes should never catch the player's capsule.
             var hit=item.GetComponent<BoxCollider>();hit.isTrigger=true;hit.size=new Vector3(.88f,.8f,.66f);
+            if(i==1)ConfigurePostcardHitBox(hit);
         }
+    }
+    public static void RelocatePostcard(Scene scene)
+    {
+        var props=Root(scene,"Mission3_PropsAndInteractions");
+        var item=props.GetComponentsInChildren<mission3Interact_Prop_ShengChiehLee>(true).Single(x=>x.kind==mission3Interact_Prop_ShengChiehLee.Kind.LostProperty&&x.index==1);
+        var display=props.GetComponentsInChildren<Transform>(true).Single(x=>x.name=="Lost property display / 02");
+        item.transform.position=props.TransformPoint(new Vector3(57,1.04f,-36.2f));item.transform.rotation=props.rotation*Quaternion.Euler(0,180,0);
+        display.position=props.TransformPoint(new Vector3(57,.5f,-36.2f));display.rotation=props.rotation*Quaternion.Euler(0,180,0);
+        ConfigurePostcardHitBox(item.GetComponent<BoxCollider>());Physics.SyncTransforms();
+    }
+    static void ConfigurePostcardHitBox(BoxCollider hit)
+    {
+        // Some demo edits moved every visible child without moving the interaction root.
+        // Keep the paper, its decorative pieces and its label centered on that root.
+        var paper=hit.transform.Find("Paper");
+        if(paper==null)throw new Exception("Coastal Postcard paper model is missing.");
+        var visualOffset=paper.localPosition;
+        foreach(var child in hit.transform.Cast<Transform>().ToArray())child.localPosition-=visualOffset;
+        // Include the visible name label, which players naturally aim at when pressing E.
+        hit.isTrigger=true;hit.center=new Vector3(0,.2f,0);hit.size=new Vector3(.98f,1,.92f);
     }
     static void SetY(Transform t,float y){var p=t.position;p.y=y;t.position=p;}
     static void SetHeight(Transform t,float y,float height){SetY(t,y);var s=t.localScale;s.y=height;t.localScale=s;}
