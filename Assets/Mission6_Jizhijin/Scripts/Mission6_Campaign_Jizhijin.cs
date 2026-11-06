@@ -62,7 +62,7 @@ public class Mission6_Campaign_Jizhijin : MonoBehaviour
         if (entryCursor) ApplyEntryCursor();
         if (reposition)
         {
-            var rb = moving.GetComponent<Rigidbody>(); rb.position = CurrentLevel.Data.Center(1, 1, 1.4f); rb.rotation = Quaternion.identity; rb.linearVelocity = Vector3.zero;
+            var rb = moving.GetComponent<Rigidbody>(); var start = CurrentLevel.Data.Start; rb.position = CurrentLevel.Data.Center(start.x, start.y, 1.4f); rb.rotation = Quaternion.identity; rb.linearVelocity = Vector3.zero;
             Camera.main.transform.localRotation = Quaternion.Euler(-8, 0, 0); Physics.SyncTransforms();
         }
         watchVisible = false; if (watch.watchVisuals != null) watch.watchVisuals.SetActive(false);

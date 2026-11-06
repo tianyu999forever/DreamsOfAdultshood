@@ -79,6 +79,25 @@ public static class Mission6_Verify_Jizhijin
             {c.enemies[0].Agent.Warp(d.Center(x+dir.x,y+dir.y));Pose(d.Center(x-dir.x,y-dir.y,1.4f));Physics.SyncTransforms();Check(!c.enemies[0].CanSeePlayer(),"a maze wall blocks enemy line of sight");return;}
         throw new Exception("No occlusion test wall found");
     }
+    static int MinimumTurns(Mission6_StageDefinition_Jizhijin d)
+    {
+        var distance=new int[d.size,d.size,4];var queue=new Queue<Vector3Int>();
+        for(int y=0;y<d.size;y++)for(int x=0;x<d.size;x++)for(int dir=0;dir<4;dir++)distance[x,y,dir]=int.MaxValue;
+        for(int dir=0;dir<4;dir++){distance[d.Start.x,d.Start.y,dir]=0;queue.Enqueue(new Vector3Int(d.Start.x,d.Start.y,dir));}
+        var directions=new[]{Vector2Int.up,Vector2Int.right,Vector2Int.down,Vector2Int.left};
+        while(queue.Count>0)
+        {
+            var p=queue.Dequeue();
+            for(int dir=0;dir<4;dir++)
+            {
+                var n=new Vector2Int(p.x,p.y)+directions[dir];if(d.IsWall(n.x,n.y))continue;
+                int turns=distance[p.x,p.y,p.z]+(p.z==dir?0:1);
+                if(turns>=distance[n.x,n.y,dir])continue;
+                distance[n.x,n.y,dir]=turns;queue.Enqueue(new Vector3Int(n.x,n.y,dir));
+            }
+        }
+        return Enumerable.Range(0,4).Min(dir=>distance[d.Exit.x,d.Exit.y,dir]);
+    }
     static void Layout(Mission6_Grid_Level_Jizhijin level)
     {
         var d=level.Data;Check(d.words.Length==(d.number==1?10:15)&&d.minimumWords==(d.number==1?7:11),"level "+d.number+" word total and 70 percent pass requirement");
@@ -97,9 +116,11 @@ public static class Mission6_Verify_Jizhijin
             int walls=0,deadEnds=0,junctions=0;
             foreach(var pos in Enumerable.Range(0,d.size).SelectMany(y=>Enumerable.Range(0,d.size).Select(x=>new Vector2Int(x,y))))
             {if(d.IsWall(pos.x,pos.y)){walls++;continue;}int degree=new[]{Vector2Int.up,Vector2Int.down,Vector2Int.left,Vector2Int.right}.Count(v=>!d.IsWall(pos.x+v.x,pos.y+v.y));if(degree==1)deadEnds++;if(degree>=3)junctions++;}
-            Check(walls>=80&&walls<140&&deadEnds<5,"second map stays open and memorable with limited walls and dead ends: "+walls+" / "+deadEnds);
-            var openings=new[]{new Vector2Int(6,4),new Vector2Int(7,4),new Vector2Int(8,4),new Vector2Int(16,10),new Vector2Int(17,10),new Vector2Int(18,10),new Vector2Int(9,16),new Vector2Int(10,16),new Vector2Int(11,16),new Vector2Int(22,22),new Vector2Int(23,22),new Vector2Int(24,22)};
-            Check(openings.All(p=>!d.IsWall(p.x,p.y)),"original broad-zone openings remain three cells wide");
+            Check(walls==175&&deadEnds<5,"approved model B retains its broad courts and limited walls: "+walls+" / "+deadEnds);
+            Check(MinimumTurns(d)==7,"every start-to-exit route requires at least seven turns, including crossword tiles");
+            Check(d.Start==new Vector2Int(3,3)&&d.Exit==new Vector2Int(3,24)&&d.Landmarks.Length==4,"model B places its start, exit and four court landmarks correctly");
+            foreach(var enemy in level.campaign.enemies)foreach(var patrol in enemy.patrolPoints)
+            {var path=new UnityEngine.AI.NavMeshPath();Check(UnityEngine.AI.NavMesh.CalculatePath(enemy.transform.position,patrol.position,UnityEngine.AI.NavMesh.AllAreas,path)&&path.status==UnityEngine.AI.NavMeshPathStatus.PathComplete,"model B enemy patrol reaches "+patrol.name);}
             foreach(var pos in d.pickups.Concat(new[]{d.Exit}))
             {var path=new UnityEngine.AI.NavMeshPath();Check(UnityEngine.AI.NavMesh.CalculatePath(d.Center(d.Start.x,d.Start.y),d.Center(pos.x,pos.y),UnityEngine.AI.NavMesh.AllAreas,path)&&path.status==UnityEngine.AI.NavMeshPathStatus.PathComplete,"baked maze navigation reaches "+pos);}
         }
@@ -149,9 +170,10 @@ public static class Mission6_Verify_Jizhijin
                 case 9:
                     int handle=SceneManager.GetActiveScene().handle;Check(c.CompleteCurrentLevel()&&c.FirstScore.correctWords==7&&!c.FirstSkipped&&c.CurrentLevel.stageNumber==2&&SceneManager.GetActiveScene().handle==handle,"optional first-level solve retains its grade and directly enters level two in the same scene");Advance(10,.2f);break;
                 case 10:
-                    Key();Check(c.CurrentLevel==c.levels[1]&&c.Phase==Mission6_Phase_Jizhijin.Planning,"second level starts its own PLAN after direct entry");Check(c.inventory.Letters.Count==0&&!c.photo.Used&&!c.HazardsActive,"level two resets the bag and photo and keeps PLAN safe");Pose(c.CurrentLevel.Data.Center(1,1,1.4f),0,-8);Advance(11);break;
+                    Key();Check(c.CurrentLevel==c.levels[1]&&c.Phase==Mission6_Phase_Jizhijin.Planning,"second level starts its own PLAN after direct entry");Check(c.inventory.Letters.Count==0&&!c.photo.Used&&!c.HazardsActive,"level two resets the bag and photo and keeps PLAN safe");var start=c.CurrentLevel.Data.Start;Pose(c.CurrentLevel.Data.Center(start.x,start.y,1.4f),0,-8);Advance(11);break;
                 case 11:Capture("campaign-04-level2-plan");Advance(110,.2f);break;
-                case 110:c.BeginExploration();c.mouseLook.enabled=c.headBob.enabled=false;position=c.enemies[0].transform.position;Advance(12,1);break;
+                case 110:Pose(c.CurrentLevel.Data.Center(3,5,1.4f));Key(UnityEngine.InputSystem.Key.W);Advance(111,.8f);break;
+                case 111:Key();Check(c.Phase==Mission6_Phase_Jizhijin.Exploring,"walking past model B PLAN board starts level two early");c.mouseLook.enabled=c.headBob.enabled=false;position=c.enemies[0].transform.position;Advance(12,1);break;
                 case 12:
                     Check(Vector3.Distance(position,c.enemies[0].transform.position)>.3f,"sentinel follows its patrol route when level two starts");Check(c.photo.TryUsePhoto(),"level two restores one photo use");Advance(13,.2f);break;
                 case 13:
@@ -193,7 +215,7 @@ public static class Mission6_Verify_Jizhijin
                 case 178:
                     Check(c.night.IsNight,"a second night recurs after another thirty-second day");c.night.ResetCycle();Check(!c.night.IsNight&&!RenderSettings.fog,"resetting the level cycle restores day");pickup=1;Advance(18,0);break;
                 case 18:
-                    if(pickup==c.CurrentLevel.Data.pickups.Length){Pose(c.CurrentLevel.Data.Center(26,26,1.4f));Advance(20);break;}
+                    if(pickup==c.CurrentLevel.Data.pickups.Length){var exit=c.CurrentLevel.Data.Exit;Pose(c.CurrentLevel.Data.Center(exit.x,exit.y,1.4f));Advance(20);break;}
                     var tile=c.CurrentLevel.GetComponentsInChildren<Mission6_LetterPickup_Collectible_Jizhijin>().Single(t=>t.name.EndsWith("_"+pickup)&&t.GetComponent<Collider>().enabled);Pose(tile.transform.position);Advance(19,.12f);break;
                 case 19:Check(c.inventory.Letters.Count==pickup+1,"physical level two pickup "+(pickup+1));pickup++;Advance(18,0);break;
                 case 20:

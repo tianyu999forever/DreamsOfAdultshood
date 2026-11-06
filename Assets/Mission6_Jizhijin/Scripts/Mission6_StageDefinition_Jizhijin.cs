@@ -28,8 +28,9 @@ public sealed class Mission6_StageDefinition_Jizhijin
     public Vector2Int[] blanks, pickups, enemies;
     public string letters;
     bool[,] mazeWalls;
-    public Vector2Int Start => new Vector2Int(1, 1);
-    public Vector2Int Exit => new Vector2Int(size - 2, size - 2);
+    public Vector2Int Start => number == 2 ? new Vector2Int(3, 3) : new Vector2Int(1, 1);
+    public Vector2Int Exit => number == 2 ? new Vector2Int(3, 24) : new Vector2Int(size - 2, size - 2);
+    public Vector2Int[] Landmarks => number == 2 ? new[] { new Vector2Int(11, 1), new Vector2Int(24, 10), new Vector2Int(24, 23), new Vector2Int(10, 24) } : Array.Empty<Vector2Int>();
     public Vector3 Center(int x, int row, float y = 0) => origin + new Vector3((x + .5f) * CellSize, y + Height(x, row), (row + .5f) * CellSize);
     public bool IsWall(int x, int row)
     {
@@ -47,7 +48,7 @@ public sealed class Mission6_StageDefinition_Jizhijin
     public float Height(int x, int row)
     {
         if (number == 1 && ((row >= 9 && row <= 11 && x >= 15 && x <= 17) || (row >= 13 && row <= 15 && x >= 2 && x <= 4))) return .36f;
-        if (number == 2 && row >= 11 && row <= 13 && x >= 23 && x <= 25) return .36f;
+        if (number == 2 && row >= 9 && row <= 11 && x >= 23 && x <= 25) return .36f;
         return 0;
     }
     public int Ramp(int x, int row)
@@ -57,7 +58,7 @@ public sealed class Mission6_StageDefinition_Jizhijin
             if (row >= 9 && row <= 11) { if (x == 14) return 1; if (x == 18) return -1; }
             if (row >= 13 && row <= 15) { if (x == 1) return 1; if (x == 5) return -1; }
         }
-        if (number == 2 && row >= 11 && row <= 13) { if (x == 22) return 1; if (x == 26) return -1; }
+        if (number == 2 && row >= 9 && row <= 11) { if (x == 22) return 1; if (x == 26) return -1; }
         return 0;
     }
     void Prepare()
@@ -85,22 +86,24 @@ public sealed class Mission6_StageDefinition_Jizhijin
     void BuildMaze()
     {
         mazeWalls = new bool[size, size];
-        // Keep the original four broad zones and their three-cell openings.
-        // One short divider per lower zone adds a small detour without a dense maze.
+        // Approved model B. Convert its top-down drawing rows to world grid rows.
+        // Offset openings join SW -> SE -> NE -> NW; crossword tiles never carve walls.
         for (int y = 0; y < size; y++) for (int x = 0; x < size; x++)
         {
-            bool original = (x == 4 && y < 4 && y != 1)
-                || (y == 4 && (x < 6 || x > 8))
-                || (y == 10 && (x < 16 || x > 18))
-                || (y == 16 && (x < 9 || x > 11))
-                || (y == 22 && (x < 22 || x > 24));
-            bool shortDivider = (x == 12 && y >= 1 && y <= 2)
-                || (x == 6 && y >= 6 && y <= 8)
-                || (x == 20 && y >= 11 && y <= 13)
-                || (x == 20 && y >= 18 && y <= 20);
-            mazeWalls[x, y] = original || shortDivider;
+            int drawingRow = size - 1 - y;
+            bool boundary = x == 0 || y == 0 || x == size - 1 || y == size - 1;
+            bool zones = (x == 14 && !(drawingRow >= 6 && drawingRow <= 9) && !(drawingRow >= 21 && drawingRow <= 24))
+                || (drawingRow == 14 && (x < 21 || x > 24));
+            bool dividers = (x == 7 && drawingRow >= 1 && drawingRow <= 9)
+                || (x == 7 && drawingRow == 13)
+                || (drawingRow == 20 && x >= 15 && x <= 26 && (x < 16 || x > 18))
+                || (x == 7 && drawingRow >= 18 && drawingRow <= 22)
+                || (x == 20 && drawingRow >= 3 && drawingRow <= 7);
+            mazeWalls[x, y] = boundary || zones || dividers;
         }
-        foreach (var p in crossword.Keys) mazeWalls[p.x, p.y] = false;
+        mazeWalls[0, 1] = false; // Existing physical connection from level one.
+        if (crossword.Keys.Concat(pickups).Concat(enemies).Concat(Landmarks).Concat(new[] { Start, Exit }).Any(p => IsWall(p.x, p.y)))
+            throw new InvalidOperationException("Model B content overlaps a wall");
     }
     static Mission6_WordClue_Jizhijin W(string word, string mask, int x, int row, bool down, string hint) => new Mission6_WordClue_Jizhijin(word, mask, x, row, 0, down, hint);
     public static readonly Mission6_StageDefinition_Jizhijin First = Build(false);
@@ -124,9 +127,10 @@ public sealed class Mission6_StageDefinition_Jizhijin
             W("HER", "_ER", 6, 12, false, "Belonging to a woman"), W("HE", "_E", 6, 12, true, "A male person"),
             W("KEY", "_EY", 7, 13, false, "Opens a lock"), W("FEW", "_EW", 12, 15, true, "A small number")
         };
-        d.pickups = second ? new[] { new Vector2Int(9,3),new Vector2Int(17,3),new Vector2Int(25,7),new Vector2Int(3,7),new Vector2Int(13,9),new Vector2Int(19,9),new Vector2Int(23,13),new Vector2Int(15,13),new Vector2Int(3,15),new Vector2Int(3,17),new Vector2Int(11,17),new Vector2Int(21,19),new Vector2Int(25,21),new Vector2Int(19,23),new Vector2Int(23,25),new Vector2Int(5,25),new Vector2Int(17,25),new Vector2Int(25,25) }
+        if (second) d.words = d.words.Select(w => new Mission6_WordClue_Jizhijin(w.word, w.mask, w.x - 3, w.row - 13, 0, w.down, w.hint)).ToArray();
+        d.pickups = second ? new[] { new Vector2Int(1,10),new Vector2Int(10,10),new Vector2Int(11,5),new Vector2Int(10,1),new Vector2Int(16,3),new Vector2Int(24,3),new Vector2Int(16,10),new Vector2Int(23,11),new Vector2Int(25,8),new Vector2Int(16,16),new Vector2Int(24,16),new Vector2Int(25,23),new Vector2Int(17,25),new Vector2Int(22,19),new Vector2Int(11,17),new Vector2Int(11,24),new Vector2Int(3,16),new Vector2Int(3,22) }
             : new[] { new Vector2Int(9,2),new Vector2Int(13,3),new Vector2Int(18,6),new Vector2Int(12,9),new Vector2Int(8,10),new Vector2Int(4,14),new Vector2Int(14,15),new Vector2Int(9,18),new Vector2Int(17,18) };
-        d.letters = "KARFEOHUV"; d.enemies = second ? new[] { new Vector2Int(19,7), new Vector2Int(21,13) } : Array.Empty<Vector2Int>();
+        d.letters = "KARFEOHUV"; d.enemies = second ? new[] { new Vector2Int(23,10), new Vector2Int(23,20) } : Array.Empty<Vector2Int>();
         d.Prepare(); return d;
     }
 }

@@ -19,27 +19,36 @@ PASS: level 2 has enough physical tiles for every missing letter
 PASS: every level 2 word requires at least one player answer
 PASS: level 2 map agrees with every terrain and crossword cell
 PASS: level 2 pickup count matches its map
-PASS: second map stays open and memorable with limited walls and dead ends: 108 / 0
-PASS: original broad-zone openings remain three cells wide
-PASS: baked maze navigation reaches (9, 3)
-PASS: baked maze navigation reaches (17, 3)
-PASS: baked maze navigation reaches (25, 7)
-PASS: baked maze navigation reaches (3, 7)
-PASS: baked maze navigation reaches (13, 9)
-PASS: baked maze navigation reaches (19, 9)
-PASS: baked maze navigation reaches (23, 13)
-PASS: baked maze navigation reaches (15, 13)
-PASS: baked maze navigation reaches (3, 15)
-PASS: baked maze navigation reaches (3, 17)
-PASS: baked maze navigation reaches (11, 17)
-PASS: baked maze navigation reaches (21, 19)
-PASS: baked maze navigation reaches (25, 21)
-PASS: baked maze navigation reaches (19, 23)
-PASS: baked maze navigation reaches (23, 25)
-PASS: baked maze navigation reaches (5, 25)
+PASS: approved model B retains its broad courts and limited walls: 175 / 1
+PASS: every start-to-exit route requires at least seven turns, including crossword tiles
+PASS: model B places its start, exit and four court landmarks correctly
+PASS: model B enemy patrol reaches Patrol_0_0
+PASS: model B enemy patrol reaches Patrol_0_1
+PASS: model B enemy patrol reaches Patrol_0_2
+PASS: model B enemy patrol reaches Patrol_0_3
+PASS: model B enemy patrol reaches Patrol_1_0
+PASS: model B enemy patrol reaches Patrol_1_1
+PASS: model B enemy patrol reaches Patrol_1_2
+PASS: model B enemy patrol reaches Patrol_1_3
+PASS: baked maze navigation reaches (1, 10)
+PASS: baked maze navigation reaches (10, 10)
+PASS: baked maze navigation reaches (11, 5)
+PASS: baked maze navigation reaches (10, 1)
+PASS: baked maze navigation reaches (16, 3)
+PASS: baked maze navigation reaches (24, 3)
+PASS: baked maze navigation reaches (16, 10)
+PASS: baked maze navigation reaches (23, 11)
+PASS: baked maze navigation reaches (25, 8)
+PASS: baked maze navigation reaches (16, 16)
+PASS: baked maze navigation reaches (24, 16)
+PASS: baked maze navigation reaches (25, 23)
 PASS: baked maze navigation reaches (17, 25)
-PASS: baked maze navigation reaches (25, 25)
-PASS: baked maze navigation reaches (26, 26)
+PASS: baked maze navigation reaches (22, 19)
+PASS: baked maze navigation reaches (11, 17)
+PASS: baked maze navigation reaches (11, 24)
+PASS: baked maze navigation reaches (3, 16)
+PASS: baked maze navigation reaches (3, 22)
+PASS: baked maze navigation reaches (3, 24)
 PASS: both sentinels are bound to the generated level two NavMesh
 PASS: S A B C thresholds combine time and word count
 PASS: pass boundaries are exactly 7 of 10 and 11 of 15
@@ -73,6 +82,7 @@ PASS: seven correct words pass with some blanks still empty
 PASS: optional first-level solve retains its grade and directly enters level two in the same scene
 PASS: second level starts its own PLAN after direct entry
 PASS: level two resets the bag and photo and keeps PLAN safe
+PASS: walking past model B PLAN board starts level two early
 PASS: sentinel follows its patrol route when level two starts
 PASS: level two restores one photo use
 PASS: sentinel sees an exposed player and starts chasing

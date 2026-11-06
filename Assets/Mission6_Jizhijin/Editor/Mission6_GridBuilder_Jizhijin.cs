@@ -76,15 +76,17 @@ public static class Mission6_GridBuilder_Jizhijin
             var map=Mission6_GridMap_Jizhijin.Create(data);
             var photo=MapPanel("Photo_Level"+n,canvas.transform,map,"LEVEL "+n+" MAP",out var photoTitle);photo.SetActive(false);stage.photoPanel=photo;stage.photoTitle=photoTitle;
             if(n==2){campaign.night.photoMap=photo.transform.Find("GridMapImage").GetComponent<RawImage>();campaign.night.dayMap=map;campaign.night.nightMap=Mission6_GridMap_Jizhijin.Create(data,true);}
-            var board=new GameObject("PLAN_Board_Level"+n,typeof(RectTransform),typeof(Canvas));board.GetComponent<Canvas>().renderMode=RenderMode.WorldSpace;board.transform.SetParent(stage.transform,false);board.transform.position=data.origin+new Vector3(4.8f,3.35f,9.53f);board.transform.localScale=Vector3.one*.01f;board.GetComponent<RectTransform>().sizeDelta=new Vector2(800,800);
+            var start=data.Start;var startPosition=data.Center(start.x,start.y);
+            var board=new GameObject("PLAN_Board_Level"+n,typeof(RectTransform),typeof(Canvas));board.GetComponent<Canvas>().renderMode=RenderMode.WorldSpace;board.transform.SetParent(stage.transform,false);board.transform.position=startPosition+new Vector3(1.2f,3.35f,5.93f);board.transform.localScale=Vector3.one*.01f;board.GetComponent<RectTransform>().sizeDelta=new Vector2(800,800);
             var poster=MapPanel("Poster",board.transform,map,"LEVEL "+n+" / PLAN",out var boardTitle);boardTitle.gameObject.SetActive(false);
             Label("Legend",poster.transform,"GOLD LETTERS / BLUE PLATFORMS / RED SENTINELS",15,new Vector2(0,-287),new Vector2(790,25));
-            Label("Instruction",poster.transform,"WASD MOVE / LEAVE THROUGH THE RIGHT OPENING",16,new Vector2(0,-318),new Vector2(790,26));
+            Label("Instruction",poster.transform,n==1?"WASD MOVE / LEAVE THROUGH THE RIGHT OPENING":"WASD MOVE / PASS THE BOARD OR LEAVE TO THE RIGHT",16,new Vector2(0,-318),new Vector2(790,26));
             stage.planPanel=board;if(n==2)board.SetActive(false);
-            Trigger("Leave_PLAN",stage,0,data.origin+new Vector3(10.5f,2,3.6f),new Vector3(.4f,5,2.2f));
+            Trigger("Leave_PLAN",stage,0,startPosition+new Vector3(6.9f,2,0),new Vector3(.4f,5,n==1?2.2f:12));
+            if(n==2)Trigger("Leave_PLAN_North",stage,0,startPosition+new Vector3(0,2,7.1f),new Vector3(12,5,.4f));
             Trigger("Crossword_Exit",stage,1,data.Center(data.Exit.x,data.Exit.y,1.6f),new Vector3(2.2f,3.4f,2.2f));
             var exitLabel=WorldText("ExitSign",stage.transform,data.Center(data.Exit.x,data.Exit.y,3),n==1?"EXIT / LEVEL 2":"FINAL EXIT",6);exitLabel.gameObject.AddComponent<FaceCamera>();
-            var leave=WorldText("LeaveStartRoom",stage.transform,data.origin+new Vector3(9.25f,3.2f,3.6f),"LEAVE TO START",4);leave.rectTransform.sizeDelta=new Vector2(6,1);leave.gameObject.AddComponent<FaceCamera>();
+            var leave=WorldText("LeaveStartRoom",stage.transform,startPosition+new Vector3(5.65f,3.2f,0),"LEAVE TO START",4);leave.rectTransform.sizeDelta=new Vector2(6,1);leave.gameObject.AddComponent<FaceCamera>();
             for(int i=0;i<data.pickups.Length;i++)
             {
                 var cell=data.pickups[i];var item=new GameObject("Pickup_"+data.letters[i]+"_"+i,typeof(BoxCollider),typeof(Mission6_LetterPickup_Collectible_Jizhijin));item.transform.SetParent(stage.transform);item.transform.position=data.Center(cell.x,cell.y,1.2f);
@@ -120,6 +122,12 @@ public static class Mission6_GridBuilder_Jizhijin
             if(d.crossword.TryGetValue(new Vector2Int(x,row),out var c))
             {tile.GetComponent<Renderer>().sharedMaterial=wordMat;var glyph=WorldText("Word_"+x+"_"+row,root.transform,d.Center(x,row,.025f),c.missing?"_":c.answer.ToString(),11);glyph.transform.rotation=Quaternion.Euler(90,0,0);glyph.color=new Color(.08f,.18f,.2f);}
         }
+        string[] landmarkNames={"1 / START COURT","2 / RAISED COURT","3 / SENTINEL COURT","4 / EXIT COURT"};
+        for(int i=0;i<d.Landmarks.Length;i++)
+        {
+            var p=d.Landmarks[i];Cube("Landmark_"+(i+1),root.transform,d.Center(p.x,p.y,.02f),new Vector3(1.8f,.04f,1.8f),raised);
+            var label=WorldText("LandmarkSign_"+(i+1),root.transform,d.Center(p.x,p.y,2.6f),landmarkNames[i],4);label.rectTransform.sizeDelta=new Vector2(8,1.2f);label.gameObject.AddComponent<FaceCamera>();
+        }
         float width=d.size*2.4f;
         Cube("Boundary_North",root.transform,d.origin+new Vector3(width/2,1.8f,width+.2f),new Vector3(width,3.6f,.4f),wall);Cube("Boundary_South",root.transform,d.origin+new Vector3(width/2,1.8f,-.2f),new Vector3(width,3.6f,.4f),wall);
         for(int r=0;r<d.size;r++)
@@ -150,7 +158,7 @@ public static class Mission6_GridBuilder_Jizhijin
             var body=GameObject.CreatePrimitive(PrimitiveType.Capsule);body.name="Body";body.transform.SetParent(go.transform,false);body.transform.localPosition=new Vector3(0,1,0);body.transform.localScale=new Vector3(.85f,1,.85f);body.GetComponent<Renderer>().sharedMaterial=mat;Object.DestroyImmediate(body.GetComponent<Collider>());
             var eyes=Cube("Eyes",go.transform,go.transform.position+new Vector3(0,1.5f,.4f),new Vector3(.5f,.16f,.12f),eye);Object.DestroyImmediate(eyes.GetComponent<Collider>());
             var enemy=go.GetComponent<Mission6_Enemy_Jizhijin>();enemy.player=campaign.moving.transform;enemy.campaign=campaign;
-            var points=i==0?new[]{new Vector2Int(19,7),new Vector2Int(23,7),new Vector2Int(23,9),new Vector2Int(15,9)}:new[]{new Vector2Int(21,13),new Vector2Int(23,13),new Vector2Int(23,17),new Vector2Int(19,17)};
+            var points=i==0?new[]{new Vector2Int(23,10),new Vector2Int(25,8),new Vector2Int(17,9),new Vector2Int(16,5)}:new[]{new Vector2Int(23,20),new Vector2Int(23,24),new Vector2Int(22,16),new Vector2Int(17,18)};
             enemy.patrolPoints=points.Select((p,index)=>{var t=new GameObject("Patrol_"+i+"_"+index).transform;t.SetParent(campaign.levels[1].transform);t.position=d.Center(p.x,p.y);return t;}).ToArray();list.Add(enemy);
         }
         campaign.enemies=list.ToArray();

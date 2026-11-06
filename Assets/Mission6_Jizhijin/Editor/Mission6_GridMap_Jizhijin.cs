@@ -55,6 +55,8 @@ public static class Mission6_GridMap_Jizhijin
         Rect(texture,0,0,dim,dim,new Color32(245,247,240,255));
         for(int row=0;row<d.size;row++)for(int x=0;x<d.size;x++)
         {int px=Margin+x*Cell,py=Margin+row*Cell;Rect(texture,px,py,Cell,Cell,TerrainColor(d,x,row));Rect(texture,px,py,1,Cell,new Color32(160,177,170,255));Rect(texture,px,py,Cell,1,new Color32(160,177,170,255));}
+        for(int i=0;i<d.Landmarks.Length;i++)
+        {var p=d.Landmarks[i];int px=Margin+p.x*Cell,py=Margin+p.y*Cell;Rect(texture,px+3,py+3,38,38,RaisedColor);Text(texture,(i+1).ToString(),px+12,py+8,4,WallColor);}
         foreach(var pair in d.crossword)
         {int px=Margin+pair.Key.x*Cell,py=Margin+pair.Key.y*Cell;var c=pair.Value;Rect(texture,px+1,py+1,Cell-1,Cell-1,WallColor);Rect(texture,px+3,py+3,Cell-5,Cell-5,Color.white);if(!hideLetters)Text(texture,c.missing?"_":c.answer.ToString(),px+12,py+5,4,c.missing?new Color32(198,81,25,255):WallColor);if(c.number>0)Text(texture,c.number.ToString(),px+4,py+31,1,WallColor);}
         if(!hideLetters)for(int i=0;i<d.pickups.Length;i++)
