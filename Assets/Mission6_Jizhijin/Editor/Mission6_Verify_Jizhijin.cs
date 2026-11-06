@@ -97,7 +97,9 @@ public static class Mission6_Verify_Jizhijin
             int walls=0,deadEnds=0,junctions=0;
             foreach(var pos in Enumerable.Range(0,d.size).SelectMany(y=>Enumerable.Range(0,d.size).Select(x=>new Vector2Int(x,y))))
             {if(d.IsWall(pos.x,pos.y)){walls++;continue;}int degree=new[]{Vector2Int.up,Vector2Int.down,Vector2Int.left,Vector2Int.right}.Count(v=>!d.IsWall(pos.x+v.x,pos.y+v.y));if(degree==1)deadEnds++;if(degree>=3)junctions++;}
-            Check(walls>250&&deadEnds>=8&&junctions>=20,"second maze has substantial walls, branching junctions and dead ends: "+walls+" / "+junctions+" / "+deadEnds);
+            Check(walls>=80&&walls<140&&deadEnds<5,"second map stays open and memorable with limited walls and dead ends: "+walls+" / "+deadEnds);
+            var openings=new[]{new Vector2Int(6,4),new Vector2Int(7,4),new Vector2Int(8,4),new Vector2Int(16,10),new Vector2Int(17,10),new Vector2Int(18,10),new Vector2Int(9,16),new Vector2Int(10,16),new Vector2Int(11,16),new Vector2Int(22,22),new Vector2Int(23,22),new Vector2Int(24,22)};
+            Check(openings.All(p=>!d.IsWall(p.x,p.y)),"original broad-zone openings remain three cells wide");
             foreach(var pos in d.pickups.Concat(new[]{d.Exit}))
             {var path=new UnityEngine.AI.NavMeshPath();Check(UnityEngine.AI.NavMesh.CalculatePath(d.Center(d.Start.x,d.Start.y),d.Center(pos.x,pos.y),UnityEngine.AI.NavMesh.AllAreas,path)&&path.status==UnityEngine.AI.NavMeshPathStatus.PathComplete,"baked maze navigation reaches "+pos);}
         }

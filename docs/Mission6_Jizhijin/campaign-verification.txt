@@ -19,7 +19,8 @@ PASS: level 2 has enough physical tiles for every missing letter
 PASS: every level 2 word requires at least one player answer
 PASS: level 2 map agrees with every terrain and crossword cell
 PASS: level 2 pickup count matches its map
-PASS: second maze has substantial walls, branching junctions and dead ends: 403 / 82 / 14
+PASS: second map stays open and memorable with limited walls and dead ends: 108 / 0
+PASS: original broad-zone openings remain three cells wide
 PASS: baked maze navigation reaches (9, 3)
 PASS: baked maze navigation reaches (17, 3)
 PASS: baked maze navigation reaches (25, 7)

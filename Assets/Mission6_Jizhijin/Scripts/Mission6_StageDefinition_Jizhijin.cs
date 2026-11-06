@@ -85,29 +85,22 @@ public sealed class Mission6_StageDefinition_Jizhijin
     void BuildMaze()
     {
         mazeWalls = new bool[size, size];
-        for (int y = 0; y < size; y++) for (int x = 0; x < size; x++) mazeWalls[x, y] = true;
-        var rng = new System.Random(61106);
-        var stack = new Stack<Vector2Int>(); var first = new Vector2Int(5, 1);
-        mazeWalls[first.x, first.y] = false; stack.Push(first);
-        var directions = new[] { Vector2Int.up * 2, Vector2Int.right * 2, Vector2Int.down * 2, Vector2Int.left * 2 };
-        while (stack.Count > 0)
+        // Keep the original four broad zones and their three-cell openings.
+        // One short divider per lower zone adds a small detour without a dense maze.
+        for (int y = 0; y < size; y++) for (int x = 0; x < size; x++)
         {
-            var p = stack.Peek();
-            var options = directions.Select(v => p + v).Where(v => v.x >= 1 && v.y >= 1 && v.x <= size - 3 && v.y <= size - 3 && !(v.x < 5 && v.y < 5) && mazeWalls[v.x, v.y]).ToArray();
-            if (options.Length == 0) { stack.Pop(); continue; }
-            var n = options[rng.Next(options.Length)]; var middle = (p + n) / 2;
-            mazeWalls[n.x, n.y] = mazeWalls[middle.x, middle.y] = false; stack.Push(n);
+            bool original = (x == 4 && y < 4 && y != 1)
+                || (y == 4 && (x < 6 || x > 8))
+                || (y == 10 && (x < 16 || x > 18))
+                || (y == 16 && (x < 9 || x > 11))
+                || (y == 22 && (x < 22 || x > 24));
+            bool shortDivider = (x == 12 && y >= 1 && y <= 2)
+                || (x == 6 && y >= 6 && y <= 8)
+                || (x == 20 && y >= 11 && y <= 13)
+                || (x == 20 && y >= 18 && y <= 20);
+            mazeWalls[x, y] = original || shortDivider;
         }
-        // A few loops give alternate escape routes while leaving branching dead ends.
-        var loopCandidates = new List<Vector2Int>();
-        for (int y = 5; y <= 25; y++) for (int x = 5; x <= 25; x++)
-            if (mazeWalls[x, y] && ((x % 2 == 0 && y % 2 == 1 && !mazeWalls[x - 1, y] && !mazeWalls[x + 1, y]) || (x % 2 == 1 && y % 2 == 0 && !mazeWalls[x, y - 1] && !mazeWalls[x, y + 1]))) loopCandidates.Add(new Vector2Int(x, y));
-        for (int i = 0; i < 8 && loopCandidates.Count > 0; i++) { int j = rng.Next(loopCandidates.Count); var p = loopCandidates[j]; mazeWalls[p.x, p.y] = false; loopCandidates.RemoveAt(j); }
-        for (int y = 0; y < 4; y++) for (int x = 0; x < 4; x++) mazeWalls[x, y] = false;
-        mazeWalls[4, 1] = false;
         foreach (var p in crossword.Keys) mazeWalls[p.x, p.y] = false;
-        for (int y = 11; y <= 13; y++) for (int x = 22; x <= 26; x++) mazeWalls[x, y] = false;
-        mazeWalls[26, 25] = mazeWalls[25, 26] = mazeWalls[26, 26] = false;
     }
     static Mission6_WordClue_Jizhijin W(string word, string mask, int x, int row, bool down, string hint) => new Mission6_WordClue_Jizhijin(word, mask, x, row, 0, down, hint);
     public static readonly Mission6_StageDefinition_Jizhijin First = Build(false);
