@@ -11,38 +11,38 @@ public class Mission5_IcePuzzle_IceSphere_ZhuohengWu : MonoBehaviour
 
     [Header("Scene References")]
     [SerializeField] private Transform iceVisual;
-    [SerializeField] private Collectible number3;
+    [SerializeField] private Mission5_StarCollectible_ZhuohengWu rewardStar;
     [SerializeField] private Collider landingFloor;
 
-    [Header("Melt and Number Drop")]
+    [Header("Melt and Star Drop")]
     [SerializeField, Min(0.01f)] private float meltDuration = 0.6f;
     [SerializeField, Min(0.01f)] private float dropDuration = 0.4f;
     [SerializeField, Min(0.01f)] private float dropHeight = 0.6f;
-    [SerializeField, Min(0.01f)] private float numberFloorOffset = 0.35f;
+    [SerializeField, Min(0.01f)] private float starFloorOffset = 0.35f;
     [SerializeField, Min(0.1f)] private float floorProbeHeight = 2f;
     [SerializeField, Min(0.1f)] private float floorProbeDistance = 10f;
 
     private Rigidbody body;
     private SphereCollider iceCollider;
-    private Collider numberTrigger;
+    private Collider rewardTrigger;
     private Vector3 direction;
     private bool ready;
     private bool melting;
+    public bool IsMelting => melting;
 
     private void Start()
     {
         body = GetComponent<Rigidbody>();
         iceCollider = GetComponent<SphereCollider>();
-        numberTrigger = number3 != null ? number3.GetComponent<Collider>() : null;
+        rewardTrigger = rewardStar != null ? rewardStar.GetComponent<Collider>() : null;
 
         if (iceVisual == null || iceVisual == transform || !iceVisual.IsChildOf(transform) ||
-            number3 == null || numberTrigger == null || !numberTrigger.isTrigger ||
-            number3.itemType != Collectible.ItemType.Number || number3.numberValue != 3 ||
-            !number3.enabled || landingFloor == null || landingFloor.isTrigger ||
+            rewardStar == null || rewardTrigger == null || !rewardTrigger.isTrigger ||
+            !rewardStar.enabled || landingFloor == null || landingFloor.isTrigger ||
             !landingFloor.enabled || !landingFloor.gameObject.activeInHierarchy || iceCollider.isTrigger)
         {
-            Debug.LogError("Mission 5 ice: assign a child Ice Visual, the existing Number_3 " +
-                "with an enabled Collectible and trigger Collider, and the active solid Ground Collider.", this);
+            Debug.LogError("Mission 5 ice: assign a child Ice Visual, the assigned IceStar " +
+                "with an enabled Star Collectible and trigger Collider, and the active solid Ground Collider.", this);
             enabled = false;
             return;
         }
@@ -61,10 +61,10 @@ public class Mission5_IcePuzzle_IceSphere_ZhuohengWu : MonoBehaviour
         direction = direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector3.right;
 
         // Reserve this exact instance, even if its waiting parent is inactive.
-        number3.gameObject.SetActive(false);
-        FloatingItem floating = number3.GetComponent<FloatingItem>();
+        rewardStar.gameObject.SetActive(false);
+        FloatingItem floating = rewardStar.GetComponent<FloatingItem>();
         if (floating != null) floating.enabled = false;
-        numberTrigger.enabled = false;
+        rewardTrigger.enabled = false;
 
         ready = true;
         body.linearVelocity = direction * moveSpeed;
@@ -72,7 +72,7 @@ public class Mission5_IcePuzzle_IceSphere_ZhuohengWu : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (!ready || melting) return;
+        if (!ready || melting || Mission5_TimeFreeze_Environment_ZhuohengWu.IsFrozenIn(this)) return;
         // Restore the configured horizontal speed each physics step, without damping.
         body.linearVelocity = direction * Mathf.Max(0.1f, moveSpeed);
     }
@@ -82,7 +82,7 @@ public class Mission5_IcePuzzle_IceSphere_ZhuohengWu : MonoBehaviour
 
     private void ReflectFromWalls(Collision collision)
     {
-        if (!ready || melting) return;
+        if (!ready || melting || Mission5_TimeFreeze_Environment_ZhuohengWu.IsFrozenIn(this)) return;
 
         for (int i = 0; i < collision.contactCount; i++)
         {
@@ -98,7 +98,7 @@ public class Mission5_IcePuzzle_IceSphere_ZhuohengWu : MonoBehaviour
 
     public void TryMelt()
     {
-        if (!ready || melting || !isActiveAndEnabled) return;
+        if (!ready || melting || !isActiveAndEnabled || Mission5_TimeFreeze_Environment_ZhuohengWu.IsFrozenIn(this)) return;
 
         Ray probe = new Ray(body.position + Vector3.up * floorProbeHeight, Vector3.down);
         if (!landingFloor.Raycast(probe, out RaycastHit floorHit, floorProbeDistance) ||
@@ -115,7 +115,7 @@ public class Mission5_IcePuzzle_IceSphere_ZhuohengWu : MonoBehaviour
         body.isKinematic = true;
         iceCollider.enabled = false;
 
-        Vector3 landingPosition = floorHit.point + Vector3.up * numberFloorOffset;
+        Vector3 landingPosition = floorHit.point + Vector3.up * starFloorOffset;
         StartCoroutine(MeltAndRelease(landingPosition));
     }
 
@@ -125,6 +125,7 @@ public class Mission5_IcePuzzle_IceSphere_ZhuohengWu : MonoBehaviour
         float elapsed = 0f;
         while (elapsed < meltDuration)
         {
+            if (Mission5_TimeFreeze_Environment_ZhuohengWu.IsFrozenIn(this)) { yield return null; continue; }
             elapsed += Time.deltaTime;
             iceVisual.localScale = Vector3.Lerp(fullScale, Vector3.zero, elapsed / meltDuration);
             yield return null;
@@ -132,33 +133,34 @@ public class Mission5_IcePuzzle_IceSphere_ZhuohengWu : MonoBehaviour
         iceVisual.gameObject.SetActive(false);
 
         // Detach only this instance at runtime; never activate the entire waiting group.
-        number3.transform.SetParent(null, true);
+        rewardStar.transform.SetParent(null, true);
         Vector3 dropStart = landingPosition + Vector3.up * dropHeight;
-        number3.transform.position = dropStart;
-        Rigidbody numberBody = number3.GetComponent<Rigidbody>();
-        if (numberBody != null)
+        rewardStar.transform.position = dropStart;
+        Rigidbody starBody = rewardStar.GetComponent<Rigidbody>();
+        if (starBody != null)
         {
-            if (!numberBody.isKinematic)
+            if (!starBody.isKinematic)
             {
-                numberBody.linearVelocity = Vector3.zero;
-                numberBody.angularVelocity = Vector3.zero;
+                starBody.linearVelocity = Vector3.zero;
+                starBody.angularVelocity = Vector3.zero;
             }
-            numberBody.useGravity = false;
-            numberBody.isKinematic = true;
+            starBody.useGravity = false;
+            starBody.isKinematic = true;
         }
-        number3.gameObject.SetActive(true);
+        rewardStar.gameObject.SetActive(true);
 
         elapsed = 0f;
         while (elapsed < dropDuration)
         {
+            if (Mission5_TimeFreeze_Environment_ZhuohengWu.IsFrozenIn(this)) { yield return null; continue; }
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / dropDuration);
-            number3.transform.position = Vector3.Lerp(dropStart, landingPosition, t * t);
+            rewardStar.transform.position = Vector3.Lerp(dropStart, landingPosition, t * t);
             yield return null;
         }
 
-        number3.transform.position = landingPosition;
+        rewardStar.transform.position = landingPosition;
         Physics.SyncTransforms();
-        numberTrigger.enabled = true; // Existing Collectible owns pickup and Bag updates.
+        rewardTrigger.enabled = true; // Star Collectible owns the single-use pickup and HUD update.
     }
 }

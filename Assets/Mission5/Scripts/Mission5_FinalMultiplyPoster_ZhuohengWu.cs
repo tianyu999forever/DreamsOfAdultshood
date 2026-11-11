@@ -2,7 +2,7 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 
-/// <summary>One existing multiplication pickup, unlocked by the real Bag and a return to the poster room.</summary>
+/// <summary>One optional bonus star, unlocked by three puzzle stars and a return to the poster room.</summary>
 [RequireComponent(typeof(BoxCollider))]
 public class Mission5_FinalMultiplyPoster_ZhuohengWu : MonoBehaviour
 {
@@ -10,16 +10,15 @@ public class Mission5_FinalMultiplyPoster_ZhuohengWu : MonoBehaviour
     public SequenceState State { get; private set; } = SequenceState.Locked;
 
     [Header("Existing Scene References")]
-    [SerializeField] private GameManager inventory;
+    [SerializeField] private Mission5_StarInventory_ZhuohengWu inventory;
     [SerializeField] private Collider playerCollider;
-    [SerializeField] private Renderer posterRenderer;
-    [SerializeField] private Material finalPosterMaterial;
-    [SerializeField] private Collectible multiplication;
+    [SerializeField] private Mission5_StarCollectible_ZhuohengWu bonusStar;
     [SerializeField] private Collider pickupTrigger;
     [SerializeField] private SphereCollider physicalCollider;
     [SerializeField] private Rigidbody pickupBody;
     [SerializeField] private Collider landingFloor;
     [SerializeField] private Transform ejectPoint;
+
 
     [Header("Existing Area Message Style")]
     [SerializeField] private TMP_Text returnMessage;
@@ -45,18 +44,16 @@ public class Mission5_FinalMultiplyPoster_ZhuohengWu : MonoBehaviour
             messageColor = returnMessage.color;
             returnMessage.gameObject.SetActive(false);
         }
-        if (multiplication != null) multiplication.gameObject.SetActive(false);
-        if (inventory == null || playerCollider == null || posterRenderer == null ||
-            finalPosterMaterial == null || multiplication == null || pickupTrigger == null ||
+        if (bonusStar != null) bonusStar.gameObject.SetActive(false);
+        if (inventory == null || playerCollider == null || bonusStar == null || pickupTrigger == null ||
             physicalCollider == null || pickupBody == null || landingFloor == null ||
             ejectPoint == null || returnMessage == null || messageTimingSource == null ||
             !roomTrigger.isTrigger || !pickupTrigger.isTrigger || physicalCollider.isTrigger ||
-            multiplication.itemType != Collectible.ItemType.Operator || multiplication.operatorValue != "*" ||
-            multiplication.GetComponent<Collider>() != pickupTrigger ||
-            pickupBody.gameObject != multiplication.gameObject ||
-            physicalCollider.gameObject != multiplication.gameObject || landingFloor.isTrigger)
+            bonusStar.GetComponent<Collider>() != pickupTrigger ||
+            pickupBody.gameObject != bonusStar.gameObject ||
+            physicalCollider.gameObject != bonusStar.gameObject || landingFloor.isTrigger)
         {
-            Debug.LogError("Mission 5 final multiply: missing or inconsistent scene references.", this);
+            Debug.LogError("Mission 5 bonus star: missing or inconsistent scene references.", this);
             enabled = false;
             return;
         }
@@ -79,12 +76,10 @@ public class Mission5_FinalMultiplyPoster_ZhuohengWu : MonoBehaviour
         if (!ready) return;
         if (State == SequenceState.Locked)
         {
-            if (!inventory.numbers.Contains(2) || !inventory.numbers.Contains(3) ||
-                !inventory.numbers.Contains(6) || !inventory.operators.Contains("+")) return;
+            if (!inventory.ExitUnlocked) return;
 
-            // This transition is one-way, independent of future Bag/UI changes.
+            // This transition is one-way, independent of future UI changes.
             State = SequenceState.AwaitingReturn;
-            posterRenderer.sharedMaterial = finalPosterMaterial;
             hasBeenOutside = !PlayerInsideRoom();
             StartCoroutine(ShowReturnMessage());
             // Even an activation inside the room cannot eject immediately: leave
@@ -98,10 +93,10 @@ public class Mission5_FinalMultiplyPoster_ZhuohengWu : MonoBehaviour
             TryRelease();
         }
         else if (State == SequenceState.ReadyForPickup &&
-            (multiplication == null || inventory.operators.Contains("*") || !pickupTrigger.enabled))
+            (bonusStar == null || bonusStar.Collected || !pickupTrigger.enabled))
         {
             State = SequenceState.Collected;
-            // Collectible already added the item and owns its animation/destruction.
+            // Collectible already added the star and owns its animation/destruction.
         }
     }
 
@@ -116,15 +111,15 @@ public class Mission5_FinalMultiplyPoster_ZhuohengWu : MonoBehaviour
     private void TryRelease()
     {
         if (State != SequenceState.AwaitingReturn || !hasBeenOutside || !PlayerInsideRoom()) return;
-        if (multiplication == null || inventory.operators.Contains("*"))
+        if (bonusStar == null || bonusStar.Collected)
         {
             State = SequenceState.Collected;
             return;
         }
 
         State = SequenceState.Falling; // Set before activation/physics callbacks: never release twice.
-        multiplication.transform.SetPositionAndRotation(ejectPoint.position, Quaternion.identity);
-        multiplication.gameObject.SetActive(true);
+        bonusStar.transform.SetPositionAndRotation(ejectPoint.position, Quaternion.identity);
+        bonusStar.gameObject.SetActive(true);
         pickupBody.position = ejectPoint.position;
         pickupBody.rotation = Quaternion.identity;
         physicalCollider.enabled = true;
@@ -139,7 +134,7 @@ public class Mission5_FinalMultiplyPoster_ZhuohengWu : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (!ready || State != SequenceState.Falling || pickupBody == null) return;
+        if (!ready || State != SequenceState.Falling || pickupBody == null || Mission5_TimeFreeze_Environment_ZhuohengWu.IsFrozenIn(this)) return;
         Vector3 position = pickupBody.position;
         bool grounded = landingFloor.Raycast(new Ray(position + Vector3.up * 0.1f, Vector3.down),
             out RaycastHit hit, 2f) && Vector3.Dot(hit.normal, Vector3.up) > 0.9f &&
@@ -155,7 +150,7 @@ public class Mission5_FinalMultiplyPoster_ZhuohengWu : MonoBehaviour
         pickupBody.useGravity = false;
         physicalCollider.enabled = false;
         State = SequenceState.ReadyForPickup;
-        pickupTrigger.enabled = true; // Original Collectible now owns the one-time Bag addition.
+        pickupTrigger.enabled = true; // Star Collectible now owns the one-time star addition.
     }
 
     private IEnumerator ShowReturnMessage()

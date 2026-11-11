@@ -16,6 +16,16 @@ public class Mission5_FireAbility_Player_ZhuohengWu : MonoBehaviour
 
     private bool emitting;
 
+    private void OnEnable()
+    {
+        if (hotbar != null) hotbar.SelectionChanged += OnSelectionChanged;
+    }
+
+    private void OnSelectionChanged(int slot)
+    {
+        if (slot != 0) SetFireVisible(false);
+    }
+
     private void Awake()
     {
         if (hotbar == null || fireOrigin == null || fireParticles == null || targetIce == null)
@@ -63,7 +73,11 @@ public class Mission5_FireAbility_Player_ZhuohengWu : MonoBehaviour
         emitting = active;
     }
 
-    private void OnDisable() => SetFireVisible(false);
+    private void OnDisable()
+    {
+        if (hotbar != null) hotbar.SelectionChanged -= OnSelectionChanged;
+        SetFireVisible(false);
+    }
 
     private void OnDrawGizmosSelected()
     {

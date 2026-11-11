@@ -39,13 +39,11 @@ public class StartTimerTrigger : MonoBehaviour
 
         activated = true;
 
-        // 停止出生房间的思考倒计时
         if (planningTimer != null)
         {
             planningTimer.PlayerLeftStartRoom();
         }
 
-        // 开始原来的迷宫倒计时
         pocketWatch.StartCountdown();
 
         Debug.Log("Player left the start room");
