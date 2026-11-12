@@ -24,8 +24,8 @@ public static class mission3Welcome_Editor_ShengChiehLee
             var active=SceneManager.GetActiveScene();
             if(active.path!="Assets/Scenes/Mission3.unity") throw new Exception("Keep the current Mission3 scene open to preserve its unsaved edits.");
             string report=Apply(active,backupDirectory,"Mission3");
-            var demo=SceneManager.GetSceneByPath("Assets/Scenes/Demos/Mission3_Demo.unity"); bool opened=!demo.IsValid()||!demo.isLoaded;
-            if(opened) demo=EditorSceneManager.OpenScene("Assets/Scenes/Demos/Mission3_Demo.unity",OpenSceneMode.Additive);
+            var demo=SceneManager.GetSceneByPath("Assets/Mission3_ShengChiehLee/Scenes/Mission3_Preview.unity"); bool opened=!demo.IsValid()||!demo.isLoaded;
+            if(opened) demo=EditorSceneManager.OpenScene("Assets/Mission3_ShengChiehLee/Scenes/Mission3_Preview.unity",OpenSceneMode.Additive);
             try { report+=Apply(demo,backupDirectory,"Mission3_Demo"); }
             finally { if(opened) EditorSceneManager.CloseScene(demo,true); SceneManager.SetActiveScene(active); }
             File.WriteAllText("Library/Mission3WelcomeCopyReport.txt","STORY_SHORT_PASS\n"+report);

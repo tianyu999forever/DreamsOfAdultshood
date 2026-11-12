@@ -13,7 +13,7 @@ using UnityEngine.SceneManagement;
 public static class mission3EntranceMap_Editor_ShengChiehLee
 {
     const string Flag="Mission3.EntranceMap.Move";
-    const string Demo="Assets/Scenes/Demos/Mission3_Demo.unity";
+    const string Demo="Assets/Mission3_ShengChiehLee/Scenes/Mission3_Preview.unity";
     const string Output="C:/Users/j1a2m/Documents/Codex/2026-10-25/w/outputs/mission3-map-position";
     static int previewFrames;
     static mission3EntranceMap_Editor_ShengChiehLee(){EditorApplication.update+=Tick;}

@@ -14,7 +14,7 @@ using UnityEngine.UI;
 public static class mission3Result_Editor_ShengChiehLee
 {
     public const string PrefabPath="Assets/Prefabs/Mission3/UI/Mission3ResultCanvas.prefab";
-    const string Demo="Assets/Scenes/Demos/Mission3_Demo.unity";
+    const string Demo="Assets/Mission3_ShengChiehLee/Scenes/Mission3_Preview.unity";
     const string Output="C:/Users/j1a2m/Documents/Codex/2026-10-25/w/outputs/mission3-results";
     static readonly Color Paper=new Color(.94f,.93f,.86f),Gold=new Color(.80f,.63f,.34f),Cyan=new Color(.06f,.65f,.74f),Muted=new Color(.58f,.67f,.67f);
     static TMP_FontAsset font;

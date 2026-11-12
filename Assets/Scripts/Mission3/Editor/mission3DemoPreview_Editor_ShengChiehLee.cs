@@ -12,6 +12,7 @@ public static class mission3DemoPreview_Editor_ShengChiehLee
     [MenuItem("Mission3/Test and Play Guided Demo")]
     public static void TestAndPlay()
     {
+        var Scene = File.Exists(mission3Monster_Editor_ShengChiehLee.Demo) ? mission3Monster_Editor_ShengChiehLee.Demo : mission3DemoPreview_Editor_ShengChiehLee.Scene;
         EditorSceneManager.OpenScene(Scene);
         SessionState.SetBool(Pending,true);
         mission3Playtest_Editor_ShengChiehLee.Begin(true);
@@ -49,6 +50,7 @@ public static class mission3DemoPreview_Editor_ShengChiehLee
     [MenuItem("Mission3/Play Guided Demo")]
     public static void Play()
     {
+        var Scene = File.Exists(mission3Monster_Editor_ShengChiehLee.Demo) ? mission3Monster_Editor_ShengChiehLee.Demo : mission3DemoPreview_Editor_ShengChiehLee.Scene;
         EditorSceneManager.OpenScene(Scene);
         var gameView=typeof(EditorWindow).Assembly.GetType("UnityEditor.GameView");
         if(gameView!=null)EditorWindow.GetWindow(gameView,false,"Game",true).Show();

@@ -17,7 +17,6 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
     public mission3Canvas_UI_ShengChiehLee canvasUI;
     public mission3Guide_UI_ShengChiehLee guide;
     public bool demoMode;
-    public mission3Monster_Manager_ShengChiehLee nightPatrol;
     public Texture2D floorMap;
     public GameObject serviceDoor;
     public mission3Interact_Prop_ShengChiehLee returnDesk;
@@ -36,6 +35,7 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
     public bool[] collected = new bool[6];
     public bool[] notesRead = new bool[3];
     public int[] assignment = { -1, -1, -1, -1, -1, -1 };
+    public mission3Monster_Manager_ShengChiehLee nightPatrol;
     public enum Page { None, Welcome, Map, Journal, Note, Checkout, Confirm, Result, Pause }
     Page page = Page.Welcome;
     Page journalReturnPage=Page.None;

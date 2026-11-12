@@ -13,7 +13,7 @@ using UnityEngine.UI;
 [InitializeOnLoad]
 public static class mission3Monster_Editor_ShengChiehLee
 {
-    public const string Demo="Assets/Scenes/Demos/Mission3_Demo.unity";
+    public const string Demo="Assets/Mission3_ShengChiehLee/Scenes/Mission3_Preview.unity";
     public const string Output="C:/Users/j1a2m/Documents/Codex/2026-10-25/w/outputs/mission3-night-patrol";
     const string Prefab="Assets/Prefabs/Mission3/Characters/Mission3NightAttendant.prefab";
     static bool editReady;
