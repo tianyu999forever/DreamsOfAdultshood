@@ -86,7 +86,7 @@ public static class mission3Monster_Editor_ShengChiehLee
         shade.gameObject.SetActive(false);
         monster.warningLights=architecture.GetComponentsInChildren<Light>(true).Where(x=>x.type==LightType.Point).OrderBy(x=>Vector3.Distance(x.transform.position,World(3,7))).Take(4).ToArray();
         var welcome=ui.pages[1].transform;
-        welcome.Find("Brief").GetComponent<TMP_Text>().text="Find the lost belongings and read the guest notes. After your second find, a night attendant patrols the corridors. Walk quietly and turn corners to escape. Return items at Lost & Found, then enter the lift.";
+        welcome.Find("Brief").GetComponent<TMP_Text>().text="A note beside your keys reads: \"Find lost items. Use guest notes to identify their owners. Return them at Lost & Found, then take the lift. After two finds, stay quiet and turn corners to avoid the night patrol.\"";
         welcome.Find("Your first steps").GetComponent<TMP_Text>().text="MAP > NOTE > BELONGING\nAFTER 2 FINDS: THE NIGHT PATROL WAKES\nRECEPTION + LIFT ARE SAFE. RUN TO ESCAPE.";
         var surface=root.AddComponent<NavMeshSurface>();surface.collectObjects=CollectObjects.All;surface.useGeometry=NavMeshCollectGeometry.PhysicsColliders;
         surface.overrideVoxelSize=true;surface.voxelSize=.12f;surface.BuildNavMesh();

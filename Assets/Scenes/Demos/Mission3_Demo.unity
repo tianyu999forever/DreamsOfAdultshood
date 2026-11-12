@@ -105006,7 +105006,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Some guests left more than their luggage.
+  m_text: Find what they left behind.
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -149778,9 +149778,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Find the lost belongings and read the guest notes. After your second find,
-    a night attendant patrols the corridors. Walk quietly and turn corners to escape.
-    Return items at Lost & Found, then enter the lift.
+  m_text: 'A note beside your keys reads: "Find lost items. Use guest notes to identify
+    their owners. Return them at Lost & Found, then take the lift. After two finds,
+    stay quiet and turn corners to avoid the night patrol."'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

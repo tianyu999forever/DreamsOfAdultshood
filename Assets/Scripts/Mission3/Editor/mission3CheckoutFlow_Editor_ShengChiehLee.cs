@@ -81,7 +81,7 @@ public static class mission3CheckoutFlow_Editor_ShengChiehLee
         ui.pages[6].transform.Find("FinalizeButton").GetComponentInChildren<TMP_Text>().text="CONFIRM RETURN / THEN GO TO LIFT";
         ui.pages[2].transform.Find("Navigation hint").GetComponent<TMP_Text>().text="R  RETURN ITEMS / L  SETTLE + NEXT LEVEL";
         ui.pages[2].transform.Find("Legend key").GetComponent<TMP_Text>().text="RED ARROW: You    /    CYAN: Belonging\nAMBER N: Note    /    MUTED +: Collected\nR: RETURN DESK    L: SETTLE / NEXT    S: LOUNGE\n\n301 Traveller / west wing\n302 Musician / north wing\n303 Botanist / east wing\nAll items are shown. North is up.";
-        ui.pages[1].transform.Find("Brief").GetComponent<TMP_Text>().text="Find the lost belongings and read the guest notes. Return items only at the Checkout / Lost & Found desk. Then enter the lift to settle your score and continue.";
+        ui.pages[1].transform.Find("Brief").GetComponent<TMP_Text>().text="A note beside your keys reads: \"Find lost items. Use guest notes to identify their owners. Return them at Lost & Found, then take the lift.\"";
         var props=roots.Single(x=>x.name=="Mission3_PropsAndInteractions").transform;
         var checkoutLabel=props.GetComponentsInChildren<TMP_Text>(true).FirstOrDefault(x=>x.name=="Checkout label");if(checkoutLabel!=null)checkoutLabel.text="CHECKOUT\nLOST & FOUND\nRETURN ITEMS HERE";
         AddNotice(props);

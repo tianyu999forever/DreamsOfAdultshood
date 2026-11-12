@@ -173,8 +173,8 @@ public static class mission3Presentation_Editor_ShengChiehLee
         ui.notice=Text(root,"Notification","",new Vector2(0,385),new Vector2(1500,42),22,Gold,TextAlignmentOptions.Center);
         var shade=Image(root,"Modal backdrop",Vector2.zero,new Vector2(3000,2200),new Color(0,0,0,.66f));shade.raycastTarget=true;ui.backdrop=shade.gameObject;
         ui.pages=new GameObject[9];
-        var welcome=Panel(root,"WelcomePanel","MISSION 03  /  HOTEL 24","Some guests left more than their luggage.");ui.pages[1]=welcome;
-        Text(welcome.transform,"Brief","The night shift is yours. Explore the hotel, read the three guest notes, and bring the lost belongings back to reception.\n\nEach item has an owner. Where you find it is only part of the story.",new Vector2(-330,97),new Vector2(840,240),27,Paper);
+        var welcome=Panel(root,"WelcomePanel","MISSION 03  /  HOTEL 24","Find what they left behind.");ui.pages[1]=welcome;
+        Text(welcome.transform,"Brief","A note beside your keys reads: \"Find lost items. Use guest notes to identify their owners. Return them at Lost & Found, then take the lift.\"",new Vector2(-330,97),new Vector2(840,240),27,Paper);
         Text(welcome.transform,"Score guide","THE SHIFT AT A GLANCE\n\n06   LOST BELONGINGS\n03   GUEST NOTES\n100   POINTS POSSIBLE\n\nReturn at least three items to check out.\nNo countdown. Take time to explore.",new Vector2(505,49),new Vector2(430,330),23,Gold);
         Image(welcome.transform,"Brief separator",new Vector2(210,35),new Vector2(1,350),new Color(.36f,.39f,.36f));
         Text(welcome.transform,"Rewards","CORRECT ITEM  +10     /     COMPLETE PAIR  +10     /     EXPLORATION BONUS  +10",new Vector2(-280,-205),new Vector2(950,65),18,Gold);
