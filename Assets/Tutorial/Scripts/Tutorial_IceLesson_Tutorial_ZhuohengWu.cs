@@ -2,6 +2,7 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>A self-contained, untimed lesson using Mission 5's fire-box and ice-shrink mechanics.</summary>
@@ -32,6 +33,9 @@ public class Tutorial_IceLesson_Tutorial_ZhuohengWu : MonoBehaviour
     [SerializeField, Min(0.1f)] private float fadeDuration = 0.25f;
     [SerializeField, Min(1f)] private float approachDistance = 4.5f;
 
+    [Header("Completion")]
+    [SerializeField] private Button returnToMenuButton;
+
     public bool IsMelting { get; private set; }
     public bool StarReady { get; private set; }
     public bool Completed { get; private set; }
@@ -44,18 +48,20 @@ public class Tutorial_IceLesson_Tutorial_ZhuohengWu : MonoBehaviour
     private float discoveryMessageTime;
     private string desiredMessage;
     private bool emitting;
+    private bool returningToMenu;
 
     private void Awake()
     {
         Time.timeScale = 1f;
         if (player == null || viewCamera == null || fireOrigin == null || fireParticles == null ||
             cardBackground == null || iceVisual == null || iceCollider == null || star == null ||
-            instructionText == null || instructionGroup == null || continuePrompt == null)
+            instructionText == null || instructionGroup == null || continuePrompt == null || returnToMenuButton == null)
         {
             Debug.LogError("Tutorial: all lesson references must be assigned.", this);
             enabled = false;
             return;
         }
+        returnToMenuButton.gameObject.SetActive(false);
         star.SetPickupEnabled(false);
         cardBackground.color = normalColor;
         instructionGroup.alpha = 0f;
@@ -83,7 +89,7 @@ public class Tutorial_IceLesson_Tutorial_ZhuohengWu : MonoBehaviour
                 {
                     ShowMessage(introductionStep == 0
                         ? "WASD to move. Use your mouse to look around."
-                        : "Your cards have different abilities, but their effects are yours to discover.");
+                        : "Your cards have different abilities, but their effects are yours to discover. Try pressing 1 and see what happens.");
                     // Ignore clicks during fades; a held button cannot advance again.
                     if (Application.isFocused && Mouse.current != null &&
                         Mouse.current.leftButton.wasPressedThisFrame && lastDialogueClickFrame != Time.frameCount &&
@@ -92,7 +98,7 @@ public class Tutorial_IceLesson_Tutorial_ZhuohengWu : MonoBehaviour
                         lastDialogueClickFrame = Time.frameCount;
                         introductionStep++;
                         ShowMessage(introductionStep == 1
-                            ? "Your cards have different abilities, but their effects are yours to discover."
+                            ? "Your cards have different abilities, but their effects are yours to discover. Try pressing 1 and see what happens."
                             : string.Empty);
                     }
                 }
@@ -184,7 +190,20 @@ public class Tutorial_IceLesson_Tutorial_ZhuohengWu : MonoBehaviour
         cardBackground.color = normalColor;
         StopFire();
         ShowMessage("Well done! Keep experimenting. There's more to discover.");
+        continuePrompt.gameObject.SetActive(false);
+        returnToMenuButton.gameObject.SetActive(true);
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
         return true;
+    }
+
+    public void ReturnToMenu()
+    {
+        if (!Completed || returningToMenu) return;
+        returningToMenu = true;
+        returnToMenuButton.interactable = false;
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("Mission2_TianyuTang");
     }
 
     private void ShowMessage(string message) => desiredMessage = message;
