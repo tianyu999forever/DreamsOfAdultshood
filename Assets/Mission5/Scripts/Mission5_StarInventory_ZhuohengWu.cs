@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 /// <summary>Mission 5's session-only star count; shared inventories are not used.</summary>
 public class Mission5_StarInventory_ZhuohengWu : MonoBehaviour
 {
-    public const int RequiredStars = 3;
+    public const int RequiredStars = 4;
     public const int PointsPerStar = 100;
     [SerializeField] private TMP_Text hudText;
     private readonly HashSet<string> collectedStars = new HashSet<string>();
@@ -14,6 +14,7 @@ public class Mission5_StarInventory_ZhuohengWu : MonoBehaviour
     public int Score => StarCount * PointsPerStar;
     public bool ExitUnlocked => StarCount >= RequiredStars;
     public bool Completed { get; private set; }
+    public event System.Action StarCollected;
 
     private void Start() => RefreshHud();
 
@@ -22,6 +23,7 @@ public class Mission5_StarInventory_ZhuohengWu : MonoBehaviour
         if (Completed || Time.timeScale <= 0f || string.IsNullOrEmpty(starId) ||
             !collectedStars.Add(starId)) return false;
         RefreshHud();
+        StarCollected?.Invoke();
         return true;
     }
 
