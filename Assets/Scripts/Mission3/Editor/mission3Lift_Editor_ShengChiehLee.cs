@@ -10,14 +10,11 @@ public static class mission3Lift_Editor_ShengChiehLee
 {
     const string ScenePath = "Assets/Scenes/Mission3.unity";
     const string Marker = "Library/Mission3LiftApplied-v3.txt";
-    const string Preview = "C:/Users/j1a2m/Documents/Codex/2026-10-15/ban/outputs/mission3-lift.png";
+    const string Preview = "docs/Mission3/mission3-lift.png";
     static Material brass, linen, walnut, ink;
 
-    [InitializeOnLoadMethod]
-    static void Initialize()
-    {
-        if (!File.Exists(Marker)) EditorApplication.delayCall += Upgrade;
-    }
+    // Run scene upgrades explicitly from the menu. A fresh checkout must keep
+    // the saved lift and its button bindings instead of rewriting them on open.
 
     static GameObject Box(Transform parent, string name, Vector3 position, Vector3 scale, Material material)
     {

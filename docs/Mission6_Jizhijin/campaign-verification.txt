@@ -1,0 +1,166 @@
+PASS: level one begins with a movable PLAN room
+PASS: clear view and unblocked physical passage at start
+PASS: ENTER LEVEL 2 is immediately visible and clickable during PLAN
+PASS: HUD button enters level two without collecting or solving and gives no first-level grade
+PASS: PLAN cannot consume the photo
+PASS: level 1 word total and 70 percent pass requirement
+PASS: level 1 has 20 x 20 tiles
+PASS: level 1 pickups, word cells and exit are reachable
+PASS: level 1 pickup markers do not cover crossword letters
+PASS: level 1 has enough physical tiles for every missing letter
+PASS: every level 1 word requires at least one player answer
+PASS: level 1 map agrees with every terrain and crossword cell
+PASS: level 1 pickup count matches its map
+PASS: level 2 word total and 70 percent pass requirement
+PASS: level 2 has 28 x 28 tiles
+PASS: level 2 pickups, word cells and exit are reachable
+PASS: level 2 pickup markers do not cover crossword letters
+PASS: level 2 has enough physical tiles for every missing letter
+PASS: every level 2 word requires at least one player answer
+PASS: level 2 map agrees with every terrain and crossword cell
+PASS: level 2 pickup count matches its map
+PASS: approved model B retains its broad courts and limited walls: 175 / 1
+PASS: every start-to-exit route requires at least seven turns, including crossword tiles
+PASS: model B places its start, exit and four court landmarks correctly
+PASS: model B enemy patrol reaches Patrol_0_0
+PASS: model B enemy patrol reaches Patrol_0_1
+PASS: model B enemy patrol reaches Patrol_0_2
+PASS: model B enemy patrol reaches Patrol_0_3
+PASS: model B enemy patrol reaches Patrol_1_0
+PASS: model B enemy patrol reaches Patrol_1_1
+PASS: model B enemy patrol reaches Patrol_1_2
+PASS: model B enemy patrol reaches Patrol_1_3
+PASS: baked maze navigation reaches (1, 10)
+PASS: baked maze navigation reaches (10, 10)
+PASS: baked maze navigation reaches (11, 5)
+PASS: baked maze navigation reaches (10, 1)
+PASS: baked maze navigation reaches (16, 3)
+PASS: baked maze navigation reaches (24, 3)
+PASS: baked maze navigation reaches (16, 10)
+PASS: baked maze navigation reaches (23, 11)
+PASS: baked maze navigation reaches (25, 8)
+PASS: baked maze navigation reaches (16, 16)
+PASS: baked maze navigation reaches (24, 16)
+PASS: baked maze navigation reaches (25, 23)
+PASS: baked maze navigation reaches (17, 25)
+PASS: baked maze navigation reaches (22, 19)
+PASS: baked maze navigation reaches (11, 17)
+PASS: baked maze navigation reaches (11, 24)
+PASS: baked maze navigation reaches (3, 16)
+PASS: baked maze navigation reaches (3, 22)
+PASS: baked maze navigation reaches (3, 24)
+PASS: both sentinels are bound to the generated level two NavMesh
+PASS: S A B C thresholds combine time and word count
+PASS: pass boundaries are exactly 7 of 10 and 11 of 15
+PASS: even full word completion cannot pass after the time limit
+PASS: WASD moves during PLAN
+PASS: walking through the opening starts level one early
+PASS: photo opens once and repeated use cannot extend it
+PASS: photo closes after five seconds while clear time keeps running
+PASS: first level never activates the night mechanic
+PASS: walking through the physical passage enters level two with zero solved words
+PASS: physical level one pickup 1
+PASS: physical level one pickup 2
+PASS: physical level one pickup 3
+PASS: physical level one pickup 4
+PASS: physical level one pickup 5
+PASS: physical level one pickup 6
+PASS: physical level one pickup 7
+PASS: physical level one pickup 8
+PASS: physical level one pickup 9
+PASS: physical level one exit opens the crossword and pauses hazards
+PASS: empty first-level answers still leave NEXT LEVEL clickable
+PASS: a selected unique letter disappears from every other dropdown
+PASS: clearing a square returns its letter to other dropdowns
+PASS: time spent answering counts toward the score
+PASS: available tile fills crossword square 0
+PASS: available tile fills crossword square 1
+PASS: available tile fills crossword square 2
+PASS: available tile fills crossword square 4
+PASS: available tile fills crossword square 6
+PASS: seven correct words pass with some blanks still empty
+PASS: optional first-level solve retains its grade and directly enters level two in the same scene
+PASS: second level starts its own PLAN after direct entry
+PASS: level two resets the bag and photo and keeps PLAN safe
+PASS: walking past model B PLAN board starts level two early
+PASS: sentinel follows its patrol route when level two starts
+PASS: level two restores one photo use
+PASS: sentinel sees an exposed player and starts chasing
+PASS: a maze wall blocks enemy line of sight
+PASS: catching the player opens failure UI and stops control
+PASS: retry restores the level two checkpoint and retains the level one grade
+PASS: retry starts a fresh thirty-second day
+PASS: second level remains day until thirty seconds
+PASS: thirty seconds triggers a ten-second night with reduced visibility
+PASS: night hides all scene letters and shows its upper countdown
+PASS: enemy movement is sixty percent faster at night
+PASS: invisible night letters cannot be accidentally collected
+PASS: photo also conceals letter positions and letters at night
+PASS: answer panel pauses the night cycle together with enemies
+PASS: ten-second night restores daylight, photo letters and standing-on-letter collection
+PASS: remaining world letters reappear at dawn
+PASS: enemy returns to normal speed after night
+PASS: a second night recurs after another thirty-second day
+PASS: resetting the level cycle restores day
+PASS: physical level two pickup 2
+PASS: physical level two pickup 3
+PASS: physical level two pickup 4
+PASS: physical level two pickup 5
+PASS: physical level two pickup 6
+PASS: physical level two pickup 7
+PASS: physical level two pickup 8
+PASS: physical level two pickup 9
+PASS: physical level two pickup 10
+PASS: physical level two pickup 11
+PASS: physical level two pickup 12
+PASS: physical level two pickup 13
+PASS: physical level two pickup 14
+PASS: physical level two pickup 15
+PASS: physical level two pickup 16
+PASS: physical level two pickup 17
+PASS: physical level two pickup 18
+PASS: level two exit displays its larger crossword with twelve missing squares
+PASS: available tile fills crossword square 0
+PASS: available tile fills crossword square 1
+PASS: available tile fills crossword square 2
+PASS: available tile fills crossword square 3
+PASS: available tile fills crossword square 4
+PASS: available tile fills crossword square 6
+PASS: available tile fills crossword square 7
+PASS: available tile fills crossword square 8
+PASS: ten of fifteen words cannot finish level two
+PASS: available tile fills crossword square 0
+PASS: available tile fills crossword square 1
+PASS: available tile fills crossword square 2
+PASS: available tile fills crossword square 3
+PASS: available tile fills crossword square 4
+PASS: available tile fills crossword square 5
+PASS: available tile fills crossword square 6
+PASS: available tile fills crossword square 7
+PASS: available tile fills crossword square 8
+PASS: eleven of fifteen words meets the second level threshold
+PASS: remaining duplicate letter copy 0 stays selectable
+PASS: remaining duplicate letter copy 1 stays selectable
+PASS: remaining duplicate letter copy 2 stays selectable
+PASS: using every copy removes that letter from all other slots
+PASS: clearing a duplicate restores exactly one available copy
+PASS: full bag letter menu opens
+PASS: full bag menu has a working visible scrollbar
+PASS: last collected letter remains readable after scrolling
+PASS: last collected letter can be selected from the menu
+PASS: available tile fills crossword square 0
+PASS: available tile fills crossword square 1
+PASS: available tile fills crossword square 2
+PASS: available tile fills crossword square 3
+PASS: available tile fills crossword square 4
+PASS: available tile fills crossword square 5
+PASS: available tile fills crossword square 6
+PASS: available tile fills crossword square 7
+PASS: available tile fills crossword square 8
+PASS: available tile fills crossword square 9
+PASS: available tile fills crossword square 10
+PASS: available tile fills crossword square 11
+PASS: all fifteen crossing words can be completed with the collected physical tiles
+PASS: finishing level two displays campaign results
+PASS: results show each level's time, word count, and combined grade
+PASS: no runtime errors

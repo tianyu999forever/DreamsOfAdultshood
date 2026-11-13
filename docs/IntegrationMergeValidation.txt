@@ -1,0 +1,63 @@
+PASS All six missions and Tutorial enabled in build settings
+PASS Valid build path/GUID Assets/Scenes/Mission2_TianyuTang.unity
+PASS Assets/Scenes/Mission2_TianyuTang.unity opens with no missing scripts or broken serialized references (0, 0)
+PASS Valid build path/GUID Assets/Scenes/Mission3.unity
+PASS Assets/Scenes/Mission3.unity opens with no missing scripts or broken serialized references (0, 0)
+PASS Valid build path/GUID Assets/Scenes/ZhuohengWu Mission5.unity
+PASS Assets/Scenes/ZhuohengWu Mission5.unity opens with no missing scripts or broken serialized references (0, 0)
+PASS Valid build path/GUID Assets/Scenes/Mission4.unity
+PASS Assets/Scenes/Mission4.unity opens with no missing scripts or broken serialized references (0, 0)
+PASS Valid build path/GUID Assets/Mission6_Jizhijin/Scenes/Mission6_Jizhijin.unity
+PASS Assets/Mission6_Jizhijin/Scenes/Mission6_Jizhijin.unity opens with no missing scripts or broken serialized references (0, 0)
+PASS Valid build path/GUID Assets/Scenes/Mission1.unity
+PASS Assets/Scenes/Mission1.unity opens with no missing scripts or broken serialized references (0, 0)
+PASS Valid build path/GUID Assets/Scenes/Tutorial.unity
+PASS Assets/Scenes/Tutorial.unity opens with no missing scripts or broken serialized references (0, 0)
+EDITOR ENVIRONMENT ISSUE [Mission2_TianyuTang] ArgumentOutOfRangeException: Index was out of range. Must be non-negative and less than the size of the collection.
+Parameter name: index (UnityEditor.Search startup indexing in batch mode; no project gameplay stack frames)
+PASS Mission 2 loaded
+PASS Original level selection panel immediately visible with paused gameplay and cursor
+PASS All seven buttons remain interactive with one valid callback each
+PASS Mission1 button retains Mission5 destination, once
+PASS Mission5 retains 01:30 countdown gated by room exit
+PASS Mission5 retains all five puzzle stars
+PASS Mission5 card controllers and ventilation initialize
+PASS Mission5 four-star unlock and score preserved
+PASS Mission5 actual exit trigger shows completion and score
+PASS Select Level label and object name preserved
+PASS Mission 2 loaded
+PASS Original level selection panel immediately visible with paused gameplay and cursor
+PASS All seven buttons remain interactive with one valid callback each
+PASS Mission5 completion returns once to selection
+PASS Mission3 button retains current Mission2 start-game behavior
+PASS Mission 2 loaded
+PASS Original level selection panel immediately visible with paused gameplay and cursor
+PASS All seven buttons remain interactive with one valid callback each
+PASS Mission2 retains target Mission3 and loads once
+PASS Mission 2 loaded
+PASS Original level selection panel immediately visible with paused gameplay and cursor
+PASS All seven buttons remain interactive with one valid callback each
+PASS Mission4 retains target Mission4 and loads once
+PASS Mission 2 loaded
+PASS Original level selection panel immediately visible with paused gameplay and cursor
+PASS All seven buttons remain interactive with one valid callback each
+PASS Mission5 retains target Mission6_Jizhijin and loads once
+PASS Mission 2 loaded
+PASS Original level selection panel immediately visible with paused gameplay and cursor
+PASS All seven buttons remain interactive with one valid callback each
+PASS Mission6 retains target Mission1 and loads once
+PASS Mission 2 loaded
+PASS Original level selection panel immediately visible with paused gameplay and cursor
+PASS All seven buttons remain interactive with one valid callback each
+PASS Tutorial retains target Tutorial and loads once
+PASS Tutorial initializes fresh with return button hidden
+PASS Tutorial existing melt/release sequence runs (public entry point; focused input unavailable headlessly)
+PASS Tutorial star completes lesson once
+PASS Completion remains in Tutorial and rejects duplicate collection
+PASS Tutorial Return to Menu is visible and clickable after completion
+PASS Mission 2 loaded
+PASS Original level selection panel immediately visible with paused gameplay and cursor
+PASS All seven buttons remain interactive with one valid callback each
+PASS Tutorial returns exactly once to Mission2 selection
+PASS Tutorial replay resets completion and star state
+PASS No gameplay Console errors in all mission navigation, Mission5 completion and Tutorial flow (Editor environment issues reported separately)

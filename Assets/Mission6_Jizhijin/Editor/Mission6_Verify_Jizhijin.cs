@@ -8,336 +8,235 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
-using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-
 [InitializeOnLoad]
 public static class Mission6_Verify_Jizhijin
 {
-    const string Flag = "Mission6_Jizhijin.Verify";
-    const string Out = "docs/Mission6_Jizhijin/";
-    static readonly List<string> results = new List<string>();
-    static readonly List<string> errors = new List<string>();
-    static int stage, pickup, menuSlot;
-    static float next, timeout, photoStarted, planStarted, walkingX;
-    static string timerBefore;
-    static bool previousBackground;
-    static Keyboard keyboard;
-    static Mission6_Grid_Level_Jizhijin level;
-    static Mission6_Photo_Player_Jizhijin photo;
-    static Mission6_Letters_GameManager_Jizhijin inventory;
-    static Mission6_Spelling_ExitPanel_Jizhijin puzzle;
-    static Moving player;
+    const string Flag="Mission6.Campaign.Verify",Out="docs/Mission6_Jizhijin/";
+    static readonly List<string> results=new List<string>(),errors=new List<string>();
+    static Mission6_Campaign_Jizhijin c; static Keyboard keyboard; static int stage,pickup; static float next,deadline,before;static Vector3 position;static bool background, asyncShaders;
     static Mission6_Verify_Jizhijin()
     {
-        EditorApplication.update += Tick;
-        EditorApplication.playModeStateChanged += Changed;
-        Application.logMessageReceived += (message, trace, type) =>
-        {
-            if (SessionState.GetBool(Flag, false) && (type == LogType.Exception || type == LogType.Assert || type == LogType.Error)) errors.Add(message + "\n" + trace);
-        };
+        EditorApplication.update+=Tick;EditorApplication.playModeStateChanged+=Changed;
+        Application.logMessageReceived+=(m,t,type)=>{if(SessionState.GetBool(Flag,false)&&(type==LogType.Error||type==LogType.Exception||type==LogType.Assert))errors.Add(m+"\n"+t);};
     }
-    [MenuItem("Mission6 Jizhijin/Verify gameplay")]
+    [MenuItem("Mission6 Jizhijin/Verify two level campaign")]
     public static void Start()
     {
-        if (EditorApplication.isPlayingOrWillChangePlaymode) return;
-        SessionState.SetBool(Flag, true);
-        SessionState.SetString(Flag + ".previous", AssetDatabase.GetAssetPath(EditorSceneManager.playModeStartScene));
-        EditorSceneManager.playModeStartScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(Mission6_Setup_Jizhijin.ScenePath);
-        EditorApplication.EnterPlaymode();
+        if(EditorApplication.isPlayingOrWillChangePlaymode)return;
+        results.Clear();errors.Clear();SessionState.SetBool(Flag,true);SessionState.SetString(Flag+".previous",AssetDatabase.GetAssetPath(EditorSceneManager.playModeStartScene));EditorSceneManager.playModeStartScene=AssetDatabase.LoadAssetAtPath<SceneAsset>(Mission6_Setup_Jizhijin.ScenePath);EditorApplication.EnterPlaymode();
     }
-    static void Changed(PlayModeStateChange change)
+    static void Changed(PlayModeStateChange state)
     {
-        if (!SessionState.GetBool(Flag, false)) return;
-        if (change == PlayModeStateChange.EnteredPlayMode)
-        {
-            stage = 0; next = Time.realtimeSinceStartup + 1; timeout = Time.realtimeSinceStartup + 80;
-            previousBackground = Application.runInBackground; Application.runInBackground = true;
-        }
-        if (change == PlayModeStateChange.EnteredEditMode)
-        {
-            EditorSceneManager.playModeStartScene = AssetDatabase.LoadAssetAtPath<SceneAsset>(SessionState.GetString(Flag + ".previous", ""));
-            SessionState.SetBool(Flag, false); Write();
-        }
+        if(!SessionState.GetBool(Flag,false))return;
+        if(state==PlayModeStateChange.EnteredPlayMode){stage=0;next=Time.realtimeSinceStartup+1;deadline=Time.realtimeSinceStartup+220;background=Application.runInBackground;Application.runInBackground=true;asyncShaders=ShaderUtil.allowAsyncCompilation;ShaderUtil.allowAsyncCompilation=false;}
+        if(state==PlayModeStateChange.EnteredEditMode){EditorSceneManager.playModeStartScene=AssetDatabase.LoadAssetAtPath<SceneAsset>(SessionState.GetString(Flag+".previous",""));SessionState.SetBool(Flag,false);Write();}
     }
-    static T Find<T>() where T : UnityEngine.Object => UnityEngine.Object.FindFirstObjectByType<T>();
-    static void Write() => File.WriteAllLines(Out + "verification.txt", results.Concat(errors.Select(x => "RUNTIME ERROR: " + x)));
-    static void Check(bool ok, string name)
-    { results.Add((ok ? "PASS: " : "FAIL: ") + name); Write(); if (!ok) throw new Exception(name); }
-    static void Capture(string name) => ScreenCapture.CaptureScreenshot(Path.GetFullPath(Out + name + ".png"));
-    static void Key(params UnityEngine.InputSystem.Key[] keys)
-    { InputSystem.QueueStateEvent(keyboard, new KeyboardState(keys)); InputSystem.Update(); }
-    static void Finish()
+    static void Write(){Directory.CreateDirectory(Out);File.WriteAllLines(Out+"campaign-verification.txt",results.Concat(errors.Select(e=>"RUNTIME ERROR: "+e)));}
+    static void Check(bool ok,string name){results.Add((ok?"PASS: ":"FAIL: ")+name);Write();if(!ok)throw new Exception(name);}
+    static void Capture(string name)=>ScreenCapture.CaptureScreenshot(Path.GetFullPath(Out+name+".png"));
+    static void Key(params Key[] keys){InputSystem.QueueStateEvent(keyboard,new KeyboardState(keys));InputSystem.Update();}
+    static void Pose(Vector3 p,float yaw=0,float pitch=0){var rb=c.moving.GetComponent<Rigidbody>();rb.position=p;rb.rotation=Quaternion.Euler(0,yaw,0);rb.linearVelocity=Vector3.zero;c.mouseLook.enabled=c.headBob.enabled=false;Camera.main.transform.localRotation=Quaternion.Euler(pitch,0,0);Physics.SyncTransforms();}
+    static void Advance(int value,float delay=.25f){stage=value;next=Time.realtimeSinceStartup+delay;}
+    static void Finish(){if(keyboard!=null)InputSystem.RemoveDevice(keyboard);Time.timeScale=1;Application.runInBackground=background;ShaderUtil.allowAsyncCompilation=asyncShaders;results.Add(errors.Count==0?"PASS: no runtime errors":"FAIL: runtime errors");Write();stage=100;EditorApplication.ExitPlaymode();}
+    static Mission6_Spelling_ExitPanel_Jizhijin Puzzle=>c.puzzles[c.CurrentLevel.stageNumber-1];
+    static void Fill(Mission6_Spelling_ExitPanel_Jizhijin p,int mask)
     {
-        if (keyboard != null) InputSystem.RemoveDevice(keyboard);
-        Time.timeScale = 1; Application.runInBackground = previousBackground;
-        results.Add(errors.Count == 0 ? "PASS: no runtime errors" : "FAIL: runtime errors recorded");
-        Write(); stage = 100; EditorApplication.ExitPlaymode();
+        p.ClearAnswers();
+        for(int i=0;i<p.slotCells.Length;i++)if((mask&(1<<i))!=0)
+            Check(p.SelectLetter(i,p.level.Data.crossword[p.slotCells[i]].answer),"available tile fills crossword square "+i);
+        p.CheckAnswer();
     }
-    static void ValidateLayout()
+    static bool FillExactly(Mission6_Spelling_ExitPanel_Jizhijin p,int target)
     {
-        var grid = level.transform;
-        var map = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Mission6_Jizhijin/Materials/Mission6_GridMap_Jizhijin.png");
-        Check(map.width == 1000 && map.height == 1000, "map import preserves pixel dimensions without rescaling");
-        bool cells = true, walls = true, pixels = true;
-        for (int row = 0; row < 20; row++) for (int x = 0; x < 20; x++)
+        for(int mask=0;mask<(1<<p.slotCells.Length);mask++)
         {
-            var tile = grid.Find("Cell_" + x.ToString("00") + "_" + row.ToString("00"));
-            cells &= tile != null && Mathf.Abs(tile.position.x - (x + 0.5f) * 2.4f) < 0.01f && Mathf.Abs(tile.position.z - (row + 0.5f) * 2.4f) < 0.01f;
-            bool wall = grid.Find("Wall_" + x + "_" + row) != null;
-            walls &= wall == Mission6_Grid_Level_Jizhijin.IsWall(x, row);
-            var pixel = map.GetPixel(Mission6_GridMap_Jizhijin.Margin + x * 44 + 1, Mission6_GridMap_Jizhijin.Margin + row * 44 + 1);
-            var expected = Mission6_Grid_Level_Jizhijin.Crossword.ContainsKey(new Vector2Int(x, row)) ? Mission6_GridMap_Jizhijin.WallColor : Mission6_GridMap_Jizhijin.TerrainColor(x, row);
-            pixels &= Mathf.Abs(pixel.r - expected.r) < 0.015f && Mathf.Abs(pixel.g - expected.g) < 0.015f && Mathf.Abs(pixel.b - expected.b) < 0.015f;
+            int count=p.level.Data.words.Count(w=>Enumerable.Range(0,w.word.Length).All(i=>!p.level.Data.crossword[w.CellAt(i)].missing || (mask&(1<<Array.IndexOf(p.slotCells,w.CellAt(i))))!=0));
+            if(count==target){Fill(p,mask);return p.CorrectWords==target;}
         }
-        Check(cells, "exactly 20 x 20 floor cells at matching world coordinates");
-        Check(walls, "scene walls match the 20 x 20 layout");
-        Check(pixels, "map terrain colors match every one of the 400 cells");
-        var seen = new HashSet<Vector2Int> { Mission6_Grid_Level_Jizhijin.StartCell };
-        var queue = new Queue<Vector2Int>(); queue.Enqueue(Mission6_Grid_Level_Jizhijin.StartCell);
-        var dirs = new[] { Vector2Int.left, Vector2Int.right, Vector2Int.up, Vector2Int.down };
-        while (queue.Count > 0)
+        return false;
+    }
+    static void StopEnemies(){foreach(var e in c.enemies){e.Agent.isStopped=true;e.Agent.ResetPath();e.enabled=false;}}
+    static void FacePickup(int index)
+    {
+        var d=c.CurrentLevel.Data;var cell=d.pickups[index];
+        var dir=new[]{Vector2Int.up,Vector2Int.right,Vector2Int.down,Vector2Int.left}.First(v=>!d.IsWall(cell.x+v.x,cell.y+v.y));
+        var look=Quaternion.LookRotation(new Vector3(-dir.x,0,-dir.y));Pose(d.Center(cell.x+dir.x,cell.y+dir.y,1.4f),look.eulerAngles.y,18);
+    }
+    static void FaceEnemy()
+    {
+        var d=c.CurrentLevel.Data;var cell=d.enemies[0];
+        var dir=new[]{Vector2Int.up,Vector2Int.right,Vector2Int.down,Vector2Int.left}.First(v=>!d.IsWall(cell.x+v.x,cell.y+v.y)&&!d.IsWall(cell.x+v.x*2,cell.y+v.y*2));
+        c.enemies[0].Agent.Warp(d.Center(cell.x,cell.y));
+        var look=Quaternion.LookRotation(new Vector3(-dir.x,0,-dir.y));Pose(d.Center(cell.x+dir.x*2,cell.y+dir.y*2,1.4f),look.eulerAngles.y,8);
+    }
+    static void Occlusion()
+    {
+        var d=c.CurrentLevel.Data;
+        for(int y=2;y<26;y++)for(int x=2;x<26;x++)foreach(var dir in new[]{Vector2Int.up,Vector2Int.right})
+            if(d.IsWall(x,y)&&!d.IsWall(x+dir.x,y+dir.y)&&!d.IsWall(x-dir.x,y-dir.y))
+            {c.enemies[0].Agent.Warp(d.Center(x+dir.x,y+dir.y));Pose(d.Center(x-dir.x,y-dir.y,1.4f));Physics.SyncTransforms();Check(!c.enemies[0].CanSeePlayer(),"a maze wall blocks enemy line of sight");return;}
+        throw new Exception("No occlusion test wall found");
+    }
+    static int MinimumTurns(Mission6_StageDefinition_Jizhijin d)
+    {
+        var distance=new int[d.size,d.size,4];var queue=new Queue<Vector3Int>();
+        for(int y=0;y<d.size;y++)for(int x=0;x<d.size;x++)for(int dir=0;dir<4;dir++)distance[x,y,dir]=int.MaxValue;
+        for(int dir=0;dir<4;dir++){distance[d.Start.x,d.Start.y,dir]=0;queue.Enqueue(new Vector3Int(d.Start.x,d.Start.y,dir));}
+        var directions=new[]{Vector2Int.up,Vector2Int.right,Vector2Int.down,Vector2Int.left};
+        while(queue.Count>0)
         {
-            var cell = queue.Dequeue();
-            foreach (var dir in dirs)
+            var p=queue.Dequeue();
+            for(int dir=0;dir<4;dir++)
             {
-                var n = cell + dir;
-                if (!Mission6_Grid_Level_Jizhijin.IsWall(n.x, n.y) && seen.Add(n)) queue.Enqueue(n);
+                var n=new Vector2Int(p.x,p.y)+directions[dir];if(d.IsWall(n.x,n.y))continue;
+                int turns=distance[p.x,p.y,p.z]+(p.z==dir?0:1);
+                if(turns>=distance[n.x,n.y,dir])continue;
+                distance[n.x,n.y,dir]=turns;queue.Enqueue(new Vector3Int(n.x,n.y,dir));
             }
         }
-        Check(Mission6_Grid_Level_Jizhijin.LetterCells.All(seen.Contains) && seen.Contains(Mission6_Grid_Level_Jizhijin.ExitCell), "all letter cells and exit reachable from start");
-        Check(Mission6_Grid_Level_Jizhijin.Words.All(w => Enumerable.Range(0, w.mask.Length).All(i => seen.Contains(w.CellAt(i)))), "all Across and Down word cells reachable");
-        var missing = Mission6_Grid_Level_Jizhijin.BlankCells.Select(p => Mission6_Grid_Level_Jizhijin.Crossword[p].answer).ToArray();
-        Check(missing.Length == 4 && missing.Distinct().Count() == 4 && missing.All(c => Mission6_Grid_Level_Jizhijin.PickupLetters.Contains(c)), "only four shared blanks require four available letters");
-        Check(FindObjects().Length == 9 && Mission6_Grid_Level_Jizhijin.PickupLetters.Distinct().Count() == 9, "map contains nine distinct physical pickups including five distractors");
-        bool badges = true;
-        for (int i = 0; i < Mission6_Grid_Level_Jizhijin.LetterCells.Length; i++)
+        return Enumerable.Range(0,4).Min(dir=>distance[d.Exit.x,d.Exit.y,dir]);
+    }
+    static void Layout(Mission6_Grid_Level_Jizhijin level)
+    {
+        var d=level.Data;Check(d.words.Length==(d.number==1?10:15)&&d.minimumWords==(d.number==1?7:11),"level "+d.number+" word total and 70 percent pass requirement");
+        Check(level.transform.Cast<Transform>().Count(t=>t.name.StartsWith("Cell_"))==d.size*d.size,"level "+d.number+" has "+d.size+" x "+d.size+" tiles");
+        var seen=new HashSet<Vector2Int>{d.Start};var queue=new Queue<Vector2Int>();queue.Enqueue(d.Start);while(queue.Count>0){var p=queue.Dequeue();foreach(var dir in new[]{Vector2Int.up,Vector2Int.down,Vector2Int.left,Vector2Int.right}){var n=p+dir;if(!d.IsWall(n.x,n.y)&&seen.Add(n))queue.Enqueue(n);}}
+        Check(d.pickups.All(seen.Contains)&&seen.Contains(d.Exit)&&d.crossword.Keys.All(seen.Contains),"level "+d.number+" pickups, word cells and exit are reachable");
+        Check(d.pickups.Distinct().Count()==d.pickups.Length&&d.pickups.All(p=>!d.crossword.ContainsKey(p)),"level "+d.number+" pickup markers do not cover crossword letters");
+        Check(d.blanks.GroupBy(p=>d.crossword[p].answer).All(g=>d.letters.Count(ch=>ch==g.Key)>=g.Count()),"level "+d.number+" has enough physical tiles for every missing letter");
+        Check(d.words.All(w=>Enumerable.Range(0,w.word.Length).Any(i=>d.crossword[w.CellAt(i)].missing)),"every level "+d.number+" word requires at least one player answer");
+        var texture=AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Mission6_Jizhijin/Materials/"+(d.number==1?"Mission6_GridMap_Jizhijin.png":"Mission6_GridMap_Level2_Jizhijin.png"));bool pixels=true;
+        for(int row=0;row<d.size;row++)for(int x=0;x<d.size;x++){var sample=texture.GetPixel(60+x*44+1,60+row*44+1);var expected=d.crossword.ContainsKey(new Vector2Int(x,row))?Mission6_GridMap_Jizhijin.WallColor:Mission6_GridMap_Jizhijin.TerrainColor(d,x,row);pixels&=Mathf.Abs(sample.r-expected.r)<.015f&&Mathf.Abs(sample.g-expected.g)<.015f;}
+        Check(pixels,"level "+d.number+" map agrees with every terrain and crossword cell");
+        Check(level.GetComponentsInChildren<Mission6_LetterPickup_Collectible_Jizhijin>().Length==d.pickups.Length,"level "+d.number+" pickup count matches its map");
+        if(d.number==2)
         {
-            var cell = Mission6_Grid_Level_Jizhijin.LetterCells[i];
-            var tile = FindObjects().Single(t => t.name.EndsWith("_" + i));
-            badges &= tile.GetComponentInChildren<TMP_Text>().text == Mission6_Grid_Level_Jizhijin.PickupLetters[i].ToString();
-            badges &= Vector2.Distance(new Vector2(tile.transform.position.x, tile.transform.position.z), new Vector2((cell.x + 0.5f) * 2.4f, (cell.y + 0.5f) * 2.4f)) < 0.01f;
-            int ink = 0;
-            for (int y = 8; y < 36; y++) for (int x = 12; x < 32; x++)
-                if (map.GetPixel(Mission6_GridMap_Jizhijin.Margin + cell.x * 44 + x, Mission6_GridMap_Jizhijin.Margin + cell.y * 44 + y).r < 0.4f) ink++;
-            badges &= ink > 20;
+            int walls=0,deadEnds=0,junctions=0;
+            foreach(var pos in Enumerable.Range(0,d.size).SelectMany(y=>Enumerable.Range(0,d.size).Select(x=>new Vector2Int(x,y))))
+            {if(d.IsWall(pos.x,pos.y)){walls++;continue;}int degree=new[]{Vector2Int.up,Vector2Int.down,Vector2Int.left,Vector2Int.right}.Count(v=>!d.IsWall(pos.x+v.x,pos.y+v.y));if(degree==1)deadEnds++;if(degree>=3)junctions++;}
+            Check(walls==175&&deadEnds<5,"approved model B retains its broad courts and limited walls: "+walls+" / "+deadEnds);
+            Check(MinimumTurns(d)==7,"every start-to-exit route requires at least seven turns, including crossword tiles");
+            Check(d.Start==new Vector2Int(3,3)&&d.Exit==new Vector2Int(3,24)&&d.Landmarks.Length==4,"model B places its start, exit and four court landmarks correctly");
+            foreach(var enemy in level.campaign.enemies)foreach(var patrol in enemy.patrolPoints)
+            {var path=new UnityEngine.AI.NavMeshPath();Check(UnityEngine.AI.NavMesh.CalculatePath(enemy.transform.position,patrol.position,UnityEngine.AI.NavMesh.AllAreas,path)&&path.status==UnityEngine.AI.NavMeshPathStatus.PathComplete,"model B enemy patrol reaches "+patrol.name);}
+            foreach(var pos in d.pickups.Concat(new[]{d.Exit}))
+            {var path=new UnityEngine.AI.NavMeshPath();Check(UnityEngine.AI.NavMesh.CalculatePath(d.Center(d.Start.x,d.Start.y),d.Center(pos.x,pos.y),UnityEngine.AI.NavMesh.AllAreas,path)&&path.status==UnityEngine.AI.NavMeshPathStatus.PathComplete,"baked maze navigation reaches "+pos);}
         }
-        Check(badges, "all nine map badges contain letter glyphs at matching physical pickup coordinates");
-        Check(Mission6_Grid_Level_Jizhijin.Crossword.Any(p => p.Value.missing && p.Value.words.Count > 1), "crossword contains missing letters shared by Across and Down");
-        Check(Mission6_Grid_Level_Jizhijin.Crossword.Count < Mission6_Grid_Level_Jizhijin.Words.Sum(w => w.word.Length), "crossing words share physical cells");
-        bool physics = true;
-        foreach (var cell in new[] { new Vector2Int(3, 14), new Vector2Int(16, 10), new Vector2Int(1, 14), new Vector2Int(7, 4), new Vector2Int(5, 4) })
-        {
-            bool hit = Physics.Raycast(Mission6_Grid_Level_Jizhijin.Center(cell.x, cell.y, 9), Vector3.down, out var info, 15, ~0, QueryTriggerInteraction.Ignore);
-            float expected = Mission6_Grid_Level_Jizhijin.IsWall(cell.x, cell.y) ? 3.6f : Mission6_Grid_Level_Jizhijin.Height(cell.x, cell.y) + (Mission6_Grid_Level_Jizhijin.RampDirection(cell.x, cell.y) != 0 ? 0.18f : 0);
-            physics &= hit && Mathf.Abs(info.point.y - expected) < 0.03f;
-        }
-        Check(physics, "physical colliders have correct wall, passage, raised floor and ramp heights");
     }
     static void Tick()
     {
-        if (File.Exists("Temp/Mission6_Jizhijin.verify") && !File.Exists("Temp/Mission6_Jizhijin.grid") && !EditorApplication.isCompiling && !EditorApplication.isUpdating && !EditorApplication.isPlayingOrWillChangePlaymode)
-        { File.Delete("Temp/Mission6_Jizhijin.verify"); Start(); return; }
-        if (!SessionState.GetBool(Flag, false) || !EditorApplication.isPlaying || stage == 100 || Time.realtimeSinceStartup < next) return;
+        if(File.Exists("Temp/Mission6_Jizhijin.verify")&&!File.Exists("Temp/Mission6_Jizhijin.grid")&&!EditorApplication.isCompiling&&!EditorApplication.isUpdating&&!EditorApplication.isPlayingOrWillChangePlaymode){File.Delete("Temp/Mission6_Jizhijin.verify");Start();return;}
+        if(!SessionState.GetBool(Flag,false)||!EditorApplication.isPlaying||stage==100||Time.realtimeSinceStartup<next)return;
         try
         {
-            if (Time.realtimeSinceStartup > timeout) throw new TimeoutException();
-            switch (stage)
+            if(Time.realtimeSinceStartup>deadline)throw new TimeoutException();
+            switch(stage)
             {
                 case 0:
-                    level = Find<Mission6_Grid_Level_Jizhijin>(); photo = Find<Mission6_Photo_Player_Jizhijin>();
-                    inventory = Find<Mission6_Letters_GameManager_Jizhijin>(); player = Find<Moving>();
-                    puzzle = UnityEngine.Object.FindObjectsByType<Mission6_Spelling_ExitPanel_Jizhijin>(FindObjectsInactive.Include, FindObjectsSortMode.None).Single();
-                    Check(level.IsPlanning && level.planPanel.activeSelf && level.planPanel.GetComponent<Canvas>().renderMode == RenderMode.WorldSpace, "PLAN map is a board in the starting room");
-                    Check(player.enabled && level.mouseLook.enabled && !player.GetComponent<Rigidbody>().isKinematic, "movement, mouse look, and physics remain enabled during PLAN");
-                    Check(!level.explorationBag.activeSelf && !level.photoHint.activeSelf, "PLAN map is clear of exploration HUD overlays");
-                    Check(!photo.TryUsePhoto() && !photo.Used, "moving during PLAN does not consume the photo");
-                    Check(!RenderSettings.fog && !UnityEngine.Object.FindObjectsByType<LensFlareComponentSRP>(FindObjectsSortMode.None).Any(f => f.enabled), "view remains free of fog and lens flares");
-                    ValidateLayout(); keyboard = InputSystem.AddDevice<Keyboard>();
-                    level.mouseLook.enabled = false; level.headBob.enabled = false;
-                    Capture("letters-01-plan-room");
-                    player.GetComponent<Rigidbody>().rotation = Quaternion.Euler(0, 90, 0); Camera.main.transform.localRotation = Quaternion.Euler(-7, 0, 0);
-                    stage = 17; next = Time.realtimeSinceStartup + 0.2f; break;
-                case 17:
-                    CheckSignFacing("starting-room sign faces the player from inside"); Capture("letters-02-sign-inside");
-                    stage = 20; next = Time.realtimeSinceStartup + 0.2f; break;
-                case 20:
-                    player.GetComponent<Rigidbody>().rotation = Quaternion.identity; Camera.main.transform.localRotation = Quaternion.identity;
-                    planStarted = level.PlanTimeLeft;
-                    walkingX = player.transform.position.z; timerBefore = level.watch.timerText.text;
-                    Key(UnityEngine.InputSystem.Key.W); stage = 1; next = Time.realtimeSinceStartup + 0.6f; break;
+                    c=UnityEngine.Object.FindFirstObjectByType<Mission6_Campaign_Jizhijin>();keyboard=InputSystem.AddDevice<Keyboard>();c.mouseLook.enabled=c.headBob.enabled=false;
+                    Check(c.CurrentLevel==c.levels[0]&&c.Phase==Mission6_Phase_Jizhijin.Planning&&c.moving.enabled,"level one begins with a movable PLAN room");
+                    Check(!RenderSettings.fog&&c.GateOpen&&!c.gateCollider.enabled,"clear view and unblocked physical passage at start");
+                    Check(c.enterSecondButton.activeSelf&&c.enterSecondButton.GetComponent<Button>().interactable,"ENTER LEVEL 2 is immediately visible and clickable during PLAN");
+                    c.enterSecondButton.GetComponent<Button>().onClick.Invoke();Check(c.CurrentLevel.stageNumber==2&&c.FirstSkipped&&c.FirstScore.points==0&&c.Phase==Mission6_Phase_Jizhijin.Planning,"HUD button enters level two without collecting or solving and gives no first-level grade");
+                    c.StartLevel(1,true);c.mouseLook.enabled=c.headBob.enabled=false;
+                    Check(!c.photo.TryUsePhoto()&&!c.photo.Used,"PLAN cannot consume the photo");Layout(c.levels[0]);Layout(c.levels[1]);
+                    Check(c.enemies.Length==2&&c.enemies.All(e=>e.Agent.isOnNavMesh),"both sentinels are bound to the generated level two NavMesh");
+                    Check(Mission6_Score_Jizhijin.Calculate(1,10,10,7,30,180).rank=="S"&&Mission6_Score_Jizhijin.Calculate(1,10,10,7,90,180).rank=="A"&&Mission6_Score_Jizhijin.Calculate(1,7,10,7,0,180).rank=="B"&&Mission6_Score_Jizhijin.Calculate(1,7,10,7,120,180).rank=="C","S A B C thresholds combine time and word count");
+                    Check(!Mission6_Score_Jizhijin.Calculate(1,6,10,7,1,180).passed&&Mission6_Score_Jizhijin.Calculate(1,7,10,7,1,180).passed&&!Mission6_Score_Jizhijin.Calculate(2,10,15,11,1,300).passed&&Mission6_Score_Jizhijin.Calculate(2,11,15,11,1,300).passed,"pass boundaries are exactly 7 of 10 and 11 of 15");
+                    Check(!Mission6_Score_Jizhijin.Calculate(1,10,10,7,180,180).passed,"even full word completion cannot pass after the time limit");
+                    Capture("campaign-01-level1-plan");position=c.moving.transform.position;Key(UnityEngine.InputSystem.Key.W);Advance(1,.5f);break;
                 case 1:
-                    Key(); Check(level.IsPlanning && player.transform.position.z > walkingX + 0.5f, "WASD physically moves the player within the PLAN room");
-                    Check(level.PlanTimeLeft < planStarted && level.watch.timerText.text == timerBefore, "PLAN ticks while the exploration timer waits");
-                    player.GetComponent<Rigidbody>().position = new Vector3(8.3f, 1.4f, 3.6f); Physics.SyncTransforms();
-                    Camera.main.transform.localRotation = Quaternion.identity;
-                    Key(UnityEngine.InputSystem.Key.D); stage = 2; next = Time.realtimeSinceStartup + 0.8f; break;
+                    Key();Check(c.moving.transform.position.z>position.z+.5f&&c.Phase==Mission6_Phase_Jizhijin.Planning,"WASD moves during PLAN");Pose(new Vector3(8.3f,1.4f,3.6f));Key(UnityEngine.InputSystem.Key.D);Advance(2,.8f);break;
                 case 2:
-                    Key(); Check(!level.IsPlanning && level.PlanTimeLeft > 0 && !level.planPanel.activeSelf, "walking through the opening ends PLAN early and hides its map");
-                    Check(player.enabled && Time.timeScale == 1, "early departure keeps movement active");
-                    Check(level.explorationBag.activeSelf && level.photoHint.activeSelf, "exploration HUD returns when leaving PLAN");
-                    player.GetComponent<Rigidbody>().rotation = Quaternion.Euler(0, 270, 0); Camera.main.transform.localRotation = Quaternion.Euler(-7, 0, 0);
-                    stage = 18; next = Time.realtimeSinceStartup + 0.2f; break;
-                case 18:
-                    CheckSignFacing("starting-room sign faces the player from outside"); Capture("letters-03-sign-outside");
-                    stage = 21; next = Time.realtimeSinceStartup + 0.2f; break;
-                case 21:
-                    player.GetComponent<Rigidbody>().rotation = Quaternion.identity; Camera.main.transform.localRotation = Quaternion.Euler(20, 0, 0);
-                    stage = 3; next = Time.realtimeSinceStartup + 0.2f; break;
-                case 3:
-                    Capture("letters-04-clear-view"); timerBefore = level.watch.timerText.text;
-                    stage = 4; next = Time.realtimeSinceStartup + 0.3f; break;
+                    Key();Check(c.Phase==Mission6_Phase_Jizhijin.Exploring&&!c.CurrentLevel.planPanel.activeSelf,"walking through the opening starts level one early");Check(c.photo.TryUsePhoto()&&!c.photo.TryUsePhoto(),"photo opens once and repeated use cannot extend it");before=c.Elapsed;Advance(3,.2f);break;
+                case 3:Capture("campaign-02-level1-photo");Advance(4,5.1f);break;
                 case 4:
-                    Key(UnityEngine.InputSystem.Key.Z); photo.SendMessage("Update"); Key(); photoStarted = Time.unscaledTime;
-                    Check(photo.Used && photo.IsVisible, "Z opens the updated crossword map once");
-                    stage = 5; next = Time.realtimeSinceStartup + 1; break;
+                    Check(!c.photo.IsVisible&&c.photo.Used&&c.Elapsed>before+5,"photo closes after five seconds while clear time keeps running");Check(!c.night.IsNight&&c.night.CycleTime==0&&!c.night.countdown.gameObject.activeSelf,"first level never activates the night mechanic");Pose(new Vector3(46.5f,1.4f,44.4f),90);Key(UnityEngine.InputSystem.Key.W);Advance(40,2.9f);break;
+                case 40:
+                    Key();Check(c.CurrentLevel.stageNumber==2&&c.FirstSkipped&&c.Phase==Mission6_Phase_Jizhijin.Planning,"walking through the physical passage enters level two with zero solved words");Capture("campaign-11-direct-entry");Advance(41,.2f);break;
+                case 41:
+                    c.StartLevel(1,true);c.BeginExploration();c.mouseLook.enabled=c.headBob.enabled=false;pickup=0;Advance(5,0);break;
                 case 5:
-                    Capture("letters-05-photo"); Key(UnityEngine.InputSystem.Key.Z); photo.SendMessage("Update"); Key();
-                    Check(photo.IsVisible && !photo.TryUsePhoto(), "repeated Z cannot extend the photo");
-                    stage = 6; next = Time.realtimeSinceStartup + Mathf.Max(0, 5.25f - (Time.unscaledTime - photoStarted)); break;
-                case 6:
-                    Check(!photo.IsVisible && !photo.TryUsePhoto(), "photo closes after five seconds and cannot reopen");
-                    Check(level.watch.timerText.text != timerBefore, "exploration countdown continues during photo");
-                    var rTile = FindObjects().Single(t => t.GetComponentInChildren<TMP_Text>().text == "R");
-                    player.GetComponent<Rigidbody>().position = new Vector3(rTile.transform.position.x, 1.4f, rTile.transform.position.z - 3);
-                    player.GetComponent<Rigidbody>().rotation = Quaternion.identity; Camera.main.transform.localRotation = Quaternion.Euler(25, 0, 0); Physics.SyncTransforms();
-                    stage = 19; next = Time.realtimeSinceStartup + 0.2f; break;
-                case 19:
-                    var glyph = FindObjects().Single(t => t.GetComponentInChildren<TMP_Text>().text == "R").GetComponentInChildren<TMP_Text>();
-                    Check(Vector3.Dot(-glyph.transform.forward, Camera.main.transform.position - glyph.transform.position) > 0, "asymmetric pickup glyph presents its front to the camera");
-                    Capture("letters-06-pickup-facing");
-                    stage = 22; next = Time.realtimeSinceStartup + 0.2f; break;
-                case 22:
-                    player.GetComponent<Rigidbody>().position = Mission6_Grid_Level_Jizhijin.Center(14, 10, 1.5f);
-                    player.GetComponent<Rigidbody>().rotation = Quaternion.identity; Camera.main.transform.localRotation = Quaternion.identity;
-                    Physics.SyncTransforms(); walkingX = player.GetComponent<Rigidbody>().position.x; Key(UnityEngine.InputSystem.Key.D);
-                    stage = 7; next = Time.realtimeSinceStartup + 2.4f; break;
+                    if(pickup==c.CurrentLevel.Data.pickups.Length){Pose(c.CurrentLevel.Data.Center(18,18,1.4f));Advance(7);break;}
+                    var item=c.CurrentLevel.GetComponentsInChildren<Mission6_LetterPickup_Collectible_Jizhijin>().Single(t=>t.name.EndsWith("_"+pickup)&&t.GetComponent<Collider>().enabled);Pose(item.transform.position);Advance(6,.15f);break;
+                case 6:Check(c.inventory.Letters.Count==pickup+1,"physical level one pickup "+(pickup+1));pickup++;Advance(5,0);break;
                 case 7:
-                    Key(); Check(player.transform.position.x > walkingX + 7, "raised terrain remains walkable without jumping");
-                    pickup = 0; stage = 8; next = 0; break;
+                    Check(c.PuzzleOpen&&Time.timeScale==0,"physical level one exit opens the crossword and pauses hazards");before=c.Elapsed;Puzzle.CheckAnswer();Check(Puzzle.CorrectWords==0&&Puzzle.nextLevelButton.GetComponent<Button>().interactable,"empty first-level answers still leave NEXT LEVEL clickable");
+                    Check(Puzzle.SelectLetter(0,'K')&&Puzzle.letterSlots.Skip(1).All(slot=>slot.options.All(o=>o.text!="K")),"a selected unique letter disappears from every other dropdown");Puzzle.letterSlots[0].value=0;Check(Puzzle.letterSlots.Skip(1).All(slot=>slot.options.Any(o=>o.text=="K")),"clearing a square returns its letter to other dropdowns");Advance(8,.4f);break;
                 case 8:
-                    if (pickup == 4)
-                    {
-                        player.GetComponent<Rigidbody>().position = Mission6_Grid_Level_Jizhijin.Center(18, 18, 1.4f);
-                        Physics.SyncTransforms(); stage = 10; next = Time.realtimeSinceStartup + 0.25f; break;
-                    }
-                    var needed = Mission6_Grid_Level_Jizhijin.Crossword[Mission6_Grid_Level_Jizhijin.BlankCells[pickup]].answer.ToString();
-                    var tile = FindObjects().Single(t => t.GetComponentInChildren<TMP_Text>().text == needed && t.GetComponent<Collider>().enabled);
-                    player.GetComponent<Rigidbody>().position = tile.transform.position;
-                    Physics.SyncTransforms(); stage = 9; next = Time.realtimeSinceStartup + 0.2f; break;
+                    Check(c.Elapsed>before+.3f,"time spent answering counts toward the score");Check(FillExactly(Puzzle,7)&&Puzzle.Solved,"seven correct words pass with some blanks still empty");Capture("campaign-03-level1-partial-grade");Advance(9,.3f);break;
                 case 9:
-                    Check(inventory.Letters.Count == pickup + 1, "letter pickup " + (pickup + 1) + " collected exactly once");
-                    pickup++; stage = 8; next = 0; break;
+                    int handle=SceneManager.GetActiveScene().handle;Check(c.CompleteCurrentLevel()&&c.FirstScore.correctWords==7&&!c.FirstSkipped&&c.CurrentLevel.stageNumber==2&&SceneManager.GetActiveScene().handle==handle,"optional first-level solve retains its grade and directly enters level two in the same scene");Advance(10,.2f);break;
                 case 10:
-                    Check(puzzle.gameObject.activeInHierarchy && Time.timeScale == 0, "physical exit opens the crossword");
-                    Check(puzzle.nextLevelButton != null && puzzle.nextLevelButton.transform.parent == puzzle.transform && puzzle.nextLevelButton.GetComponentInParent<Canvas>() != null && puzzle.nextLevelButton.GetComponent<Image>().color.a == 1, "NEXT LEVEL belongs to the exit Canvas and has an opaque button image");
-                    Check(puzzle.nextLevelButton.activeInHierarchy && puzzle.playAgainButton.activeInHierarchy, "NEXT LEVEL and PLAY AGAIN are visible as soon as the exit panel opens");
-                    Check(puzzle.nextLevelButton.GetComponent<Button>().interactable && puzzle.letterSlots.All(s => s.value == 0), "NEXT LEVEL is enabled while all crossword inputs are empty");
-                    Capture("letters-10-navigation-visible"); stage = 27; next = Time.realtimeSinceStartup + 0.3f; break;
-                case 27:
-                    Check(puzzle.letterSlots.Length == 4 && puzzle.slotCells.Distinct().Count() == 4, "crossword has exactly four inputs with shared intersections counted once");
-                    Check(FindObjects().Count(t => t.GetComponent<Collider>().enabled) == 5, "five distractor letters remain uncollected at the exit");
-                    Check(puzzle.transform.Cast<Transform>().Count(t => t.name.StartsWith("Square_")) == Mission6_Grid_Level_Jizhijin.Crossword.Count, "UI grid preserves the reference crossword shape");
-                    puzzle.CheckAnswer(); Check(!puzzle.Solved, "incomplete crossword cannot win");
-                    puzzle.letterSlots[0].value = 1; puzzle.letterSlots[1].value = 1;
-                    Check(puzzle.letterSlots[1].value == 0, "a physical tile cannot fill two different squares");
-                    for (int i = 0; i < 4; i++) puzzle.letterSlots[i].SetValueWithoutNotify((i + 1) % 4 + 1);
-                    puzzle.CheckAnswer(); Check(!puzzle.Solved, "incorrect crossword can be retried");
-                    Capture("letters-07-retry"); stage = 11; next = Time.realtimeSinceStartup + 0.3f; break;
-                case 11:
-                    foreach (var existing in puzzle.letterSlots) existing.SetValueWithoutNotify(0);
-                    var used = new HashSet<int>();
-                    for (int i = 0; i < puzzle.slotCells.Length; i++)
-                    {
-                        string answer = Mission6_Grid_Level_Jizhijin.Crossword[puzzle.slotCells[i]].answer.ToString();
-                        int index = Enumerable.Range(0, inventory.Letters.Count).First(j => !used.Contains(j) && inventory.Letters[j] == answer);
-                        used.Add(index); puzzle.letterSlots[i].value = index + 1;
-                    }
-                    puzzle.transform.Find("SubmitButton").GetComponent<Button>().onClick.Invoke();
-                    Check(puzzle.Solved && puzzle.resultText.text.Contains("8 / 8") && inventory.Letters.Count == 4, "only four collected letters complete all eight crossing words");
-                    Check(puzzle.wordLabels.All(l => l.color.g > 0.9f), "shared answers validate both Across and Down");
-                    Check(puzzle.nextLevelButton.activeInHierarchy && puzzle.nextLevelButton.GetComponent<Button>().onClick.GetPersistentMethodName(0) == "NextLevel", "correct crossword retains the wired NEXT LEVEL button");
-                    Capture("letters-08-success"); stage = 12; next = Time.realtimeSinceStartup + 0.4f; break;
+                    Key();Check(c.CurrentLevel==c.levels[1]&&c.Phase==Mission6_Phase_Jizhijin.Planning,"second level starts its own PLAN after direct entry");Check(c.inventory.Letters.Count==0&&!c.photo.Used&&!c.HazardsActive,"level two resets the bag and photo and keeps PLAN safe");var start=c.CurrentLevel.Data.Start;Pose(c.CurrentLevel.Data.Center(start.x,start.y,1.4f),0,-8);Advance(11);break;
+                case 11:Capture("campaign-04-level2-plan");Advance(110,.2f);break;
+                case 110:Pose(c.CurrentLevel.Data.Center(3,5,1.4f));Key(UnityEngine.InputSystem.Key.W);Advance(111,.8f);break;
+                case 111:Key();Check(c.Phase==Mission6_Phase_Jizhijin.Exploring,"walking past model B PLAN board starts level two early");c.mouseLook.enabled=c.headBob.enabled=false;position=c.enemies[0].transform.position;Advance(12,1);break;
                 case 12:
-                    int intersection = Array.IndexOf(puzzle.slotCells, new Vector2Int(9, 16));
-                    int single = Array.IndexOf(puzzle.slotCells, new Vector2Int(11, 16));
-                    int oldValue = puzzle.letterSlots[intersection].value;
-                    puzzle.letterSlots[intersection].SetValueWithoutNotify(puzzle.letterSlots[single].value);
-                    puzzle.letterSlots[single].SetValueWithoutNotify(oldValue);
-                    puzzle.CheckAnswer();
-                    Check(!puzzle.Solved && puzzle.resultText.text.StartsWith("5 / 8"), "changing a shared square affects both crossing words");
-                    Check(puzzle.nextLevelButton.activeInHierarchy && puzzle.playAgainButton.activeInHierarchy, "editing or submitting an incorrect answer keeps both navigation buttons visible");
-                    foreach (var remaining in FindObjects().Where(t => t.GetComponent<Collider>().enabled)) inventory.AddLetter(remaining.letter);
-                    puzzle.gameObject.SetActive(false); puzzle.gameObject.SetActive(true);
-                    Check(inventory.Letters.Count == 9 && inventory.Letters.All(c => puzzle.bagText.text.Contains(c)), "crossword displays all nine collected letters in its bag summary");
-                    menuSlot = 0; puzzle.letterSlots[menuSlot].Show(); stage = 23; next = Time.realtimeSinceStartup + 0.2f; break;
-                case 23:
-                    Canvas.ForceUpdateCanvases();
-                    var menu = puzzle.letterSlots[menuSlot].transform.Find("Dropdown List");
-                    var view = menu.GetComponent<ScrollRect>().viewport;
-                    var items = menu.GetComponentsInChildren<Toggle>().OrderByDescending(t => t.transform.position.y).ToArray();
-                    bool readable = items.Length == 10 && menu.GetComponentsInChildren<Scrollbar>().Length == 0;
-                    for (int i = 0; i < items.Length; i++)
-                    {
-                        var label = items[i].transform.Find("Letter").GetComponent<TMP_Text>();
-                        var corners = new Vector3[4]; label.rectTransform.GetWorldCorners(corners);
-                        readable &= label.text == (i == 0 ? "-" : inventory.Letters[i - 1]);
-                        readable &= label.preferredWidth < label.rectTransform.rect.width;
-                        readable &= corners.All(c => { var local = view.InverseTransformPoint(c); return local.x >= view.rect.xMin - 0.1f && local.x <= view.rect.xMax + 0.1f && local.y >= view.rect.yMin - 0.1f && local.y <= view.rect.yMax + 0.1f; });
-                    }
-                    Check(readable, "blank " + (menuSlot + 1) + " shows all nine letter options without clipping or scrollbar overlap");
-                    if (menuSlot < 3)
-                    {
-                        puzzle.letterSlots[menuSlot++].Hide(); puzzle.letterSlots[menuSlot].Show();
-                        next = Time.realtimeSinceStartup + 0.2f; break;
-                    }
-                    Capture("letters-09-full-bag-menu"); stage = 24; next = Time.realtimeSinceStartup + 0.3f; break;
-                case 24:
-                    var last = puzzle.letterSlots[menuSlot].transform.Find("Dropdown List").GetComponentsInChildren<Toggle>().OrderBy(t => t.transform.position.y).First();
-                    last.isOn = true;
-                    Check(puzzle.letterSlots[menuSlot].captionText.text == inventory.Letters[8], "last letter in a full bag remains selectable");
-                    foreach (var slot in puzzle.letterSlots) slot.SetValueWithoutNotify(0);
-                    Check(!puzzle.Solved && puzzle.letterSlots.All(s => s.value == 0), "next mission test begins with an unfinished crossword and no submitted answer");
-                    puzzle.nextSceneName = "MissingMission_Verification"; puzzle.NextLevel();
-                    Check(Time.timeScale == 0 && SceneManager.GetActiveScene().path == Mission6_Setup_Jizhijin.ScenePath, "unavailable next mission preserves the paused crossword instead of throwing a load error");
-                    puzzle.nextSceneName = "";
-                    puzzle.nextLevelButton.GetComponent<Button>().onClick.Invoke();
-                    stage = 25; next = Time.realtimeSinceStartup + 1; break;
-                case 25:
-                    Check(SceneManager.GetActiveScene().buildIndex == 1 && Time.timeScale == 1, "clicking NEXT LEVEL skips the unfinished crossword, loads the next scene, and restores time");
-                    SceneManager.LoadScene(Mission6_Setup_Jizhijin.ScenePath); stage = 13; next = Time.realtimeSinceStartup + 1; break;
+                    Check(Vector3.Distance(position,c.enemies[0].transform.position)>.3f,"sentinel follows its patrol route when level two starts");Check(c.photo.TryUsePhoto(),"level two restores one photo use");Advance(13,.2f);break;
                 case 13:
-                    level = Find<Mission6_Grid_Level_Jizhijin>(); photo = Find<Mission6_Photo_Player_Jizhijin>(); inventory = Find<Mission6_Letters_GameManager_Jizhijin>();
-                    Check(level.IsPlanning && level.moving.enabled && !photo.Used && inventory.Letters.Count == 0, "restart restores movable PLAN and an empty bag");
-                    puzzle = UnityEngine.Object.FindObjectsByType<Mission6_Spelling_ExitPanel_Jizhijin>(FindObjectsInactive.Include, FindObjectsSortMode.None).Single();
-                    puzzle.gameObject.SetActive(true); Time.timeScale = 0;
-                    puzzle.playAgainButton.GetComponent<Button>().onClick.Invoke();
-                    stage = 26; next = Time.realtimeSinceStartup + 1; break;
-                case 26:
-                    level = Find<Mission6_Grid_Level_Jizhijin>(); photo = Find<Mission6_Photo_Player_Jizhijin>(); inventory = Find<Mission6_Letters_GameManager_Jizhijin>();
-                    Check(level.IsPlanning && Time.timeScale == 1 && inventory.Letters.Count == 0, "PLAY AGAIN works before crossword completion and restores a fresh running round");
-                    level.BeginExploration(); Check(photo.TryUsePhoto(), "new round restores the one-use photo");
-                    level.watch.PlayerDead(); stage = 14; next = Time.realtimeSinceStartup + 0.2f; break;
+                    Capture("campaign-05-level2-photo");Advance(130,.2f);break;
+                case 130:c.photo.Close();FaceEnemy();Advance(14,.35f);break;
                 case 14:
-                    Check(!photo.IsVisible, "death closes photo while paused");
-                    level.watch.RestartGame(); stage = 15; next = Time.realtimeSinceStartup + 1; break;
+                    Check(c.enemies[0].CanSeePlayer()&&c.enemies[0].Chasing,"sentinel sees an exposed player and starts chasing");
+                    Capture("campaign-09-sentinel-chase");Advance(140,.2f);break;
+                case 140:
+                    StopEnemies();Occlusion();
+                    Pose(c.enemies[0].transform.position+new Vector3(0,1.4f,.7f));c.enemies[0].enabled=true;Advance(15,.25f);break;
                 case 15:
-                    level = Find<Mission6_Grid_Level_Jizhijin>();
-                    Check(level.IsPlanning, "new PLAN begins after death restart");
-                    Time.timeScale = 30; stage = 16; next = Time.realtimeSinceStartup + 5; break;
-                case 16:
-                    Check(Time.timeScale == 0 && level.watch.deathPanel.activeSelf && !level.moving.enabled, "remaining in the room until PLAN expires causes the original failure");
-                    Finish(); break;
+                    Check(c.Phase==Mission6_Phase_Jizhijin.Failed&&c.deathPanel.activeSelf&&!c.moving.enabled&&Time.timeScale==0,"catching the player opens failure UI and stops control");Capture("campaign-06-sentinel-capture");Advance(16,.25f);break;
+                case 16:c.Replay();Advance(17,1.3f);break;
+                case 17:
+                    c=UnityEngine.Object.FindFirstObjectByType<Mission6_Campaign_Jizhijin>();Check(c.CurrentLevel.stageNumber==2&&c.FirstScore.correctWords==7&&c.Phase==Mission6_Phase_Jizhijin.Planning&&!c.photo.Used,"retry restores the level two checkpoint and retains the level one grade");
+                    c.BeginExploration();StopEnemies();c.mouseLook.enabled=c.headBob.enabled=false;Check(!c.night.IsNight&&c.night.CycleTime<.1f,"retry starts a fresh thirty-second day");FacePickup(0);Advance(170,29.5f);break;
+                case 170:
+                    Check(!c.night.IsNight&&c.night.SecondsLeft<1,"second level remains day until thirty seconds");Capture("campaign-12-day-before-night");Advance(171,.7f);break;
+                case 171:
+                    Check(c.night.IsNight&&c.night.SecondsLeft>9&&RenderSettings.fog&&RenderSettings.fogEndDistance==11,"thirty seconds triggers a ten-second night with reduced visibility");
+                    Check(c.night.letterRenderers.Where(r=>r!=null).All(r=>!r.enabled)&&c.night.countdown.gameObject.activeSelf&&c.night.countdown.text.Contains("NIGHT ENDS"),"night hides all scene letters and shows its upper countdown");
+                    c.enemies[0].enabled=true;Advance(172,.15f);break;
+                case 172:
+                    Check(Mathf.Abs(c.enemies[0].Agent.speed-(c.enemies[0].Chasing?c.enemies[0].chaseSpeed:c.enemies[0].patrolSpeed)*1.6f)<.01f,"enemy movement is sixty percent faster at night");StopEnemies();Capture("campaign-13-night-maze");Advance(1721,.2f);break;
+                case 1721:Pose(c.CurrentLevel.Data.Center(c.CurrentLevel.Data.pickups[0].x,c.CurrentLevel.Data.pickups[0].y,1.4f));Advance(173,.15f);break;
+                case 173:
+                    Check(c.inventory.Letters.Count==0,"invisible night letters cannot be accidentally collected");Check(c.photo.TryUsePhoto()&&c.night.photoMap.texture==c.night.nightMap,"photo also conceals letter positions and letters at night");Advance(174,.2f);break;
+                case 174:
+                    Capture("campaign-14-night-photo");Advance(1741,.2f);break;
+                case 1741:c.OpenPuzzle(c.CurrentLevel);before=c.night.CycleTime;Advance(175,.6f);break;
+                case 175:
+                    Check(Mathf.Abs(c.night.CycleTime-before)<.03f&&c.PuzzleOpen,"answer panel pauses the night cycle together with enemies");c.ClosePuzzle();Advance(176,c.night.SecondsLeft+.2f);break;
+                case 176:
+                    Check(!c.night.IsNight&&!RenderSettings.fog&&c.night.photoMap.texture==c.night.dayMap&&c.inventory.Letters.Count==1,"ten-second night restores daylight, photo letters and standing-on-letter collection");
+                    Check(c.night.letterRenderers.Where(r=>r!=null).All(r=>r.enabled),"remaining world letters reappear at dawn");c.enemies[0].enabled=true;Advance(177,.2f);break;
+                case 177:
+                    Check(Mathf.Abs(c.enemies[0].Agent.speed-(c.enemies[0].Chasing?c.enemies[0].chaseSpeed:c.enemies[0].patrolSpeed))<.01f,"enemy returns to normal speed after night");StopEnemies();Pose(c.CurrentLevel.Data.Center(1,1,1.4f));Advance(178,c.night.SecondsLeft+.2f);break;
+                case 178:
+                    Check(c.night.IsNight,"a second night recurs after another thirty-second day");c.night.ResetCycle();Check(!c.night.IsNight&&!RenderSettings.fog,"resetting the level cycle restores day");pickup=1;Advance(18,0);break;
+                case 18:
+                    if(pickup==c.CurrentLevel.Data.pickups.Length){var exit=c.CurrentLevel.Data.Exit;Pose(c.CurrentLevel.Data.Center(exit.x,exit.y,1.4f));Advance(20);break;}
+                    var tile=c.CurrentLevel.GetComponentsInChildren<Mission6_LetterPickup_Collectible_Jizhijin>().Single(t=>t.name.EndsWith("_"+pickup)&&t.GetComponent<Collider>().enabled);Pose(tile.transform.position);Advance(19,.12f);break;
+                case 19:Check(c.inventory.Letters.Count==pickup+1,"physical level two pickup "+(pickup+1));pickup++;Advance(18,0);break;
+                case 20:
+                    Check(c.PuzzleOpen&&Puzzle.letterSlots.Length==12,"level two exit displays its larger crossword with twelve missing squares");Check(FillExactly(Puzzle,10)&&!c.CompleteCurrentLevel(),"ten of fifteen words cannot finish level two");Check(FillExactly(Puzzle,11)&&Puzzle.Solved,"eleven of fifteen words meets the second level threshold");Capture("campaign-07-level2-partial-grade");Advance(21,.3f);break;
+                case 21:
+                    Puzzle.ClearAnswers();var repeated=c.inventory.Letters.GroupBy(v=>v).First(g=>g.Count()>1);int copies=repeated.Count();
+                    for(int i=0;i<copies;i++)Check(Puzzle.SelectLetter(i,repeated.Key[0]),"remaining duplicate letter copy "+i+" stays selectable");
+                    Check(Puzzle.letterSlots[copies].options.All(o=>!o.text.StartsWith(repeated.Key))&&Puzzle.SelectedTiles.Where(i=>i>=0).Distinct().Count()==copies,"using every copy removes that letter from all other slots");
+                    Puzzle.letterSlots[0].value=0;Check(Puzzle.letterSlots[copies].options.Any(o=>o.text==repeated.Key),"clearing a duplicate restores exactly one available copy");
+                    Puzzle.ClearAnswers();Puzzle.letterSlots[0].Show();Advance(210,.2f);break;
+                case 210:
+                    var menu=Puzzle.letterSlots[0].transform.Find("Dropdown List");Check(menu!=null,"full bag letter menu opens");var scroll=menu.GetComponent<ScrollRect>();Canvas.ForceUpdateCanvases();Check(scroll.verticalScrollbar!=null&&scroll.verticalScrollbar.gameObject.activeInHierarchy&&scroll.content.rect.height>scroll.viewport.rect.height,"full bag menu has a working visible scrollbar");scroll.verticalNormalizedPosition=0;Advance(211,.2f);break;
+                case 211:
+                    var list=Puzzle.letterSlots[0].transform.Find("Dropdown List").GetComponent<ScrollRect>();var toggles=list.content.GetComponentsInChildren<Toggle>();var last=toggles.Last(t=>t.gameObject.activeInHierarchy);var lastText=last.GetComponentsInChildren<TMP_Text>().First(t=>t.name=="Letter");var local=list.viewport.InverseTransformPoint(lastText.rectTransform.TransformPoint(lastText.rectTransform.rect.center));Check(lastText.text==Puzzle.letterSlots[0].options.Last().text&&list.viewport.rect.Contains(new Vector2(local.x,local.y))&&lastText.rectTransform.rect.width>50,"last collected letter remains readable after scrolling");Capture("campaign-10-full-bag-menu");Advance(212,.2f);break;
+                case 212:
+                    var choice=Puzzle.letterSlots[0].transform.Find("Dropdown List").GetComponent<ScrollRect>().content.GetComponentsInChildren<Toggle>().Last(t=>t.gameObject.activeInHierarchy);string lastOption=Puzzle.letterSlots[0].options.Last().text;choice.isOn=true;Check(Puzzle.SelectedTiles[0]>=0&&c.inventory.Letters[Puzzle.SelectedTiles[0]][0]==lastOption[0],"last collected letter can be selected from the menu");Puzzle.letterSlots[0].Hide();Fill(Puzzle,(1<<Puzzle.slotCells.Length)-1);Check(Puzzle.CorrectWords==15,"all fifteen crossing words can be completed with the collected physical tiles");Advance(22,.3f);break;
+                case 22:
+                    Check(c.CompleteCurrentLevel()&&c.Phase==Mission6_Phase_Jizhijin.Finished&&c.finishPanel.activeSelf,"finishing level two displays campaign results");Check(c.FirstScore.correctWords==7&&c.SecondScore.correctWords==15&&c.finishText.text.Contains("TOTAL"),"results show each level's time, word count, and combined grade");Capture("campaign-08-final-results");Advance(23,.3f);break;
+                case 23:Finish();break;
             }
         }
-        catch (Exception error) { results.Add("FAIL: " + error); Finish(); }
-    }
-    static Mission6_LetterPickup_Collectible_Jizhijin[] FindObjects() => UnityEngine.Object.FindObjectsByType<Mission6_LetterPickup_Collectible_Jizhijin>(FindObjectsSortMode.None);
-    static void CheckSignFacing(string message)
-    {
-        var sign = level.transform.Find("LeaveStartRoom");
-        Check(sign != null && Vector3.Dot(-sign.forward, Camera.main.transform.position - sign.position) > 0, message);
+        catch(Exception e){results.Add("FAIL: "+e);Finish();}
     }
 }

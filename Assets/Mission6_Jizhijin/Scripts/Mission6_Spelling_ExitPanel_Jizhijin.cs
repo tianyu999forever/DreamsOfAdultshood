@@ -1,108 +1,100 @@
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-
 public class Mission6_Spelling_ExitPanel_Jizhijin : MonoBehaviour
 {
     public Mission6_Letters_GameManager_Jizhijin inventory;
+    public Mission6_Grid_Level_Jizhijin level;
     public TMP_Dropdown[] letterSlots;
     public Vector2Int[] slotCells;
     public TMP_Text[] wordLabels;
-    public TMP_Text resultText;
-    public TMP_Text bagText;
-    public GameObject playAgainButton;
-    public GameObject nextLevelButton;
-    [Tooltip("Optional scene name or path. Leave empty to load the next enabled scene in Build Settings.")]
+    public TMP_Text resultText, bagText, timeText;
+    public GameObject playAgainButton, nextLevelButton;
     public string nextSceneName;
-    public bool Solved { get; private set; }
+    public int CorrectWords { get; private set; }
+    public bool Solved => level != null && CorrectWords >= level.Data.minimumWords;
+    int[] selectedTiles;
+    readonly List<List<int>> optionTiles = new List<List<int>>();
+    bool updating;
+    public IReadOnlyList<int> SelectedTiles => selectedTiles;
     void Awake()
     {
-        foreach (var slot in letterSlots)
-        {
-            var captured = slot;
-            slot.onValueChanged.AddListener(_ => SelectionChanged(captured));
-        }
+        for (int i = 0; i < letterSlots.Length; i++) { int slotIndex = i; letterSlots[i].onValueChanged.AddListener(value => SelectionChanged(slotIndex, value)); }
     }
     void OnEnable()
     {
-        ResetCompletion();
-        if (inventory == null || letterSlots == null) return;
-        resultText.text = "Fill the crossword. A shared cell completes both directions.";
-        var options = new List<string> { "-" };
-        foreach (string letter in inventory.Letters) options.Add(letter);
-        if (bagText != null) bagText.text = "COLLECTED: " + (inventory.Letters.Count == 0 ? "-" : string.Join("   ", inventory.Letters));
-        foreach (var slot in letterSlots)
-        { slot.ClearOptions(); slot.AddOptions(options); slot.SetValueWithoutNotify(0); slot.RefreshShownValue(); }
-        if (wordLabels != null) foreach (var label in wordLabels) label.color = Color.white;
+        if (level == null || inventory == null) return;
+        if (selectedTiles == null || selectedTiles.Length != letterSlots.Length) selectedTiles = Enumerable.Repeat(-1, letterSlots.Length).ToArray();
+        playAgainButton.SetActive(true); nextLevelButton.SetActive(true);
+        resultText.text = level.stageNumber == 1 ? "Optional puzzle. NEXT LEVEL enters level 2 even with no answers." : "Need " + level.Data.minimumWords + " / " + level.Data.words.Length + " words. Answer time counts toward your grade.";
+        RefreshMenus();
+        foreach (var label in wordLabels) label.color = Color.white;
     }
-    void SelectionChanged(TMP_Dropdown changed)
+    void SelectionChanged(int slot, int option)
     {
-        ResetCompletion();
-        if (changed.value == 0) return;
-        foreach (var slot in letterSlots)
-            if (slot != changed && slot.value == changed.value)
+        if (updating || slot >= optionTiles.Count || option >= optionTiles[slot].Count) return;
+        selectedTiles[slot] = optionTiles[slot][option];
+        RefreshMenus();
+    }
+    void RefreshMenus()
+    {
+        updating = true; optionTiles.Clear();
+        var used = new HashSet<int>(selectedTiles.Where(i => i >= 0));
+        for (int slot = 0; slot < letterSlots.Length; slot++)
+        {
+            int own = selectedTiles[slot];
+            var ids = new List<int> { -1 }; var names = new List<string> { "-" }; int selectedOption = 0;
+            var groups = Enumerable.Range(0, inventory.Letters.Count).Where(i => !used.Contains(i) || i == own).GroupBy(i => inventory.Letters[i]);
+            foreach (var group in groups)
             {
-                changed.SetValueWithoutNotify(0); changed.RefreshShownValue();
-                resultText.text = "That tile is already used in another cell."; return;
+                int tile = group.Contains(own) ? own : group.First(); ids.Add(tile);
+                names.Add(group.Key + (group.Count() > 1 ? " x" + group.Count() : ""));
+                if (tile == own) selectedOption = ids.Count - 1;
             }
-        resultText.text = "One intersection, one letter: it counts for Across and Down.";
+            optionTiles.Add(ids); var menu = letterSlots[slot];
+            menu.ClearOptions(); menu.AddOptions(names); menu.SetValueWithoutNotify(selectedOption); menu.RefreshShownValue();
+            if (own >= 0) menu.captionText.text = inventory.Letters[own];
+        }
+        bagText.text = "AVAILABLE: " + string.Join("  ", Enumerable.Range(0, inventory.Letters.Count).Where(i => !used.Contains(i)).GroupBy(i => inventory.Letters[i]).Select(g => g.Key + (g.Count() > 1 ? " x" + g.Count() : "")));
+        updating = false;
+    }
+    public void ClearAnswers()
+    {
+        selectedTiles = Enumerable.Repeat(-1, letterSlots.Length).ToArray(); RefreshMenus();
+    }
+    public bool SelectLetter(int slot, char letter)
+    {
+        int option = optionTiles[slot].FindIndex(i => i >= 0 && inventory.Letters[i][0] == letter);
+        if (option < 0) return false;
+        letterSlots[slot].value = option; return true;
     }
     public void CheckAnswer()
     {
-        if (inventory == null) return;
-        ResetCompletion();
-        var used = new HashSet<int>();
-        var answers = new Dictionary<Vector2Int, char>();
-        for (int i = 0; i < letterSlots.Length; i++)
+        var data = level.Data; CorrectWords = 0;
+        var selected = new Dictionary<Vector2Int, char>(); var used = new HashSet<int>();
+        for (int i = 0; i < slotCells.Length; i++)
         {
-            int index = letterSlots[i].value - 1;
-            if (index < 0 || index >= inventory.Letters.Count)
-            { resultText.text = "Fill all " + letterSlots.Length + " blank cells, or return to find more letters."; return; }
-            if (!used.Add(index)) { resultText.text = "Use each collected tile in only one cell."; return; }
-            answers[slotCells[i]] = inventory.Letters[index][0];
+            int index = selectedTiles[i];
+            if (index < 0 || index >= inventory.Letters.Count) continue;
+            if (!used.Add(index)) { resultText.text = "Use each collected tile in only one square."; return; }
+            selected[slotCells[i]] = inventory.Letters[index][0];
         }
-        int correct = 0;
-        for (int w = 0; w < Mission6_Grid_Level_Jizhijin.Words.Length; w++)
+        for (int wi = 0; wi < data.words.Length; wi++)
         {
-            var clue = Mission6_Grid_Level_Jizhijin.Words[w]; string answer = "";
-            for (int i = 0; i < clue.word.Length; i++)
+            var word = data.words[wi]; bool correct = true;
+            for (int i = 0; i < word.word.Length; i++)
             {
-                var cell = clue.CellAt(i);
-                answer += answers.TryGetValue(cell, out char selected) ? selected : Mission6_Grid_Level_Jizhijin.Crossword[cell].answer;
+                var pos = word.CellAt(i); var cell = data.crossword[pos];
+                char answer = cell.missing ? (selected.TryGetValue(pos, out var letter) ? letter : '_') : cell.answer;
+                correct &= answer == word.word[i];
             }
-            bool matches = answer == clue.word; if (matches) correct++;
-            if (wordLabels != null && w < wordLabels.Length)
-                wordLabels[w].color = matches ? new Color(0.4f, 1, 0.7f) : new Color(1, 0.7f, 0.3f);
+            if (correct) CorrectWords++;
+            wordLabels[wi].color = correct ? new Color(.4f, 1, .7f) : new Color(1, .7f, .3f);
         }
-        Solved = correct == Mission6_Grid_Level_Jizhijin.Words.Length;
-        resultText.text = Solved ? "CROSSWORD COMPLETE!  8 / 8\nYou escaped. Well done!" : correct + " / 8 correct. Check the orange clues.";
+        var score = Mission6_Score_Jizhijin.Calculate(data.number, CorrectWords, data.words.Length, data.minimumWords, level.campaign.Elapsed, data.timeLimit);
+        resultText.text = CorrectWords + " / " + data.words.Length + " correct   |   " + (score.passed ? "PASS   GRADE " + score.rank + "   " + score.points.ToString("0.0") + "/100" : data.number == 1 ? "OPTIONAL / NO FIRST-LEVEL GRADE" : "Need " + data.minimumWords + " words to pass") + "\n" + (score.passed ? (data.number == 1 ? "NEXT LEVEL" : "FINISH LEVEL") + " confirms this score. More words and less time improve it." : data.number == 1 ? "NEXT LEVEL enters level 2 even with no grade. Solve 7 words to earn a first-level grade." : "Partial answers count. Return to the maze for more letters.");
     }
-    void ResetCompletion()
-    {
-        Solved = false;
-        if (playAgainButton != null) playAgainButton.SetActive(true);
-        if (nextLevelButton != null) nextLevelButton.SetActive(true);
-    }
-    public void NextLevel()
-    {
-        string destination = nextSceneName == null ? "" : nextSceneName.Trim();
-        if (destination.Length == 0)
-        {
-            int nextIndex = SceneManager.GetActiveScene().buildIndex + 1;
-            if (SceneManager.GetActiveScene().buildIndex < 0 || nextIndex >= SceneManager.sceneCountInBuildSettings)
-            { resultText.text = "All available missions complete!"; return; }
-            destination = SceneUtility.GetScenePathByBuildIndex(nextIndex);
-        }
-        if (!Application.CanStreamedLevelBeLoaded(destination))
-        { resultText.text = "The next mission is not available in this build."; return; }
-        Time.timeScale = 1;
-        Cursor.lockState = CursorLockMode.Locked; Cursor.visible = false;
-        SceneManager.LoadScene(destination);
-    }
-    public void PlayAgain()
-    {
-        Time.timeScale = 1; Cursor.lockState = CursorLockMode.Locked; Cursor.visible = false;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().path);
-    }
+    public void NextLevel() { level.campaign.CompleteCurrentLevel(); }
+    public void PlayAgain() { level.campaign.Replay(); }
 }
