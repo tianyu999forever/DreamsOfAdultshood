@@ -30,6 +30,7 @@ public class mission3Tutorial_Manager_ShengChiehLee : MonoBehaviour
     public bool ControlsEnabled => lessonMove != null && lessonMove.enabled && lessonLook != null && lessonLook.enabled;
 
     const string ScenePath = "Assets/Scenes/Mission3.unity";
+    const string PreviewPath = "Assets/Mission3_ShengChiehLee/Scenes/Mission3_Preview.unity";
     const string ResourcePath = "Mission3/TutorialRoom";
     Vector3 hotelPosition, cameraPosition, previousPosition;
     Quaternion hotelRotation, cameraRotation, previousView;
@@ -56,7 +57,7 @@ public class mission3Tutorial_Manager_ShengChiehLee : MonoBehaviour
     }
     static void SceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (scene.path != ScenePath) return;
+        if (scene.path != ScenePath && scene.path != PreviewPath) return;
         var manager = scene.GetRootGameObjects().SelectMany(x => x.GetComponentsInChildren<mission3Hotel_Manager_ShengChiehLee>(true)).Single();
         var originalMovement = manager.movement;
         if (!(originalMovement is mission3TutorialMove_Player_ShengChiehLee))
@@ -67,7 +68,7 @@ public class mission3Tutorial_Manager_ShengChiehLee : MonoBehaviour
             movement.walkStepInterval = originalMovement.walkStepInterval; movement.runStepInterval = originalMovement.runStepInterval; movement.walkVolume = originalMovement.walkVolume; movement.runVolume = originalMovement.runVolume;
             movement.enabled = originalMovement.enabled; originalMovement.enabled = false; manager.movement = movement;
         }
-        if (CompletedThisSession) return;
+        if (scene.path != ScenePath || CompletedThisSession) return;
         var prefab = Resources.Load<GameObject>(ResourcePath);
         if (prefab == null) { Debug.LogError("Mission3 tutorial room is missing from Resources."); return; }
         var room = Instantiate(prefab); room.name = "Mission3_TutorialRoom";
@@ -262,6 +263,8 @@ public class mission3Tutorial_Manager_ShengChiehLee : MonoBehaviour
         Manager.movement.enabled = true; Manager.mouseLook.enabled = true;
         if (Manager.headBob != null) Manager.headBob.enabled = headBobEnabled;
         Cursor.lockState = CursorLockMode.Locked; Cursor.visible = false;
+        // Show the authored hotel story after training, before the shift timer starts.
+        Manager.SetPage(mission3Hotel_Manager_ShengChiehLee.Page.Welcome);
         CompletedThisSession = true; CurrentStep = Step.Finished;
         Manager.ShowHint("Tutorial complete. Inspect the lobby map, read the guest notes, and find the lost belongings.");
         for (float time = .3f; time > 0; time -= Time.unscaledDeltaTime) { fade.alpha = time / .3f; yield return null; }
