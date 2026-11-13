@@ -172,6 +172,13 @@ public static class mission3TutorialTest_Editor_ShengChiehLee
                 case 15:
                     if (age < .8) return;
                     Require(UnityEngine.Object.FindFirstObjectByType<mission3Tutorial_Manager_ShengChiehLee>() == null, "Room remained active after entering the hotel.");
+                    Require(manager.CurrentPage == mission3Hotel_Manager_ShengChiehLee.Page.Welcome && manager.canvasUI.pages[1].activeInHierarchy && manager.playerBody.isKinematic && !manager.movement.enabled, "Hotel introduction did not appear after training.");
+                    Require(manager.canvasUI.pages[1].transform.Find("Title").GetComponent<TMP_Text>().text == "Welcome to the HOTEL FLOOR 13!", "Hotel title was not preserved.");
+                    Require(manager.canvasUI.pages[1].transform.Find("Brief").GetComponent<TMP_Text>().text.StartsWith("A note beside your keys reads:"), "Hotel story was not preserved.");
+                    Require(manager.ElapsedSeconds < .1f, "Hotel timer advanced before accepting the introduction.");
+                    Capture("03-hotel-introduction"); manager.canvasUI.Begin(); Next(151); break;
+                case 151:
+                    if (age < .25) return;
                     Require(manager.enabled && manager.movement.enabled && manager.mouseLook.enabled && manager.canvasUI.gameObject.activeSelf && !manager.playerBody.isKinematic, "Hotel controls or Canvas were not restored.");
                     Require(manager.CollectedCount == 0 && !manager.notesRead.Any(x => x) && manager.FinalScore == 0 && !manager.ReturnsSubmitted, "Hotel progress changed during tutorial.");
                     Require(manager.ElapsedSeconds < 2 && manager.guide != null && !manager.guide.MapViewed && !manager.guide.JournalViewed, "Training consumed hotel time or marked real clues as read.");
@@ -216,7 +223,7 @@ public static class mission3TutorialTest_Editor_ShengChiehLee
     }
     static void Capture(string name)
     {
-        var camera = manager.playerCamera; var canvas = lesson.GetComponentInChildren<Canvas>();
+        var camera = manager.playerCamera; var canvas = lesson != null ? lesson.GetComponentInChildren<Canvas>() : manager.canvasUI.GetComponent<Canvas>();
         var oldMode = canvas.renderMode; var oldCamera = canvas.worldCamera; float oldPlane = canvas.planeDistance;
         var oldTarget = camera.targetTexture; var oldActive = RenderTexture.active;
         var data = camera.GetComponent<UniversalAdditionalCameraData>(); bool post = data != null && data.renderPostProcessing;

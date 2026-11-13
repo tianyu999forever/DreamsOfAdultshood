@@ -263,6 +263,8 @@ public class mission3Tutorial_Manager_ShengChiehLee : MonoBehaviour
         Manager.movement.enabled = true; Manager.mouseLook.enabled = true;
         if (Manager.headBob != null) Manager.headBob.enabled = headBobEnabled;
         Cursor.lockState = CursorLockMode.Locked; Cursor.visible = false;
+        // Show the authored hotel story after training, before the shift timer starts.
+        Manager.SetPage(mission3Hotel_Manager_ShengChiehLee.Page.Welcome);
         CompletedThisSession = true; CurrentStep = Step.Finished;
         Manager.ShowHint("Tutorial complete. Inspect the lobby map, read the guest notes, and find the lost belongings.");
         for (float time = .3f; time > 0; time -= Time.unscaledDeltaTime) { fade.alpha = time / .3f; yield return null; }

@@ -647,7 +647,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &6796915
 Transform:
   m_ObjectHideFlags: 0
@@ -2074,7 +2074,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &24286430
 Transform:
   m_ObjectHideFlags: 0
@@ -3808,12 +3808,12 @@ GameObject:
   - component: {fileID: 54746007}
   - component: {fileID: 54746006}
   m_Layer: 0
-  m_Name: Guest note table
+  m_Name: Legacy / 303 note table
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &54746005
 Transform:
   m_ObjectHideFlags: 0
@@ -10158,7 +10158,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &154947340
 Transform:
   m_ObjectHideFlags: 0
@@ -26898,7 +26898,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &354815096
 Transform:
   m_ObjectHideFlags: 0
@@ -28133,6 +28133,79 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 368724810}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1001 &369525690
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 457922144}
+    m_Modifications:
+    - target: {fileID: 1909379576878069319, guid: e4a8a2d894bac9e428a9b8dc1d8a7930, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 56.85
+      objectReference: {fileID: 0}
+    - target: {fileID: 1909379576878069319, guid: e4a8a2d894bac9e428a9b8dc1d8a7930, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.97999996
+      objectReference: {fileID: 0}
+    - target: {fileID: 1909379576878069319, guid: e4a8a2d894bac9e428a9b8dc1d8a7930, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -36.95652
+      objectReference: {fileID: 0}
+    - target: {fileID: 1909379576878069319, guid: e4a8a2d894bac9e428a9b8dc1d8a7930, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1909379576878069319, guid: e4a8a2d894bac9e428a9b8dc1d8a7930, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1909379576878069319, guid: e4a8a2d894bac9e428a9b8dc1d8a7930, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1909379576878069319, guid: e4a8a2d894bac9e428a9b8dc1d8a7930, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1909379576878069319, guid: e4a8a2d894bac9e428a9b8dc1d8a7930, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1909379576878069319, guid: e4a8a2d894bac9e428a9b8dc1d8a7930, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1909379576878069319, guid: e4a8a2d894bac9e428a9b8dc1d8a7930, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5362561064096282437, guid: e4a8a2d894bac9e428a9b8dc1d8a7930, type: 3}
+      propertyPath: m_Name
+      value: Mission3_Note303Display_ShengChiehLee
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6934648097201369267, guid: e4a8a2d894bac9e428a9b8dc1d8a7930, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
+    - targetCorrespondingSourceObject: {fileID: 6582949260916453997, guid: e4a8a2d894bac9e428a9b8dc1d8a7930, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
+  m_SourcePrefab: {fileID: 100100000, guid: e4a8a2d894bac9e428a9b8dc1d8a7930, type: 3}
+--- !u!4 &369525691 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3591949207582861581, guid: e4a8a2d894bac9e428a9b8dc1d8a7930, type: 3}
+  m_PrefabInstance: {fileID: 369525690}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &369525692 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1909379576878069319, guid: e4a8a2d894bac9e428a9b8dc1d8a7930, type: 3}
+  m_PrefabInstance: {fileID: 369525690}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &370500289
 GameObject:
   m_ObjectHideFlags: 0
@@ -36323,6 +36396,8 @@ Transform:
   m_LocalScale: {x: 1.15, y: 1, z: 1.15}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 369525692}
+  - {fileID: 1782490680}
   - {fileID: 803432247}
   - {fileID: 112944803}
   - {fileID: 2085885395}
@@ -59169,7 +59244,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &711170447
 Transform:
   m_ObjectHideFlags: 0
@@ -83242,7 +83317,7 @@ MonoBehaviour:
   m_OverrideVoxelSize: 1
   m_VoxelSize: 0.12
   m_MinRegionArea: 2
-  m_NavMeshData: {fileID: 23800000, guid: 7872f46d44885c24899e5e0192798c1d, type: 2}
+  m_NavMeshData: {fileID: 0}
   m_BuildHeightMesh: 0
 --- !u!4 &1039673884
 Transform:
@@ -85729,7 +85804,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1067784268
 RectTransform:
   m_ObjectHideFlags: 0
@@ -87718,7 +87793,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1097414118
 Transform:
   m_ObjectHideFlags: 0
@@ -93673,12 +93748,12 @@ GameObject:
   - component: {fileID: 1177218854}
   - component: {fileID: 1177218853}
   m_Layer: 0
-  m_Name: Lost property display / 02
+  m_Name: Legacy / Postcard display
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1177218852
 Transform:
   m_ObjectHideFlags: 0
@@ -103223,14 +103298,13 @@ GameObject:
   - component: {fileID: 1296129450}
   - component: {fileID: 1296129449}
   - component: {fileID: 1296129448}
-  - component: {fileID: 1296129447}
   m_Layer: 0
-  m_Name: Guest note 303
+  m_Name: Legacy / Guest note 303
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1296129446
 Transform:
   m_ObjectHideFlags: 0
@@ -103247,22 +103321,6 @@ Transform:
   - {fileID: 1088117600}
   m_Father: {fileID: 457922144}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1296129447
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1296129445}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 10b0428f2160741b2814f0cab8d489fb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::mission3Interact_Prop_ShengChiehLee
-  kind: 1
-  index: 2
-  displayName: Read guest note 303
-  description: 
 --- !u!23 &1296129448
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -130263,7 +130321,7 @@ MonoBehaviour:
   - {fileID: 3928698}
   itemPositions:
   - {fileID: 1955608520}
-  - {fileID: 1799939427}
+  - {fileID: 1782490681}
   - {fileID: 755662744}
   - {fileID: 1445661948}
   - {fileID: 282191167}
@@ -130271,7 +130329,7 @@ MonoBehaviour:
   notePositions:
   - {fileID: 1424106646}
   - {fileID: 152194283}
-  - {fileID: 1296129446}
+  - {fileID: 369525691}
   itemRows:
   - {fileID: 1056324069}
   - {fileID: 1388242740}
@@ -140932,6 +140990,76 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!1001 &1782490679
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 457922144}
+    m_Modifications:
+    - target: {fileID: 3212596115699594730, guid: 7d0c2c6705d1b9f44ade233f03ce5001, type: 3}
+      propertyPath: m_Name
+      value: Mission3_PostcardVisual_ShengChiehLee
+      objectReference: {fileID: 0}
+    - target: {fileID: 7493284060707245573, guid: 7d0c2c6705d1b9f44ade233f03ce5001, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 56.999996
+      objectReference: {fileID: 0}
+    - target: {fileID: 7493284060707245573, guid: 7d0c2c6705d1b9f44ade233f03ce5001, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.035
+      objectReference: {fileID: 0}
+    - target: {fileID: 7493284060707245573, guid: 7d0c2c6705d1b9f44ade233f03ce5001, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -36.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7493284060707245573, guid: 7d0c2c6705d1b9f44ade233f03ce5001, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: -0.00000004371139
+      objectReference: {fileID: 0}
+    - target: {fileID: 7493284060707245573, guid: 7d0c2c6705d1b9f44ade233f03ce5001, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7493284060707245573, guid: 7d0c2c6705d1b9f44ade233f03ce5001, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7493284060707245573, guid: 7d0c2c6705d1b9f44ade233f03ce5001, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7493284060707245573, guid: 7d0c2c6705d1b9f44ade233f03ce5001, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7493284060707245573, guid: 7d0c2c6705d1b9f44ade233f03ce5001, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7493284060707245573, guid: 7d0c2c6705d1b9f44ade233f03ce5001, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 690202895207111592, guid: 7d0c2c6705d1b9f44ade233f03ce5001, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
+  m_SourcePrefab: {fileID: 100100000, guid: 7d0c2c6705d1b9f44ade233f03ce5001, type: 3}
+--- !u!4 &1782490680 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7493284060707245573, guid: 7d0c2c6705d1b9f44ade233f03ce5001, type: 3}
+  m_PrefabInstance: {fileID: 1782490679}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1782490681 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2768127804646576103, guid: 7d0c2c6705d1b9f44ade233f03ce5001, type: 3}
+  m_PrefabInstance: {fileID: 1782490679}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1782509617
 GameObject:
   m_ObjectHideFlags: 0
@@ -142898,14 +143026,13 @@ GameObject:
   m_Component:
   - component: {fileID: 1799939427}
   - component: {fileID: 1799939429}
-  - component: {fileID: 1799939428}
   m_Layer: 0
-  m_Name: LostProperty_1_Coastal Postcard
+  m_Name: Legacy / Coastal Postcard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1799939427
 Transform:
   m_ObjectHideFlags: 0
@@ -142915,7 +143042,7 @@ Transform:
   m_GameObject: {fileID: 1799939426}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 1, z: -0, w: -0.00000004371139}
-  m_LocalPosition: {x: 56.999996, y: 1.04, z: -36.2}
+  m_LocalPosition: {x: 56.999996, y: 1.035, z: -36.2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -142929,22 +143056,6 @@ Transform:
   - {fileID: 1097414118}
   m_Father: {fileID: 457922144}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1799939428
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1799939426}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 10b0428f2160741b2814f0cab8d489fb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::mission3Interact_Prop_ShengChiehLee
-  kind: 0
-  index: 1
-  displayName: Coastal Postcard
-  description: 
 --- !u!65 &1799939429
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -171222,7 +171333,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2138749539
 Transform:
   m_ObjectHideFlags: 0

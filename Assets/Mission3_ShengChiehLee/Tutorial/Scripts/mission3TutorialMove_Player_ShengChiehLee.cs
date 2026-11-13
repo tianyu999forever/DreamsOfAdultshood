@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
 
 // Tutorial-local copy of shared Moving physics; the shared script and player asset stay unchanged.
 [DefaultExecutionOrder(-100)]
@@ -13,6 +14,16 @@ public class mission3TutorialMove_Player_ShengChiehLee : Moving
     readonly Vector3[] wallNormals = new Vector3[8];
     int wallCount;
     PhysicsMaterial originalMaterial, movementMaterial;
+    MeshRenderer bodyRenderer;
+    ShadowCastingMode originalBodyShadows;
+    void Awake()
+    {
+        // Hide only the root capsule mesh; camera-mounted hands and watch keep rendering.
+        bodyRenderer = GetComponent<MeshRenderer>();
+        if (bodyRenderer == null) return;
+        originalBodyShadows = bodyRenderer.shadowCastingMode;
+        bodyRenderer.shadowCastingMode = ShadowCastingMode.ShadowsOnly;
+    }
     void Start()
     {
         body = GetComponent<Rigidbody>(); capsule = GetComponent<Collider>();
@@ -85,6 +96,8 @@ public class mission3TutorialMove_Player_ShengChiehLee : Moving
     void OnDisable() { move = Vector2.zero; jumpRequested = false; wallCount = 0; }
     void OnDestroy()
     {
+        if (bodyRenderer != null && bodyRenderer.shadowCastingMode == ShadowCastingMode.ShadowsOnly)
+            bodyRenderer.shadowCastingMode = originalBodyShadows;
         if (capsule != null && capsule.sharedMaterial == movementMaterial) capsule.sharedMaterial = originalMaterial;
         if (movementMaterial != null) Destroy(movementMaterial);
     }
