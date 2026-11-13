@@ -112,9 +112,9 @@ public class Mission5_TimeFreeze_Environment_ZhuohengWu : MonoBehaviour
     private bool OwnsBody(Rigidbody body)
     {
         if (!Eligible(body)) return false;
-        // These controllers retain their own kinematic targets/return anchors. The safe also
+        // These controllers retain their own kinematic targets/return anchors. The ventilation shutter also
         // operates its visible access interlock while the rotor is frozen.
-        if (body.GetComponentInParent<Mission5_RotatingCase_DisplayCase_ZhuohengWu>() != null) return false;
+        if (body.GetComponentInParent<Mission5_Ventilation_Shutter_ZhuohengWu>() != null) return false;
         var gravity = body.GetComponent<Mission5_ReverseGravity_MovableObject_ZhuohengWu>();
         return gravity == null || !gravity.IsMoving;
     }

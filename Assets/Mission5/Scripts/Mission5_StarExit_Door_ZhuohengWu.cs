@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-/// <summary>Keeps the existing exit hinge locked until three stars, using the original F interaction.</summary>
+/// <summary>Keeps the existing exit hinge locked until the required star count, using the original F interaction.</summary>
 public class Mission5_StarExit_Door_ZhuohengWu : MonoBehaviour
 {
     [SerializeField] private Mission5_StarInventory_ZhuohengWu inventory;
@@ -34,7 +34,7 @@ public class Mission5_StarExit_Door_ZhuohengWu : MonoBehaviour
         promptText.gameObject.SetActive(nearby && inventory != null && !inventory.Completed && Time.timeScale > 0f);
         if (inventory != null)
             promptText.text = !inventory.ExitUnlocked
-                ? "Collect at least 3 stars to unlock the exit"
+                ? $"Collect at least {Mission5_StarInventory_ZhuohengWu.RequiredStars} stars to unlock the exit"
                 : IsOpen ? "Press F to Close Door" : "Press F to Open Door";
     }
 
