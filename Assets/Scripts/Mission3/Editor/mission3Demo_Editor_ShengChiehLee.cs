@@ -13,7 +13,7 @@ using UnityEngine.UI;
 
 public static class mission3Demo_Editor_ShengChiehLee
 {
-    const string Demo="Assets/Scenes/Demos/Mission3_Demo.unity";
+    const string Demo="Assets/Mission3_ShengChiehLee/Scenes/Mission3_Preview.unity";
     const string Output="C:/Users/j1a2m/Documents/Codex/2026-10-25/w/outputs/mission3-demo";
     static TMP_FontAsset font;
     static readonly Color Ink=new Color(.055f,.10f,.12f),Paper=new Color(.95f,.92f,.84f),Gold=new Color(.79f,.60f,.29f);

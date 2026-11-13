@@ -35,6 +35,7 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
     public bool[] collected = new bool[6];
     public bool[] notesRead = new bool[3];
     public int[] assignment = { -1, -1, -1, -1, -1, -1 };
+    public mission3Monster_Manager_ShengChiehLee nightPatrol;
     public enum Page { None, Welcome, Map, Journal, Note, Checkout, Confirm, Result, Pause }
     Page page = Page.Welcome;
     Page journalReturnPage=Page.None;
@@ -83,6 +84,7 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
         focus = null;
         if(guide!=null)guide.PageOpened(value);
         if(canvasUI!=null)canvasUI.Refresh();
+        if(nightPatrol!=null)nightPatrol.PageChanged();
     }
     void LateUpdate()
     {
@@ -94,7 +96,7 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
     }
     void Update()
     {
-        if(page==Page.Result)return;
+        if(page==Page.Result||(nightPatrol!=null&&nightPatrol.IsRecovering))return;
         var k = Keyboard.current; if (k == null) return;
         if (page == Page.Map && k.mKey.wasPressedThisFrame) { SetPage(Page.None); return; }
         if(k.tabKey.wasPressedThisFrame&&(page==Page.None||page==Page.Checkout||page==Page.Journal)) { if(page==Page.Journal)BackToHotel();else OpenJournal();return; }
@@ -236,8 +238,8 @@ public class mission3Hotel_Manager_ShengChiehLee : MonoBehaviour
         switch (page)
         {
             case Page.Welcome:
-                GUILayout.Label("Some guests left more than their luggage.", title); GUILayout.Space(18);
-                GUILayout.Label("Explore the hotel. Read the three guest notes, collect lost belongings, then return to the reception checkout beside the lift. Assign owners and return belongings at the desk. Then enter the lift to settle your score.", body);
+                GUILayout.Label("Find what they left behind.", title); GUILayout.Space(18);
+                GUILayout.Label("A note beside your keys reads: \"Find lost items. Use guest notes to identify their owners. Return them at Lost & Found, then take the lift." + (nightPatrol != null ? " After two finds, stay quiet and turn corners to avoid the night patrol." : "") + "\"", body);
                 GUILayout.Space(18); GUILayout.Label("Correct return: 10 points each (60 max)\nComplete guest pair: 10 bonus points (30 max)\nOpen the service shortcut: 10 points\nTotal: 100. You may leave with 3 or more items. No countdown.", body);
                 GUILayout.Space(18); GUILayout.Label("The entrance wall carries the real floor plan. M opens a copy; TAB keeps the notes you have read. Items found in a room do not necessarily belong to that guest.", body);
                 if (GUILayout.Button("Begin the night shift",button)) SetPage(Page.None); break;

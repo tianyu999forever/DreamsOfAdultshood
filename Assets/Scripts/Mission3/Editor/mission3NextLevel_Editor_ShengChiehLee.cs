@@ -111,7 +111,7 @@ public static class mission3NextLevel_Editor_ShengChiehLee
     public static void UpdateSigns()
     {
         if(EditorApplication.isPlayingOrWillChangePlaymode)throw new InvalidOperationException("Stop Play mode before editing the lift sign.");
-        foreach(string path in new[]{mission3Paths_Editor_ShengChiehLee.Scene,"Assets/Scenes/Demos/Mission3_Demo.unity"})
+        foreach(string path in new[]{mission3Paths_Editor_ShengChiehLee.Scene,"Assets/Mission3_ShengChiehLee/Scenes/Mission3_Preview.unity"})
         {
             var scene=SceneManager.GetSceneByPath(path);if(!scene.IsValid()||!scene.isLoaded)scene=EditorSceneManager.OpenScene(path,OpenSceneMode.Additive);
             var manager=scene.GetRootGameObjects().SelectMany(x=>x.GetComponentsInChildren<mission3Hotel_Manager_ShengChiehLee>(true)).Single();
