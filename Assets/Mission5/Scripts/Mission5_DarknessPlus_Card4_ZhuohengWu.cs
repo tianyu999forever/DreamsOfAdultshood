@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-/// <summary>Card 4 dims the assigned room lights and reveals the existing plus pickup.</summary>
+/// <summary>Card 4 dims the assigned room lights and reveals the hidden star pickup.</summary>
 // Restore last frame's lighting before the existing FlickeringLight coroutines run.
 [DefaultExecutionOrder(-1000)]
 public class Mission5_DarknessPlus_Card4_ZhuohengWu : MonoBehaviour
@@ -11,10 +11,10 @@ public class Mission5_DarknessPlus_Card4_ZhuohengWu : MonoBehaviour
     [SerializeField] private Mission5_CardHotbar_CardHotbar_ZhuohengWu hotbar;
     [SerializeField] private Transform[] roomLightRoots;
     [SerializeField] private Light[] additionalRoomLights;
-    [SerializeField] private Collectible plusCollectible;
-    [SerializeField] private GameObject plusVisual;
-    [SerializeField] private Collider plusPickupCollider;
-    [SerializeField] private Light plusGlow;
+    [SerializeField] private Mission5_StarCollectible_ZhuohengWu hiddenStar;
+    [SerializeField] private GameObject starVisual;
+    [SerializeField] private Collider starPickupCollider;
+    [SerializeField] private Light starGlow;
 
     [Header("Dark Room")]
     [SerializeField, Range(0.01f, 1f)] private float darkIntensityMultiplier = 0.04f;
@@ -22,10 +22,10 @@ public class Mission5_DarknessPlus_Card4_ZhuohengWu : MonoBehaviour
     [SerializeField] private Color darkAmbientColor = new Color(0.035f, 0.045f, 0.055f, 1f);
     [SerializeField, Range(0f, 1f)] private float darkReflectionMultiplier = 0.15f;
 
-    [Header("Plus Glow")]
+    [Header("Star Glow")]
     [SerializeField, Min(0f)] private float glowIntensity = 0.35f;
 
-    public bool PlusCollected { get; private set; }
+    public bool StarCollected { get; private set; }
 
     private readonly List<Light> lights = new List<Light>();
     private readonly List<LensFlareComponentSRP> flares = new List<LensFlareComponentSRP>();
@@ -40,20 +40,32 @@ public class Mission5_DarknessPlus_Card4_ZhuohengWu : MonoBehaviour
     private bool initialized, lightingApplied, revealed;
     private static readonly int EmissionColor = Shader.PropertyToID("_EmissionColor");
 
+    private void OnEnable()
+    {
+        if (hotbar != null) hotbar.SelectionChanged += OnSelectionChanged;
+    }
+
+    private void OnSelectionChanged(int slot)
+    {
+        if (slot != 2 && slot != 4) return;
+        SetStarVisible(false);
+        darkness = 0f;
+        RestoreLighting();
+    }
+
     private void Awake()
     {
         // Fail closed even if another required reference was missed during manual setup.
-        SetPlusVisible(false);
-        if (hotbar == null || plusCollectible == null || plusVisual == null ||
-            plusPickupCollider == null || plusGlow == null ||
-            plusPickupCollider.gameObject != plusCollectible.gameObject ||
-            !plusPickupCollider.isTrigger || plusCollectible.itemType != Collectible.ItemType.Operator ||
-            plusCollectible.operatorValue != "+" ||
-            !plusVisual.transform.IsChildOf(plusCollectible.transform) ||
-            plusVisual == plusCollectible.gameObject ||
-            transform.IsChildOf(plusCollectible.transform))
+        SetStarVisible(false);
+        if (hotbar == null || hiddenStar == null || starVisual == null ||
+            starPickupCollider == null || starGlow == null ||
+            starPickupCollider.gameObject != hiddenStar.gameObject ||
+            !starPickupCollider.isTrigger ||
+            !starVisual.transform.IsChildOf(hiddenStar.transform) ||
+            starVisual == hiddenStar.gameObject ||
+            transform.IsChildOf(hiddenStar.transform))
         {
-            Debug.LogError("Mission 5 Card 4: assign Hotbar, the existing Operator_Plus Collectible, " +
+            Debug.LogError("Mission 5 Card 4: assign Hotbar, the HiddenStar Star Collectible, " +
                 "its child Visual, its root trigger Collider, and its glow Light. " +
                 "Put this controller on a separate active GameObject.", this);
             enabled = false;
@@ -100,7 +112,7 @@ public class Mission5_DarknessPlus_Card4_ZhuohengWu : MonoBehaviour
 
     private void AddLight(Light light)
     {
-        if (light != null && light != plusGlow && !lights.Contains(light)) lights.Add(light);
+        if (light != null && light != starGlow && !lights.Contains(light)) lights.Add(light);
     }
 
     private void Update()
@@ -114,30 +126,30 @@ public class Mission5_DarknessPlus_Card4_ZhuohengWu : MonoBehaviour
     {
         if (!initialized) return;
 
-        // Collectible disables its root collider synchronously after adding to the Bag.
+        // Collectible disables its root collider synchronously after adding a star to the HUD.
         // Observe that handshake BEFORE applying our own hide/release state. Never
         // re-enable a collected trigger during its 0.5-second destruction animation.
-        if (!PlusCollected && (plusCollectible == null || plusPickupCollider == null ||
-            (revealed && !plusPickupCollider.enabled))) PlusCollected = true;
+        if (!StarCollected && (hiddenStar == null || starPickupCollider == null ||
+            hiddenStar.Collected)) StarCollected = true;
 
         bool held = hotbar != null && hotbar.isActiveAndEnabled &&
             hotbar.SelectedSlotIndex == 3 && Time.timeScale > 0f;
-        SetPlusVisible(held && !PlusCollected && plusCollectible != null &&
-            plusCollectible.isActiveAndEnabled);
+        SetStarVisible(held && !StarCollected && hiddenStar != null &&
+            hiddenStar.isActiveAndEnabled);
 
         darkness = Mathf.MoveTowards(darkness, held ? 1f : 0f,
             Time.deltaTime / Mathf.Max(0.01f, transitionDuration));
         if (darkness > 0f) ApplyLighting();
     }
 
-    private void SetPlusVisible(bool visible)
+    private void SetStarVisible(bool visible)
     {
-        if (plusVisual != null) plusVisual.SetActive(visible);
-        if (plusPickupCollider != null) plusPickupCollider.enabled = visible;
-        if (plusGlow != null)
+        if (starVisual != null) starVisual.SetActive(visible);
+        if (starPickupCollider != null) starPickupCollider.enabled = visible;
+        if (starGlow != null)
         {
-            plusGlow.intensity = Mathf.Max(0f, glowIntensity);
-            plusGlow.enabled = visible;
+            starGlow.intensity = Mathf.Max(0f, glowIntensity);
+            starGlow.enabled = visible;
         }
         revealed = visible;
     }
@@ -198,10 +210,11 @@ public class Mission5_DarknessPlus_Card4_ZhuohengWu : MonoBehaviour
 
     private void OnDisable()
     {
+        if (hotbar != null) hotbar.SelectionChanged -= OnSelectionChanged;
         // Preserve the collection handshake if this component is disabled that frame.
-        if (revealed && plusPickupCollider != null && !plusPickupCollider.enabled) PlusCollected = true;
+        if (hiddenStar != null && hiddenStar.Collected) StarCollected = true;
         RestoreLighting();
         darkness = 0f;
-        SetPlusVisible(false);
+        SetStarVisible(false);
     }
 }

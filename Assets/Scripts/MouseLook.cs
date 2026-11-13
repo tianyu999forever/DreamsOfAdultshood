@@ -67,6 +67,9 @@ public class MouseLook : MonoBehaviour
                 0f,
                 0f
             );
+
+        // Synchronize mouse look with the interpolated player Rigidbody.
+        Physics.SyncTransforms();
     }
 
     private float NormalizeAngle(float angle)
